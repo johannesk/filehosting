@@ -21,47 +21,18 @@
 #++
 #
 
-require "filehosting/integer"
+class Integer
 
-module FileHosting
-
-	# This class holds all the informations about a file.
-	class FileInfo
-
-		# the uniq identification for this file
-		attr_accessor :uid
-
-		# the file name
-		attr_accessor :name
-
-		# where the file comes from
-		attr_accessor :source
-
-		# where to get the file now
-		attr_accessor :url
-
-		# the mimetype of the file
-		attr_accessor :mimetype
-
-		# the size of the file
-		attr_accessor :size
-
-		# the tags of the file
-		attr_accessor :tags
-
-		# the history of this file
-		attr_accessor :history
-
-		def to_text
-			"name:     #{@filename}\n"+
-			"uid:      #{@uid}\n"+
-			"tags:     #{@tags.join(", ")}\n"+
-			"mimetype: #{@mimetype}\n"+
-			"size:     #{@size.to_text}\n"+
-			"url:      #{@url}\n"+
-			"source:   #{@source}"
+	# display a number in a human readable way if requested
+	def to_text
+		return self.to_s unless $human and self > 999
+		res= self.to_f
+		exp= 0
+		while res > 999
+			exp+= 1
+			res/= 1024
 		end
-
+		return "#{(res*10).round.to_f/10}#{["", "K", "M", "G", "T", "P"][exp]}"
 	end
 
 end

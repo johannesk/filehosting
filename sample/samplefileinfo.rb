@@ -31,15 +31,15 @@ module FileHosting
 	class SampleFileInfo < FileInfo
 
 		def initialize
-			@uid= Base64.encode64((rand*10000000000000).to_i.to_s(36))
+			@uid= Base64.encode64((rand*10000000000000).to_i.to_s(36)).strip
 			random= (rand*3).to_int
 			@mimetype= ["application/pdf", "video/ms-xvideo", "text/x-c++"][random]
-			@filename= ["Uebung"+(rand*30).to_i+".pdf", "Vorlesung"+(rand*30).to_i+".avi", "Programm"+(rand*30).to_i+".java"][random]
+			@filename= ["Uebung"+(rand*30).to_i.to_s+".pdf", "Vorlesung"+(rand*30).to_i.to_s+".avi", "Programm"+(rand*30).to_i.to_s+".java"][random]
 			@source= "http://source.example/#{@filename}"
 			@url= "http://download.example/#{@uid}"
-			@size= (rand*1073741824).to_i
+			@size= (rand*2**(rand*40)).to_i
 			@tags= []
-			@tags<< "#{(rand*2)<1 ? "S" : "W"}S#{rand*30.to_i}"
+			@tags<< "#{(rand*2)<1 ? "S" : "W"}S#{(rand*30).to_i}"
 			@tags+= [["Uebung"], ["Video", "Vorlesung"], ["Uebung", "Sourcecode"]][random]
 			@history= []
 		end

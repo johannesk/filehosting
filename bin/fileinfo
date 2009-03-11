@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -21,48 +22,24 @@
 #++
 #
 
-require "filehosting/integer"
+$:<< "../sample"
 
-module FileHosting
+require "samplefileinfo"
 
-	# This class holds all the informations about a file.
-	class FileInfo
+require "optparse"
 
-		# the uniq identification for this file
-		attr_accessor :uid
+opts= OptionParser.new
 
-		# the file name
-		attr_accessor :name
-
-		# where the file comes from
-		attr_accessor :source
-
-		# where to get the file now
-		attr_accessor :url
-
-		# the mimetype of the file
-		attr_accessor :mimetype
-
-		# the size of the file
-		attr_accessor :size
-
-		# the tags of the file
-		attr_accessor :tags
-
-		# the history of this file
-		attr_accessor :history
-
-		def to_text
-			"name:     #{@filename}\n"+
-			"uid:      #{@uid}\n"+
-			"tags:     #{@tags.join(", ")}\n"+
-			"mimetype: #{@mimetype}\n"+
-			"size:     #{@size.to_text}\n"+
-			"url:      #{@url}\n"+
-			"source:   #{@source}"
-		end
-
-	end
-
+opts.on("-h", "--human", "display everything in a human readable way") do
+	$human= true
 end
+
+opts.on("--help", "display this message") do
+	STDOUT.puts opts
+	exit 0
+end
+
+opts.parse(ARGV)
+
+puts FileHosting::SampleFileInfo.new.to_text
 
