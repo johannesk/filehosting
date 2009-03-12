@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,37 +21,20 @@
 #++
 #
 
-$:<< "../sample"
+module FileHosting
 
-require "filehosting/string"
+	# The DataSource knows everything
+	class DataSource
 
-require "sampledatasource"
+		# searches for all files with these tags
+		def search_tags(tags)
+		end
 
-source= FileHosting::SampleDataSource.new
+		# returns the fileinfo for the file with this uuid
+		def fileinfo(uuid)
+		end
 
-require "optparse"
+	end
 
-opts= OptionParser.new
-
-opts.banner= "usage: fileinfo [options] <uuid>"
-
-opts.on("-h", "--human", "display everything in a human readable way") do
-	$human= true
 end
 
-opts.on("--help", "display this message") do
-	STDOUT.puts opts
-	exit 0
-end
-
-args= opts.parse(ARGV)
-if args.size != 1
-	STDERR.puts opts
-	exit 1
-end
-
-uuid= args[0]
-
-fileinfo= source.fileinfo(uuid)
-
-puts (fileinfo || "no such file found").to_text

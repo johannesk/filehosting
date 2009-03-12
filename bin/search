@@ -34,7 +34,7 @@ require "optparse"
 
 opts= OptionParser.new
 
-opts.banner= "usage: fileinfo [options] <uuid>"
+opts.banner= "usage: search [options] <tag ... tag>"
 
 opts.on("-h", "--human", "display everything in a human readable way") do
 	$human= true
@@ -46,13 +46,13 @@ opts.on("--help", "display this message") do
 end
 
 args= opts.parse(ARGV)
-if args.size != 1
+if args.size < 1
 	STDERR.puts opts
 	exit 1
 end
 
-uuid= args[0]
+fileinfos= source.search_tags(opts)
 
-fileinfo= source.fileinfo(uuid)
-
-puts (fileinfo || "no such file found").to_text
+puts "#{fileinfos.size} Files found" if $human
+puts if $human and fileinfos.size > 0
+puts fileinfos.collect { |f| f.to_text }.join("\n\n") if fileinfos.size > 0
