@@ -23,6 +23,8 @@
 
 require "filehosting/integer"
 
+require "yaml"
+
 module FileHosting
 
 	# This class holds all the informations about a file.
@@ -50,7 +52,7 @@ module FileHosting
 		attr_accessor :tags
 
 		# the history of this file
-		attr_accessor :history
+		#attr_accessor :history
 
 		def to_text
 			"name:     #{@filename}\n"+
@@ -62,7 +64,29 @@ module FileHosting
 			"source:   #{@source}"
 		end
 
+		# all subclasses of FileInfo should only serialize FileInfo Attributes
+		def to_yaml_properties
+			["@uid", "@name", "@source", "@url", "@mimetype", "@size", "@tags"]#, "@history"]
+		end
+
+		def to_yaml_type
+			"!filehosting/fileinfo"
+		end
+
 	end
 
+end
+
+YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
+	res= FileHosting::FileInfo.new
+	res.uid= value["uid"].to_s
+	res.name= value["name"].to_s
+	res.source= value["source"].to_s
+	res.url= value["url"].to_s
+	res.mimetype= value["mimetype"].to_s
+	res.size= value["size"].to_i
+	res.tags= value["tags"].collect { |x| x.to_s }
+	#res.history= value["history"]
+	res
 end
 
