@@ -56,7 +56,7 @@ module FileHosting
 
 		def to_text
 			"name:     #{@filename}\n"+
-			"uuid:     #{@uid}\n"+
+			"uuid:     #{@uuid}\n"+
 			"tags:     #{@tags.join(", ")}\n"+
 			"mimetype: #{@mimetype}\n"+
 			"size:     #{@size.to_text}\n"+
