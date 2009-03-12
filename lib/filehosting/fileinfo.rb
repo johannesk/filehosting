@@ -30,8 +30,8 @@ module FileHosting
 	# This class holds all the informations about a file.
 	class FileInfo
 
-		# the uniq identification for this file
-		attr_accessor :uid
+		# the RFC 4122 uuid for this file
+		attr_accessor :uuid
 
 		# the file name
 		attr_accessor :name
@@ -56,7 +56,7 @@ module FileHosting
 
 		def to_text
 			"name:     #{@filename}\n"+
-			"uid:      #{@uid}\n"+
+			"uuid:     #{@uid}\n"+
 			"tags:     #{@tags.join(", ")}\n"+
 			"mimetype: #{@mimetype}\n"+
 			"size:     #{@size.to_text}\n"+
@@ -66,7 +66,7 @@ module FileHosting
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uid", "@name", "@source", "@url", "@mimetype", "@size", "@tags"]#, "@history"]
+			["@uuid", "@name", "@source", "@url", "@mimetype", "@size", "@tags"]#, "@history"]
 		end
 
 		def to_yaml_type
