@@ -24,35 +24,32 @@
 
 $:<< "../sample"
 
-require "filehosting/string"
-
 require "sampledatasource"
 
-source= FileHosting::SampleDataSource.new
+require "filehosting/string"
+require "filehosting/config"
+require "filehosting/configargreader"
 
-require "optparse"
+class FileinfoArgReader < FileHosting::ConfigArgReader
+	
+	def banner
+		super + " <uuid>"
+	end
 
-opts= OptionParser.new
-
-opts.banner= "usage: fileinfo [options] <uuid>"
-
-opts.on("-h", "--human", "display everything in a human readable way") do
-	$human= true
 end
 
-opts.on("--help", "display this message") do
-	STDOUT.puts opts
-	exit 0
-end
+argreader= FileinfoArgReader.new
+args= argreader.parse(ARGV)
 
-args= opts.parse(ARGV)
+config= FileHosting::Config.new({:datasource => FileHosting::SampleDataSource}, argreader)
+
 if args.size != 1
-	STDERR.puts opts
+	STDERR.puts argreader.usage
 	exit 1
 end
 
 uuid= args[0]
 
-fileinfo= source.fileinfo(uuid)
+fileinfo= config.datasource.fileinfo(uuid)
 
 puts (fileinfo || "no such file found").to_text

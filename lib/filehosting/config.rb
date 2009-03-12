@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,35 +21,37 @@
 #++
 #
 
-$:<< "../sample"
+require "filehosting/datasource"
 
-$:<< "../sample"
+module FileHosting
 
-require "sampledatasource"
+	# This Class holds the Configuration
+	class Config
 
-require "filehosting/config"
-require "filehosting/configargreader"
+		attr :values
 
-class SearchArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <tag ... tag>"
+		# An instant of a subclass of DataSource
+		attr :datasource
+
+		def initialize(*data)
+			@values= {
+				:datasource      => DataSource,
+				:datasource_args => [],
+				:human       => false
+			}
+			data.each do |d|
+				@values.merge!(case d
+				when Hash
+					d
+				when ConfigReader
+					d.read
+				end)
+			end
+			$human= @values[:human]
+			@datasource= @values[:datasource].new(*@values[:datasource_args])
+		end
+
 	end
 
 end
 
-argreader= SearchArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new({:datasource => FileHosting::SampleDataSource}, argreader)
-
-if args.size < 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-fileinfos= config.datasource.search_tags(args)
-
-puts "#{fileinfos.size} Files found" if $human
-puts if $human and fileinfos.size > 0
-puts fileinfos.collect { |f| f.to_text }.join("\n\n") if fileinfos.size > 0
