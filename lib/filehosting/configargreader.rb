@@ -34,6 +34,10 @@ module FileHosting
 			@values= Hash.new
 		end
 
+		def read
+			@values
+		end
+
 		def parse(args)
 			m= switches
 			args= self.class.split_shortarg(args)
@@ -135,6 +139,15 @@ module FileHosting
 			@values[:human]= true
 		end
 		alias :switch_h :switch_human
+
+		def help_datasource
+			"select the datasource"
+		end
+
+		def switch_datasource(source)
+			@values[:datasource]= source
+		end
+		alias :switch_s :switch_datasource
 
 		def read
 			@values

@@ -8,7 +8,7 @@ backend
 
 bin
 ---
-	The tools in bin must be called from inside bin or the project root, otherwise some
+	The tools in bin must be called from inside bin , otherwise some
 	librarys won't be found.
 
 filehostingrc

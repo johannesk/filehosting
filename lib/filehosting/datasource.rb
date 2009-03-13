@@ -28,10 +28,12 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags)
+			[]
 		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
+			nil
 		end
 
 	end

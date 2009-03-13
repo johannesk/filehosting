@@ -22,7 +22,6 @@
 #
 
 require "filehosting/configreader"
-require "filehosting/sampledatasource"
 
 require "yaml"
 
@@ -49,10 +48,6 @@ module FileHosting
 				next if Symbol === key
 				res[key.to_sym]= res[key]
 				res.delete(key)
-			end
-			case res[:datasource]
-			when "sample"
-				res[:datasource]= SampleDataSource
 			end
 			res
 		end

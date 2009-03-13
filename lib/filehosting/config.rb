@@ -22,6 +22,7 @@
 #
 
 require "filehosting/datasource"
+require "filehosting/sampledatasource"
 
 module FileHosting
 
@@ -48,7 +49,19 @@ module FileHosting
 				end)
 			end
 			$human= @values[:human]
+			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]
 			@datasource= @values[:datasource].new(*@values[:datasource_args])
+		end
+
+		# Returns a subclass of Datasource only by its name
+		# possible values are:
+		# - sample
+		def self.datasource_by_name(name)
+			return name if name == DataSource
+			case name.to_s
+			when "sample"
+				SampleDataSource
+			end
 		end
 
 	end
