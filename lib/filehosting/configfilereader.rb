@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,32 +21,46 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
+$:<< "../sample"
 
-class SearchArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <tag ... tag>"
+require "sampledatasource"
+
+require "filehosting/configreader"
+
+require "yaml"
+
+module FileHosting
+
+	# A Class to read a config from a file
+	class ConfigFileReader < ConfigReader
+
+		# The file to read from
+		attr :file
+
+		def initialize(file)
+			@file= file
+		end
+
+		def read
+			begin
+				res= YAML.load(File.read(file))
+			rescue
+				return Hash.new
+			end
+			return Hash.new unless Hash === res
+			res.each_key do |key|
+				next if Symbol === key
+				res[key.to_sym]= res[key]
+				res.delete(key)
+			end
+			case res[:datasource]
+			when "sample"
+				res[:datasource]= SampleDataSource
+			end
+			res
+		end
+
 	end
 
 end
 
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= SearchArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(etcreader, homereader, argreader)
-
-if args.size < 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-fileinfos= config.datasource.search_tags(args)
-
-puts "#{fileinfos.size} Files found" if $human
-puts if $human and fileinfos.size > 0
-puts fileinfos.collect { |f| f.to_text }.join("\n\n") if fileinfos.size > 0

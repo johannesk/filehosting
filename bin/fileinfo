@@ -22,12 +22,9 @@
 #++
 #
 
-$:<< "../sample"
-
-require "sampledatasource"
-
 require "filehosting/string"
 require "filehosting/config"
+require "filehosting/configfilereader"
 require "filehosting/configargreader"
 
 class FileinfoArgReader < FileHosting::ConfigArgReader
@@ -38,10 +35,12 @@ class FileinfoArgReader < FileHosting::ConfigArgReader
 
 end
 
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
 argreader= FileinfoArgReader.new
 args= argreader.parse(ARGV)
 
-config= FileHosting::Config.new({:datasource => FileHosting::SampleDataSource}, argreader)
+config= FileHosting::Config.new(etcreader, homereader, argreader)
 
 if args.size != 1
 	STDERR.puts argreader.usage
