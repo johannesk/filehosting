@@ -21,11 +21,8 @@
 #++
 #
 
-$:<< "../sample"
-
-require "sampledatasource"
-
 require "filehosting/configreader"
+require "filehosting/sampledatasource"
 
 require "yaml"
 

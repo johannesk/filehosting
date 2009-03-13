@@ -22,8 +22,7 @@
 #
 
 require "filehosting/datasource"
-
-require "samplefileinfo"
+require "filehosting/samplefileinfo"
 
 module FileHosting
 
