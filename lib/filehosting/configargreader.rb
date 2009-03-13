@@ -35,13 +35,13 @@ module FileHosting
 		end
 
 		def parse(args)
-			m= methods.grep(/^arg_/).collect { |a| a[4..-1] }
+			m= switches
 			args= self.class.split_shortarg(args)
 			while args.size > 0
 				break unless args[0]=~ /^--?(\w+)$/
 				arg= args.shift
-				arg_help unless m.include?($1)
-				block= method("arg_#{$1}")
+				switch_help unless m.include?(arg)
+				block= method("switch_#{$1}")
 				a= []
 				block.arity.times { a << args.shift }
 				block.call(*a)
@@ -49,6 +49,7 @@ module FileHosting
 			args
 		end
 
+		# converts ["-abc"] into ["-a", "-b", "-c"]
 		def self.split_shortarg(args)
 			args= args.collect do |arg|
 				next arg unless arg=~ /^-\w+$/
@@ -56,44 +57,58 @@ module FileHosting
 			end.flatten
 		end
 
-		def usage
-			args_m= []
-			args= []
-			methods.grep(/^arg_/).each do |m|
-				if args_m.include?(method(m))
-					args[args_m.index(method(m))] << m[4..-1]
+		# all available switches
+		def switches
+			m= methods.grep(/^switch_/)
+			m= m.collect { |a| a[("switch_".size)..-1] }
+			m= m.collect do |a|
+				if a.size == 1
+					"-#{a}"
 				else
-					args_m<< method(m)
-					args<< [m[4..-1]]
+					"--#{a}"
 				end
 			end
-			args.each { |a| a.sort! { |a,b| a.size <=> b.size } }
-			args.each { |a| a.unshift("") if a[0].size > 1 }
-			max= Array.new(args.inject(0) { |n, a| n < a.size ? a.size : n }, 0)
-			args.each do |a|
+		end
+
+		# all available switches. Multiple represantations of
+		# the same switch are grouped together
+		# example: [["-h", "--human"], ["--help"]]
+		def switchGroups
+			meth= []
+			res= []
+			switches.each do |s|
+				s=~ /^--?(\w+)$/
+				m= method("switch_#{$1}")
+				if meth.include?(m)
+					res[meth.index(m)] << s
+				else
+					meth<< m
+					res<< [s]
+				end
+			end
+			res.each { |a| a.sort! { |a,b| a.size <=> b.size } }
+			res
+		end
+
+		# returns the usage string as seen in --help
+		def usage
+			sg= switchGroups
+			sg.each { |a| a.unshift("") if a[0].size > 2 } # leave the first column empty if no short option is given
+			max= Array.new(sg.inject(0) { |m, a| m < a.size ? a.size : m }, 0)
+			sg.each do |a|
 				a.size.times do |i|
 					max[i]= a[i].size if a[i].size > max[i]
 				end
 			end
-			messages= args.collect do |arg|
-				argm= arg.collect do |s|
-					case s.size
-					when 0
-						""
-					when 1
-						"-"
-					else
-						"--"
-					end +
-					s
-				end
+			messages= sg.collect do |arg|
 				"    " +
 				(0..(arg.size-1)).collect do |i|
-					argm[i]+" "*(max[i]+3-argm[i].size)
+					arg[i]+" "*(max[i]+2-arg[i].size)
 				end.join +
 				"     " +
 				arg.collect do |s|
-					eval("help_#{s}") if methods.include?("help_#{s}")
+					s=~ /^--?(\w+)$/
+					eval("help_#{$1}") if methods.include?("help_#{$1}")
 				end.find { |x| x }
 			end
 			banner+"\n" + messages.join("\n")
@@ -107,7 +122,7 @@ module FileHosting
 			"display this message"
 		end
 
-		def arg_help
+		def switch_help
 			puts usage
 			exit 0
 		end
@@ -116,10 +131,10 @@ module FileHosting
 			"human readable"
 		end
 
-		def arg_human
+		def switch_human
 			@values[:human]= true
 		end
-		alias :arg_h :arg_human
+		alias :switch_h :switch_human
 
 		def read
 			@values
