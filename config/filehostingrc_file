@@ -1,0 +1,4 @@
+---
+datasource: file
+datasource_args: /tmp
+human: true

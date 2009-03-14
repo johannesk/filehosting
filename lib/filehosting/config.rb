@@ -22,7 +22,6 @@
 #
 
 require "filehosting/datasource"
-require "filehosting/sampledatasource"
 
 module FileHosting
 
@@ -60,7 +59,11 @@ module FileHosting
 			return name if name == DataSource
 			case name.to_s
 			when "sample"
+				require "filehosting/sampledatasource"
 				SampleDataSource
+			when "file"
+				require "filehosting/filedatasource"
+				FileDataSource
 			end
 		end
 
