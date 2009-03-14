@@ -34,13 +34,10 @@ module FileHosting
 		attr_accessor :uuid
 
 		# the file name
-		attr_accessor :name
+		attr_accessor :filename
 
 		# where the file comes from
 		attr_accessor :source
-
-		# where to get the file now
-		attr_accessor :url
 
 		# the mimetype of the file
 		attr_accessor :mimetype
@@ -60,13 +57,12 @@ module FileHosting
 			"tags:     #{@tags.join(", ")}\n"+
 			"mimetype: #{@mimetype}\n"+
 			"size:     #{@size.to_text}\n"+
-			"url:      #{@url}\n"+
 			"source:   #{@source}"
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uuid", "@name", "@source", "@url", "@mimetype", "@size", "@tags"]#, "@history"]
+			["@uuid", "@filename", "@source", "@mimetype", "@size", "@tags"]#, "@history"]
 		end
 
 		def to_yaml_type
@@ -79,10 +75,9 @@ end
 
 YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 	res= FileHosting::FileInfo.new
-	res.uid= value["uid"].to_s
-	res.name= value["name"].to_s
+	res.uuid= value["uuid"].to_s
+	res.filename= value["filename"].to_s
 	res.source= value["source"].to_s
-	res.url= value["url"].to_s
 	res.mimetype= value["mimetype"].to_s
 	res.size= value["size"].to_i
 	res.tags= value["tags"].collect { |x| x.to_s }

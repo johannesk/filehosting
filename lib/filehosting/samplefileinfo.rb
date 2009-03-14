@@ -36,7 +36,6 @@ module FileHosting
 			@mimetype= ["application/pdf", "video/ms-xvideo", "text/x-c++"][random]
 			@filename= ["Uebung"+rand(30).to_s+".pdf", "Vorlesung"+rand(30).to_s+".avi", "Programm"+rand(30).to_s+".java"][random]
 			@source= "http://source.example/#{@filename}"
-			@url= "http://download.example/#{@uuid}"
 			@size= (rand*2**(rand*40)).to_i
 			@tags= []
 			@tags<< "#{(rand*2)<1 ? "S" : "W"}S#{rand(30)}"
