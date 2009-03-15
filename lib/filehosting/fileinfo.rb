@@ -45,6 +45,12 @@ module FileHosting
 		# the size of the file
 		attr_accessor :size
 
+		# the type of the hash (eg. "SHA-256")
+		attr_accessor :hash_type
+
+		# the hash data as string
+		attr_accessor :hash
+
 		# the tags of the file
 		attr_accessor :tags
 
@@ -52,17 +58,19 @@ module FileHosting
 		#attr_accessor :history
 
 		def to_text
-			"name:     #{@filename}\n"+
-			"uuid:     #{@uuid}\n"+
-			"tags:     #{@tags.join(", ")}\n"+
-			"mimetype: #{@mimetype}\n"+
-			"size:     #{@size.to_text}\n"+
-			"source:   #{@source}"
+			"name:      #{@filename}\n"+
+			"uuid:      #{@uuid}\n"+
+			"tags:      #{@tags.join(", ")}\n"+
+			"mimetype:  #{@mimetype}\n"+
+			"size:      #{@size.to_text}\n"+
+			"hash type: #{@hash_type}\n"+
+			"hash:      #{@hash}\n"+
+			"source:    #{@source}"
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uuid", "@filename", "@source", "@mimetype", "@size", "@tags"]#, "@history"]
+			["@uuid", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]#, "@history"]
 		end
 
 		def to_yaml_type
@@ -80,6 +88,8 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 	res.source= value["source"].to_s
 	res.mimetype= value["mimetype"].to_s
 	res.size= value["size"].to_i
+	res.hash_type= value["hash_type"].to_s
+	res.hash= value["hash"].to_s
 	res.tags= value["tags"].collect { |x| x.to_s }
 	#res.history= value["history"]
 	res

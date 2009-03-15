@@ -25,31 +25,40 @@
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
-require "filehosting/samplefileinfo"
+require "filehosting/fileinfo"
 
-class GenerateRandomFilesArgReader < FileHosting::ConfigArgReader
+require "uuidtools"
+
+class AddArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <#files>"
+		super + " <file> <tag ... tag>"
 	end
 
 end
 
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= GenerateRandomFilesArgReader.new
+argreader= AddArgReader.new
 args= argreader.parse(ARGV)
 
 config= FileHosting::Config.new(etcreader, homereader, argreader)
 
-if args.size != 1
+if args.size < 2
 	STDERR.puts argreader.usage
 	exit 1
 end
 
-count= args[0].to_i
-
-count.times do
-	file= `mktemp`.strip
-	config.datasource.add_file(FileHosting::SampleFileInfo.new, file)
+file= Pathname.new(ARGV.shift)
+unless file.exist?
+	STDERR.puts "file does not exist"
+	exit 2
 end
+
+fileinfo= FileHosting::FileInfo.new
+fileinfo.uuid= UUID.random_create.to_s
+fileinfo.source= file.to_s
+fileinfo.filename= file.basename.to_s
+fileinfo.tags= ARGV
+
+config.datasource.add_file(fileinfo, file)

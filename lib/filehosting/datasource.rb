@@ -31,9 +31,32 @@ module FileHosting
 			[]
 		end
 
+		# searches for all files with at least on of this tags
+		def search_tags_partial(tags)
+			[]
+		end
+
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
 			nil
+		end
+
+		# Adds a file to the datasource. There must be no
+		# existing file with the same uuid. Some data from the
+		# metadata will not be trusted and replaced by own
+		# calculations (eg. filesize). File can ether be an IO
+		# or a String. The IO will be read to EOF. The String
+		# must contain the filename, from where to copy the
+		# file.
+		def add_file(fileinfo, file)
+		end
+
+		# Changes the metadata of a file
+		def update_fileinfo(fileinfo)
+		end
+
+		# Replaces a file, but not it's metadata
+		def update_filedata(uuid, file)
 		end
 
 	end

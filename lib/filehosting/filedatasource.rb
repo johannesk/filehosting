@@ -26,6 +26,8 @@ require "filehosting/fileinfo"
 
 require "pathname"
 require "yaml"
+require "digest/sha2"
+require "filemagic"
 
 module FileHosting
 
@@ -80,10 +82,33 @@ module FileHosting
 			end
 		end
 
-		def add_file(fileinfo)
-			file= @metadatadir+fileinfo.uuid.to_s
-			raise "uuid exists" if file.exist?
-			File.open(file, "w") do |f|
+		# stores the file and updates the fileinfo
+		def store_file(fileinfo, file)
+			dest= @filesdir + fileinfo.uuid.to_s
+			file= Pathname.new(file) if String === file
+			case file
+			when Pathname
+				FileUtils.cp(file, dest)
+			when IO
+				raise "to be implemented"
+			end
+			fileinfo.size= file.size
+			fileinfo.hash_type= "SHA-256"
+			fileinfo.hash= Digest::SHA256.file(dest).to_s
+			begin
+				fm= FileMagic.new(FileMagic::MAGIC_MIME)
+				fileinfo.mimetype= fm.file(dest.to_s).sub(/; .*?$/, "")
+			ensure
+				fm.close
+			end
+			fileinfo
+		end
+
+		def add_file(fileinfo, file)
+			mfile= @metadatadir + fileinfo.uuid.to_s
+			raise "uuid exists" if mfile.exist?
+			store_file(fileinfo, file)
+			File.open(mfile, "w") do |f|
 				f.write(fileinfo.to_yaml)
 			end
 			fileinfo.tags.each do |tag|
