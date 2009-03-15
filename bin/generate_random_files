@@ -25,42 +25,30 @@
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
+require "filehosting/samplefileinfo"
 
-class SearchArgReader < FileHosting::ConfigArgReader
+class GenerateRandomFilesArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <tag ... tag>"
+		super + " <#files>"
 	end
-
-	def help_partialmatch
-		"also find files with only partial matches"
-	end
-
-	$partial_match= false
-	def switch_partialmatch
-		$partial_match= true
-	end
-	alias :switch_p :switch_partialmatch
 
 end
 
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= SearchArgReader.new
+argreader= GenerateRandomFilesArgReader.new
 args= argreader.parse(ARGV)
 
 config= FileHosting::Config.new(etcreader, homereader, argreader)
 
-if args.size < 1
+if args.size != 1
 	STDERR.puts argreader.usage
 	exit 1
 end
 
-fileinfos= config.datasource.search_tags(args)
-fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
+count= args[0].to_i
 
-puts "#{fileinfos.size} Files found" if $human
-puts "#{fileinfos_partial.size} Files with partial match found" if $human and $partial_match
-puts if $human and fileinfos.size > 0
-fileinfos+= fileinfos_partial if $partial_match
-puts (fileinfos).collect { |f| f.to_text }.join("\n\n") if fileinfos.size > 0
+count.times do
+	config.datasource.add_file(FileHosting::SampleFileInfo.new)
+end

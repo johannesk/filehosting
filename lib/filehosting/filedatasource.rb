@@ -42,13 +42,25 @@ module FileHosting
 		end
 
 		def search_tags(tags)
+			tags= tags.clone
+			res= uuids_by_tag(tags.pop)
+			tags.each do |tag|
+				res&= uuids_by_tag(tag)
+			end
+			res.collect { |uuid| fileinfo(uuid) }
+		end
+
+		def search_tags_partial(tags)
 			count= Hash.new(0)
 			tags.each do |tag|
 				uuids_by_tag(tag).each do |uuid|
 					count[uuid]+= 1
 				end
 			end
-			count.keys.sort { |a,b| count[a] <=> count[b] }.collect { |uuid| fileinfo(uuid) }
+			res= count.keys
+			res.delete_if { |x| count[x] == tags.size }
+			res.sort! { |a,b| count[b] <=> count[a] }
+			res.collect { |uuid| fileinfo(uuid) }
 		end
 
 		def fileinfo(uuid)
@@ -57,6 +69,26 @@ module FileHosting
 			res= YAML.load(file.read)
 			return nil unless FileInfo === res
 			res
+		end
+
+		def register_uuid_for_tag(uuid, tag)
+			uuids= uuids_by_tag(tag)
+			uuids<< uuid.to_s
+			file= @tagsdir+tag.to_s
+			File.open(file, "w") do |f|
+				f.write(uuids.to_yaml)
+			end
+		end
+
+		def add_file(fileinfo)
+			file= @metadatadir+fileinfo.uuid.to_s
+			raise "uuid exists" if file.exist?
+			File.open(file, "w") do |f|
+				f.write(fileinfo.to_yaml)
+			end
+			fileinfo.tags.each do |tag|
+				register_uuid_for_tag(fileinfo.uuid, tag)
+			end
 		end
 
 		# get all files uuid with this tag
