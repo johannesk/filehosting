@@ -24,6 +24,7 @@
 require "filehosting/datasource"
 require "filehosting/fileinfo"
 require "filehosting/nosuchfileerror"
+require "filehosting/fileexistserror"
 
 require "pathname"
 require "yaml"
@@ -69,9 +70,9 @@ module FileHosting
 
 		def fileinfo(uuid)
 			file= @metadatadir+uuid.to_s
-			return nil unless file.file?
+			raise NoSuchFileError.new(uuid) unless file.file?
 			res= YAML.load(file.read)
-			return nil unless FileInfo === res
+			raise NoSuchFileError.new(uuid) unless FileInfo === res
 			res
 		end
 
@@ -129,7 +130,7 @@ module FileHosting
 
 		def add_file(fileinfo, file)
 			mfile= @metadatadir + fileinfo.uuid.to_s
-			raise "uuid exists" if mfile.exist?
+			raise FileExistsError(fileinfo.uuid) if mfile.exist?
 			store_file(fileinfo, file)
 			store_fileinfo(fileinfo)
 			register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)

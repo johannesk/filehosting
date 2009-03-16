@@ -26,6 +26,7 @@ require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/fileinfo"
+require "filehosting/error"
 
 require "uuidtools"
 
@@ -50,15 +51,15 @@ if args.size < 2
 end
 
 file= Pathname.new(args.shift)
-unless file.exist?
-	STDERR.puts "file does not exist"
-	exit 2
+
+begin
+	fileinfo= FileHosting::FileInfo.new
+	fileinfo.uuid= UUID.random_create.to_s
+	fileinfo.source= file.to_s
+	fileinfo.filename= file.basename.to_s
+	fileinfo.tags= args
+
+	config.datasource.add_file(fileinfo, file)
+rescue FileHosting::Error, Errno::ENOENT => e
+	puts e
 end
-
-fileinfo= FileHosting::FileInfo.new
-fileinfo.uuid= UUID.random_create.to_s
-fileinfo.source= file.to_s
-fileinfo.filename= file.basename.to_s
-fileinfo.tags= args
-
-config.datasource.add_file(fileinfo, file)

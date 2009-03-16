@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,37 +21,25 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
 require "filehosting/error"
 
-class FileinfoArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid>"
+module FileHosting
+
+	# This error indicates an operation on a not existing File
+	# was requested.
+	class NoSuchFileError < Error
+		
+		attr_reader :uuid
+
+		def initialize(uuid)
+			@uuid= uuid
+		end
+
+		def to_s
+			"the file '#{@uuid}' does not exist"
+		end
+
 	end
 
 end
 
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= FileinfoArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-uuid= args[0]
-
-begin
-	fileinfo= config.datasource.fileinfo(uuid)
-	puts fileinfo.to_text
-rescue FileHosting::Error => e
-	puts e
-end

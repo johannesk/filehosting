@@ -25,6 +25,7 @@
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
+require "filehosting/error"
 
 class ReplaceArgReader < FileHosting::ConfigArgReader
 	
@@ -48,9 +49,9 @@ end
 
 uuid= args.shift
 file= Pathname.new(args.shift)
-unless file.exist?
-	STDERR.puts "file does not exist"
-	exit 2
-end
 
-config.datasource.update_filedata(uuid, file)
+begin
+	config.datasource.update_filedata(uuid, file)
+rescue FileHosting::Error, Errno::ENOENT => e
+	puts e
+end

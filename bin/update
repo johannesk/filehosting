@@ -25,6 +25,7 @@
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
+require "filehosting/error"
 
 class ReplaceArgReader < FileHosting::ConfigArgReader
 	
@@ -77,19 +78,23 @@ if args.size != 1
 end
 uuid= args[0]
 
-fileinfo= config.datasource.fileinfo(uuid)
+begin
+	fileinfo= config.datasource.fileinfo(uuid)
 
-if $filename
-	fileinfo.filename= $filename
+	if $filename
+		fileinfo.filename= $filename
+	end
+
+	if $source
+		fileinfo.source= $source
+	end
+
+	if $tags
+		fileinfo.tags= $tags
+	end
+
+	config.datasource.update_fileinfo(fileinfo)
+rescue FileHosting::Error => e
+	puts e
 end
-
-if $source
-	fileinfo.source= $source
-end
-
-if $tags
-	fileinfo.tags= $tags
-end
-
-config.datasource.update_fileinfo(fileinfo)
 

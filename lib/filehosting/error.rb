@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,37 +21,11 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+module FileHosting
 
-class FileinfoArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid>"
+	# The parent of all FileHosting Error's
+	class Error < StandardError
 	end
 
 end
 
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= FileinfoArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-uuid= args[0]
-
-begin
-	fileinfo= config.datasource.fileinfo(uuid)
-	puts fileinfo.to_text
-rescue FileHosting::Error => e
-	puts e
-end

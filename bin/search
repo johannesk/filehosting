@@ -25,6 +25,7 @@
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
+require "filehosting/error"
 
 class SearchArgReader < FileHosting::ConfigArgReader
 	
@@ -56,8 +57,12 @@ if args.size < 1
 	exit 1
 end
 
-fileinfos= config.datasource.search_tags(args)
-fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
+begin
+	fileinfos= config.datasource.search_tags(args)
+	fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
+rescue FileHosting::Error => e
+	puts e
+end
 
 puts "#{fileinfos.size} Files found" if $human
 puts "#{fileinfos_partial.size} Files with partial match found" if $human and $partial_match

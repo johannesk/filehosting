@@ -21,6 +21,9 @@
 #++
 #
 
+require "filehosting/nosuchfileerror"
+require "filehosting/fileexistserror"
+
 module FileHosting
 
 	# The DataSource knows everything
@@ -38,7 +41,7 @@ module FileHosting
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
-			nil
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# Adds a file to the datasource. There must be no
@@ -49,14 +52,17 @@ module FileHosting
 		# must contain the filename, from where to copy the
 		# file.
 		def add_file(fileinfo, file)
+			raise FileExistsError.new(fileinfo.uuid)
 		end
 
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo)
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# Replaces a file, but not it's metadata
 		def update_filedata(uuid, file)
+			raise NoSuchFileError.new(uuid)
 		end
 
 	end
