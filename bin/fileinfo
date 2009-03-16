@@ -28,6 +28,8 @@ require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
 
+require "uuidtools"
+
 class FileinfoArgReader < FileHosting::ConfigArgReader
 	
 	def banner
@@ -47,12 +49,17 @@ if args.size != 1
 	STDERR.puts argreader.usage
 	exit 1
 end
-
-uuid= args[0]
+begin
+	uuid= UUID.parse(args[0])
+rescue ArgumentError => e
+	STDERR.puts e
+	exit 1
+end
 
 begin
 	fileinfo= config.datasource.fileinfo(uuid)
 	puts fileinfo.to_text
 rescue FileHosting::Error => e
-	puts e
+	STDERR.puts e
+	exit 2
 end

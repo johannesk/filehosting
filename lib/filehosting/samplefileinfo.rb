@@ -31,7 +31,7 @@ module FileHosting
 	class SampleFileInfo < FileInfo
 
 		def initialize
-			@uuid= UUID.random_create.to_s
+			@uuid= UUID.random_create
 			random= rand(3)
 			@mimetype= ["application/pdf", "video/ms-xvideo", "text/x-c++"][random]
 			@filename= ["Uebung"+rand(30).to_s+".pdf", "Vorlesung"+rand(30).to_s+".avi", "Programm"+rand(30).to_s+".java"][random]

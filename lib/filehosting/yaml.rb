@@ -21,24 +21,18 @@
 #++
 #
 
-require "filehosting/datasource"
-require "filehosting/samplefileinfo"
+require "yaml"
 
-module FileHosting
+class Object
 
-	# Sample DataSource generates Sample FileInfo's
-	class SampleDataSource < DataSource
-
-		def search_tags(tags)
-			(1..rand(6)).collect { |x| SampleFileInfo.new }
+	def to_yaml(opts = Hash.new)
+		YAML::quick_emit(object_id, opts) do |out|
+			out.map(taguri, to_yaml_style) do |map|
+				to_yaml_properties.each do |m|
+					map.add(m[1..((m.index(?.) or 0)-1)], eval(m))
+				end
+			end
 		end
-
-		def fileinfo(uuid)
-			res= SampleFileInfo.new
-			res.uuid= uuid
-			res
-		end
-
 	end
 
 end

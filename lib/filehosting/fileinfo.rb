@@ -22,15 +22,18 @@
 #
 
 require "filehosting/integer"
+require "filehosting/yaml"
 
 require "yaml"
+require "uuidtools"
 
 module FileHosting
 
 	# This class holds all the informations about a file.
 	class FileInfo
 
-		# the RFC 4122 uuid for this file
+		# the RFC 4122 uuid for this file. It should always be
+		# stored as a UUID object.
 		attr_accessor :uuid
 
 		# the file name
@@ -70,7 +73,7 @@ module FileHosting
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uuid", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]#, "@history"]
+			["@uuid.to_s", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]#, "@history"]
 		end
 
 		def to_yaml_type
@@ -83,7 +86,7 @@ end
 
 YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 	res= FileHosting::FileInfo.new
-	res.uuid= value["uuid"].to_s
+	res.uuid= UUID.parse(value["uuid"])
 	res.filename= value["filename"].to_s
 	res.source= value["source"].to_s
 	res.mimetype= value["mimetype"].to_s

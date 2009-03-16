@@ -27,6 +27,8 @@ require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
 
+require "uuidtools"
+
 class ReplaceArgReader < FileHosting::ConfigArgReader
 	
 	def banner
@@ -47,7 +49,12 @@ if args.size != 2
 	exit 1
 end
 
-uuid= args.shift
+begin
+	uuid= UUID.parse(args.shift)
+rescue ArgumentError => e
+	STDERR.puts e
+	exit 1
+end
 file= Pathname.new(args.shift)
 
 begin

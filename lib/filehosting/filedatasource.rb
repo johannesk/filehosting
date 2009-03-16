@@ -155,7 +155,7 @@ module FileHosting
 			return [] unless file.file?
 			res= YAML.load(file.read)
 			return [] unless Array === res
-			res
+			res.collect { |str| UUID.parse(str) }
 		end
 
 	end
