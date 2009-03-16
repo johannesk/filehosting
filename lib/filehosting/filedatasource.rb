@@ -23,11 +23,13 @@
 
 require "filehosting/datasource"
 require "filehosting/fileinfo"
+require "filehosting/nosuchfileerror"
 
 require "pathname"
 require "yaml"
 require "digest/sha2"
 require "filemagic"
+require "fileutils"
 
 module FileHosting
 
@@ -73,12 +75,25 @@ module FileHosting
 			res
 		end
 
-		def register_uuid_for_tag(uuid, tag)
-			uuids= uuids_by_tag(tag)
-			uuids<< uuid.to_s
-			file= @tagsdir+tag.to_s
-			File.open(file, "w") do |f|
-				f.write(uuids.to_yaml)
+		def register_uuid_for_tags(uuid, tags)
+			tags.each do |tag|
+				uuids= uuids_by_tag(tag)
+				uuids<< uuid.to_s
+				file= @tagsdir+tag.to_s
+				File.open(file, "w") do |f|
+					f.write(uuids.to_yaml)
+				end
+			end
+		end
+
+		def unregister_uuid_for_tags(uuid, tags)
+			tags.each do |tag|
+				uuids= uuids_by_tag(tag)
+				uuids.delete(uuid.to_s)
+				file= @tagsdir+tag.to_s
+				File.open(file, "w") do |f|
+					f.write(uuids.to_yaml)
+				end
 			end
 		end
 
@@ -104,16 +119,33 @@ module FileHosting
 			fileinfo
 		end
 
+		# stores the fileinfo
+		def store_fileinfo(fileinfo)
+			mfile= @metadatadir + fileinfo.uuid.to_s
+			File.open(mfile, "w") do |f|
+				f.write(fileinfo.to_yaml)
+			end
+		end
+
 		def add_file(fileinfo, file)
 			mfile= @metadatadir + fileinfo.uuid.to_s
 			raise "uuid exists" if mfile.exist?
 			store_file(fileinfo, file)
-			File.open(mfile, "w") do |f|
-				f.write(fileinfo.to_yaml)
-			end
-			fileinfo.tags.each do |tag|
-				register_uuid_for_tag(fileinfo.uuid, tag)
-			end
+			store_fileinfo(fileinfo)
+			register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
+		end
+
+		def update_filedata(uuid, file)
+			fileinfo= self.fileinfo(uuid)
+			store_file(fileinfo, file)
+			store_fileinfo(fileinfo)
+		end
+
+		def update_fileinfo(fileinfo)
+			old= self.fileinfo(fileinfo.uuid)
+			unregister_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
+			store_fileinfo(fileinfo)
+			register_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
 		end
 
 		# get all files uuid with this tag
