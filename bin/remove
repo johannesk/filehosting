@@ -22,52 +22,26 @@
 #++
 #
 
+require "filehosting/string"
 require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
+require "filehosting/internaldatacorruptionerror"
 
-class SearchArgReader < FileHosting::ConfigArgReader
+require "uuidtools"
+
+class RemoveArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <tag ... tag>"
+		super + " <uuid ... uuid>"
 	end
-
-	def help_partialmatch
-		"also find files with only partial matches"
-	end
-
-	$partial_match= false
-	def switch_partialmatch
-		$partial_match= true
-	end
-	alias :switch_p :switch_partialmatch
-
-	def help_uuid
-		"display only uuid's"
-	end
-
-	$uuid= false
-	def switch_uuid
-		$uuid= true
-	end
-	alias :switch_u :switch_uuid
-
-	def help_count
-		"display only how many files where found"
-	end
-
-	$count= false
-	def switch_count
-		$count= true
-	end
-	alias :switch_c :switch_count
 
 end
 
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= SearchArgReader.new
+argreader= RemoveArgReader.new
 args= argreader.parse(ARGV)
 
 config= FileHosting::Config.new(etcreader, homereader, argreader)
@@ -76,24 +50,20 @@ if args.size < 1
 	STDERR.puts argreader.usage
 	exit 1
 end
-
 begin
-	fileinfos= config.datasource.search_tags(args)
-	fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
-rescue FileHosting::Error => e
-	puts e
-	exit 2
+	uuids= args.collect { |s|  UUID.parse(s) }
+rescue ArgumentError => e
+	STDERR.puts e
+	exit 1
 end
 
-puts "#{fileinfos.size}#{$human ? " Files found" : ""}" if $human or $count
-puts "#{fileinfos_partial.size}#{$human ? " Files with partial match found" : ""}" if $partial_match and ($humon or $count)
-exit 0 if $count
-puts if $human and fileinfos.size > 0
-fileinfos+= fileinfos_partial if $partial_match
-puts((fileinfos).collect do |f|
-	unless $uuid
-		f.to_text + "\n"
-	else
-		f.uuid.to_s
+uuids.each do |uuid|
+	begin
+		config.datasource.remove_file(uuid)
+	rescue FileHosting::Error => e
+		STDERR.puts e
+	rescue FileHosting::InternalDataCorruptionError => e
+		STDERR.puts e
+		exit 2
 	end
-end.join("\n")) if fileinfos.size > 0
+end

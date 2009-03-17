@@ -78,18 +78,8 @@ module FileHosting
 				raise InternalDataCorruptionError
 			end
 			raise InternalDataCorruptionError unless FileInfo === res
+			raise InternalDataCorruptionError unless res.uuid == uuid
 			res
-		end
-
-		# get all files uuid with this tag
-		def uuids_by_tag(tag)
-			read_tag(tag).collect do |str|
-				begin
-					UUID.parse(str)
-				rescue ArgumentError
-					raise InternalDataCorruptionError
-				end
-			end
 		end
 
 		def add_file(fileinfo, file)
@@ -103,8 +93,8 @@ module FileHosting
 				register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
 			rescue Exception => e
 				begin
-					FileUtils.rm(ffile)
-					FileUtils.rm(mfile)
+					remove_filedata(fileinfo.uuid)
+					remove_fileinfo(fileinfo.uuid)
 					unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
 				ensure
 					raise e
@@ -133,7 +123,7 @@ module FileHosting
 		end
 
 		def update_fileinfo(fileinfo)
-			old= self.fileinfo(fileinfo.uuid)
+			old= fileinfo(fileinfo.uuid)
 			begin
 				unregister_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
 				store_fileinfo(fileinfo)
@@ -149,7 +139,44 @@ module FileHosting
 			end
 		end
 
+		def remove_file(uuid)
+			old= fileinfo(uuid)
+			begin
+				unregister_uuid_for_tags(uuid, old.tags)
+				remove_fileinfo(uuid)
+				remove_filedata(uuid)
+			rescue Exception => e
+				begin
+					register_uuid_for_tags(uuid, old.tags)
+					store_fileinfo(old)
+				ensure
+					raise e
+				end
+			end
+		end
+
 		private
+
+		def remove_fileinfo(uuid)
+			file= @metadatadir + uuid.to_s
+			FileUtils.rm(file)
+		end
+
+		def remove_filedata(uuid)
+			file= @filesdir + uuid.to_s
+			FileUtils.rm(file)
+		end
+
+		# get all files uuid with this tag
+		def uuids_by_tag(tag)
+			read_tag(tag).collect do |str|
+				begin
+					UUID.parse(str)
+				rescue ArgumentError
+					raise InternalDataCorruptionError
+				end
+			end
+		end
 
 		def read_tag(tag)
 			file= @tagsdir+tag.to_s
@@ -182,8 +209,12 @@ module FileHosting
 				uuids= read_tag(tag)
 				uuids.delete(uuid.to_s)
 				file= @tagsdir+tag.to_s
-				File.open(file, "w") do |f|
-					f.write(uuids.to_yaml)
+				if uuids.size > 0
+					File.open(file, "w") do |f|
+						f.write(uuids.to_yaml)
+					end
+				else
+					FileUtils.rm(file)
 				end
 			end
 		end

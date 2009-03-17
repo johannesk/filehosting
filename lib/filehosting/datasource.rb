@@ -65,6 +65,10 @@ module FileHosting
 			raise NoSuchFileError.new(uuid)
 		end
 
+		# removes a file
+		def remove_file(uuid)
+		end
+
 	end
 
 end
