@@ -43,6 +43,16 @@ class SearchArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_p :switch_partialmatch
 
+	def help_uuid
+		"display only uuid's"
+	end
+
+	$uuid= false
+	def switch_uuid
+		$uuid= true
+	end
+	alias :switch_u :switch_uuid
+
 end
 
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
@@ -68,4 +78,10 @@ puts "#{fileinfos.size} Files found" if $human
 puts "#{fileinfos_partial.size} Files with partial match found" if $human and $partial_match
 puts if $human and fileinfos.size > 0
 fileinfos+= fileinfos_partial if $partial_match
-puts (fileinfos).collect { |f| f.to_text }.join("\n\n") if fileinfos.size > 0
+puts((fileinfos).collect do |f|
+	unless $uuid
+		f.to_text + "\n"
+	else
+		f.uuid.to_s
+	end
+end.join("\n")) if fileinfos.size > 0

@@ -76,9 +76,69 @@ module FileHosting
 			res
 		end
 
+		# get all files uuid with this tag
+		def uuids_by_tag(tag)
+			read_tag(tag).collect { |str| UUID.parse(str) }
+		end
+
+		def add_file(fileinfo, file)
+			mfile= @metadatadir + fileinfo.uuid.to_s
+			raise FileExistsError(fileinfo.uuid) if mfile.exist?
+			ffile= @filesdir + fileinfo.uuid.to_s
+			raise FileExistsError(fileinfo.uuid) if ffile.exist?
+			begin
+				store_file(fileinfo, file)
+				store_fileinfo(fileinfo)
+				register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
+			rescue
+				FileUtils.rm(ffile)
+				FileUtils.rm(mfile)
+				unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
+			end
+		end
+
+		def update_filedata(uuid, file)
+			old= fileinfo(uuid)
+			new= old.clone
+			ffile= @filesdir + old.uuid.to_s
+			tmp_file= @filesdir + (old.uuid.to_s + ".tmp")
+			begin
+				FileUtils.mv(ffile, tmp_file)
+				store_file(new, file)
+				store_fileinfo(new)
+			rescue
+				FileUtils.mv(tmp_file, ffile)
+				store_fileinfo(old)
+			end
+		end
+
+		def update_fileinfo(fileinfo)
+			old= self.fileinfo(fileinfo.uuid)
+			begin
+				unregister_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
+				store_fileinfo(fileinfo)
+				register_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
+			rescue Exception => e
+				register_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
+				store_fileinfo(old)
+				unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
+				raise e
+			end
+		end
+
+		private
+
+		def read_tag(tag)
+			file= @tagsdir+tag.to_s
+			return [] unless file.file?
+			res= YAML.load(file.read)
+			return [] unless Array === res
+			res
+		end
+
 		def register_uuid_for_tags(uuid, tags)
 			tags.each do |tag|
-				uuids= uuids_by_tag(tag)
+				uuids= read_tag(tag)
 				uuids<< uuid.to_s
 				file= @tagsdir+tag.to_s
 				File.open(file, "w") do |f|
@@ -89,7 +149,7 @@ module FileHosting
 
 		def unregister_uuid_for_tags(uuid, tags)
 			tags.each do |tag|
-				uuids= uuids_by_tag(tag)
+				uuids= read_tag(tag)
 				uuids.delete(uuid.to_s)
 				file= @tagsdir+tag.to_s
 				File.open(file, "w") do |f|
@@ -126,36 +186,6 @@ module FileHosting
 			File.open(mfile, "w") do |f|
 				f.write(fileinfo.to_yaml)
 			end
-		end
-
-		def add_file(fileinfo, file)
-			mfile= @metadatadir + fileinfo.uuid.to_s
-			raise FileExistsError(fileinfo.uuid) if mfile.exist?
-			store_file(fileinfo, file)
-			store_fileinfo(fileinfo)
-			register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
-		end
-
-		def update_filedata(uuid, file)
-			fileinfo= self.fileinfo(uuid)
-			store_file(fileinfo, file)
-			store_fileinfo(fileinfo)
-		end
-
-		def update_fileinfo(fileinfo)
-			old= self.fileinfo(fileinfo.uuid)
-			unregister_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
-			store_fileinfo(fileinfo)
-			register_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
-		end
-
-		# get all files uuid with this tag
-		def uuids_by_tag(tag)
-			file= @tagsdir+tag.to_s
-			return [] unless file.file?
-			res= YAML.load(file.read)
-			return [] unless Array === res
-			res.collect { |str| UUID.parse(str) }
 		end
 
 	end
