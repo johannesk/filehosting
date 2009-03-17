@@ -23,6 +23,7 @@
 
 require "filehosting/integer"
 require "filehosting/yaml"
+require "filehosting/internaldatacorruptionerror"
 
 require "yaml"
 require "uuidtools"
@@ -85,16 +86,20 @@ module FileHosting
 end
 
 YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
-	res= FileHosting::FileInfo.new
-	res.uuid= UUID.parse(value["uuid"])
-	res.filename= value["filename"].to_s
-	res.source= value["source"].to_s
-	res.mimetype= value["mimetype"].to_s
-	res.size= value["size"].to_i
-	res.hash_type= value["hash_type"].to_s
-	res.hash= value["hash"].to_s
-	res.tags= value["tags"].collect { |x| x.to_s }
-	#res.history= value["history"]
-	res
+	begin
+		res= FileHosting::FileInfo.new
+		res.uuid= UUID.parse(value["uuid"])
+		res.filename= value["filename"].to_s
+		res.source= value["source"].to_s
+		res.mimetype= value["mimetype"].to_s
+		res.size= value["size"].to_i
+		res.hash_type= value["hash_type"].to_s
+		res.hash= value["hash"].to_s
+		res.tags= value["tags"].collect { |x| x.to_s }
+		#res.history= value["history"]
+		res
+	rescue
+		raise InternalDataCorruptionError
+	end
 end
 

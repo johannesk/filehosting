@@ -103,5 +103,5 @@ begin
 	config.datasource.update_fileinfo(fileinfo)
 rescue FileHosting::Error => e
 	puts e
+	exit 2
 end
-

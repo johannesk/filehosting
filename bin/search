@@ -72,6 +72,7 @@ begin
 	fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
 rescue FileHosting::Error => e
 	puts e
+	exit 2
 end
 
 puts "#{fileinfos.size} Files found" if $human

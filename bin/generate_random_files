@@ -26,6 +26,9 @@ require "filehosting/config"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/samplefileinfo"
+require "filehosting/error"
+
+require "fileutils"
 
 class GenerateRandomFilesArgReader < FileHosting::ConfigArgReader
 	
@@ -42,14 +45,21 @@ args= argreader.parse(ARGV)
 
 config= FileHosting::Config.new(etcreader, homereader, argreader)
 
-if args.size != 1
+if args.size != 1 or args[0]=~ /[^0-9]/
 	STDERR.puts argreader.usage
 	exit 1
 end
 
 count= args[0].to_i
 
-count.times do
-	file= `mktemp`.strip
-	config.datasource.add_file(FileHosting::SampleFileInfo.new, file)
+begin
+	count.times do
+		file= `mktemp`.strip
+		`dd if=/dev/zero of=#{file} bs=1 seek=#{(rand*2**(rand*27)).to_i} count=0 2> /dev/null`
+		config.datasource.add_file(FileHosting::SampleFileInfo.new, file)
+		FileUtils.rm(file)
+	end
+rescue FileHosting::Error => e
+	puts e
+	exit 2
 end

@@ -25,6 +25,7 @@ require "filehosting/datasource"
 require "filehosting/fileinfo"
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
+require "filehosting/internaldatacorruptionerror"
 
 require "pathname"
 require "yaml"
@@ -71,14 +72,24 @@ module FileHosting
 		def fileinfo(uuid)
 			file= @metadatadir+uuid.to_s
 			raise NoSuchFileError.new(uuid) unless file.file?
-			res= YAML.load(file.read)
-			raise NoSuchFileError.new(uuid) unless FileInfo === res
+			begin
+				res= YAML.load(file.read)
+			rescue
+				raise InternalDataCorruptionError
+			end
+			raise InternalDataCorruptionError unless FileInfo === res
 			res
 		end
 
 		# get all files uuid with this tag
 		def uuids_by_tag(tag)
-			read_tag(tag).collect { |str| UUID.parse(str) }
+			read_tag(tag).collect do |str|
+				begin
+					UUID.parse(str)
+				rescue ArgumentError
+					raise InternalDataCorruptionError
+				end
+			end
 		end
 
 		def add_file(fileinfo, file)
@@ -90,10 +101,14 @@ module FileHosting
 				store_file(fileinfo, file)
 				store_fileinfo(fileinfo)
 				register_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
-			rescue
-				FileUtils.rm(ffile)
-				FileUtils.rm(mfile)
-				unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
+			rescue Exception => e
+				begin
+					FileUtils.rm(ffile)
+					FileUtils.rm(mfile)
+					unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags)
+				ensure
+					raise e
+				end
 			end
 		end
 
@@ -106,9 +121,14 @@ module FileHosting
 				FileUtils.mv(ffile, tmp_file)
 				store_file(new, file)
 				store_fileinfo(new)
-			rescue
-				FileUtils.mv(tmp_file, ffile)
-				store_fileinfo(old)
+				FileUtils.rm(tmp_file)
+			rescue Exception => e
+				begin
+					FileUtils.mv(tmp_file, ffile)
+					store_fileinfo(old)
+				ensure
+					raise e
+				end
 			end
 		end
 
@@ -119,10 +139,13 @@ module FileHosting
 				store_fileinfo(fileinfo)
 				register_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
 			rescue Exception => e
-				register_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
-				store_fileinfo(old)
-				unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
-				raise e
+				begin
+					register_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
+					store_fileinfo(old)
+					unregister_uuid_for_tags(fileinfo.uuid, fileinfo.tags-old.tags)
+				ensure
+					raise e
+				end
 			end
 		end
 
@@ -131,8 +154,15 @@ module FileHosting
 		def read_tag(tag)
 			file= @tagsdir+tag.to_s
 			return [] unless file.file?
-			res= YAML.load(file.read)
-			return [] unless Array === res
+			begin
+				res= YAML.load(file.read)
+			rescue
+				raise InternalDataCorruptionError
+			end
+			raise InternalDataCorruptionError unless Array === res
+			res.each do |s|
+				raise InternalDataCorruptionError unless String === s
+			end
 			res
 		end
 

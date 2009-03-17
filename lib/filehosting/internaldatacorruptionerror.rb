@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,44 +21,19 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
 require "filehosting/error"
 
-require "uuidtools"
+module FileHosting
 
-class ReplaceArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid> <file>"
+	# This error indicates an operation on a not existing File
+	# was requested.
+	class InternalDataCorruptionError < Error
+
+		def to_s
+			"internal data corruption"
+		end
+
 	end
 
 end
 
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= ReplaceArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(etcreader, homereader, argreader)
-
-if args.size != 2
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-begin
-	uuid= UUID.parse(args.shift)
-rescue ArgumentError => e
-	STDERR.puts e
-	exit 1
-end
-file= Pathname.new(args.shift)
-
-begin
-	config.datasource.update_filedata(uuid, file)
-rescue FileHosting::Error, Errno::ENOENT => e
-	puts e
-	exit 2
-end
