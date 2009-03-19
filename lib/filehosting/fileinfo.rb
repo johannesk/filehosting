@@ -33,6 +33,8 @@ module FileHosting
 	# This class holds all the informations about a file.
 	class FileInfo
 
+		include YAMLPropertiesByEval
+
 		# the RFC 4122 uuid for this file. It should always be
 		# stored as a UUID object.
 		attr_accessor :uuid
@@ -82,19 +84,21 @@ module FileHosting
 		end
 
 		def to_text
-			"name:      #{@filename}\n"+
-			"uuid:      #{@uuid}\n"+
-			"tags:      #{@tags.join(", ")}\n"+
-			"mimetype:  #{@mimetype}\n"+
-			"size:      #{@size.to_text}\n"+
-			"hash type: #{@hash_type}\n"+
-			"hash:      #{@hash}\n"+
-			"source:    #{@source}"
+			to_hash.to_text([:filename, :uuid, :tags, :mimetype, :size, :hash_type, :hash, :source])
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uuid.to_s", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]
+			{
+				"uuid"      => lambda { @uuid.to_s },
+				"filename"  => lambda { @filename },
+				"source"    => lambda { @source },
+				"mimetype"  => lambda { @mimetype },
+				"size"      => lambda { @size },
+				"hash_type" => lambda { @hash_type },
+				"hash"      => lambda { @hash },
+				"tags"      => lambda { @tags }
+			}
 		end
 
 		def to_yaml_type

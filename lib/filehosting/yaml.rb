@@ -23,13 +23,21 @@
 
 require "yaml"
 
-class Object
+module YAMLPropertiesByEval
+
+	def to_yaml_properties
+		res= Hash.new
+		instance_variables.each do |var|
+			res[var[1..-1]]= lambda { eval(var) }
+		end
+		res
+	end
 
 	def to_yaml(opts = Hash.new)
 		YAML::quick_emit(object_id, opts) do |out|
 			out.map(taguri, to_yaml_style) do |map|
-				to_yaml_properties.each do |m|
-					map.add(m[1..((m.index(?.) or 0)-1)], eval(m))
+				to_yaml_properties.each do |key, value|
+					map.add(key, value.call)
 				end
 			end
 		end

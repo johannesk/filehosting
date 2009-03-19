@@ -1,0 +1,66 @@
+#!/usr/bin/ruby
+#
+# Author:: Johannes Krude
+# Copyright:: (c) Johannes Krude 2009
+# License:: AGPL3
+#
+#--
+# This file is part of filehosting.
+#
+# filehosting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# filehosting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
+#++
+#
+
+require "filehosting/string"
+require "filehosting/config"
+require "filehosting/autoconfigreader"
+require "filehosting/configfilereader"
+require "filehosting/configargreader"
+require "filehosting/error"
+
+require "uuidtools"
+
+class FileHistoryArgReader < FileHosting::ConfigArgReader
+	
+	def banner
+		super + " <uuid>"
+	end
+
+end
+
+autoreader= FileHosting::AutoConfigReader.new
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+argreader= FileHistoryArgReader.new
+args= argreader.parse(ARGV)
+
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+if args.size != 1
+	STDERR.puts argreader.usage
+	exit 1
+end
+begin
+	uuid= UUID.parse(args[0])
+rescue ArgumentError => e
+	STDERR.puts e
+	exit 1
+end
+
+begin
+	puts config.datasource.history_file(uuid).to_text
+rescue FileHosting::Error => e
+	STDERR.puts e
+	exit 2
+end

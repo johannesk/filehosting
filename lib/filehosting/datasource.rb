@@ -76,6 +76,16 @@ module FileHosting
 		def remove_file(uuid)
 		end
 
+		# returns the history of a user
+		def history_user(user= @user)
+			[]
+		end
+
+		# returns the history of a file
+		def history_file(uuid)
+			[]
+		end
+
 	end
 
 end

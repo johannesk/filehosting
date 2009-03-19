@@ -149,10 +149,6 @@ module FileHosting
 		end
 		alias :switch_s :switch_datasource
 
-		def read
-			@values
-		end
-
 		def help_user
 			"select the user"
 		end

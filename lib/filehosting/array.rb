@@ -23,35 +23,24 @@
 
 require "filehosting/string"
 require "filehosting/integer"
-require "filehosting/array"
+require "filehosting/hash"
 
-class Hash
+class Array
 
-	# Display a number in a human readable way if requested. If
-	# use is given, use specifies which keys are used and in which
-	# order.
-	def to_text(use= nil)
-		left= Hash.new
-		(use or keys).each do |key|
-			left[key]=if key.respond_to?(:to_text)
-				key.to_text
+	# Display an array in a human readable way
+	def to_text
+		items= collect do |value|
+			if value.respond_to?(:to_text)
+				value.to_text
 			else
-				key.to_s
+				value.to_s
 			end
 		end
-		size= left.values.inject(0) { |n,m| n > m.size ? n : m.size }
-		(use or keys).collect do |key|
-			v= if self[key].respond_to?(:to_text)
-				self[key].to_text
-			else
-				self[key].to_s
-			end
-			if v=~ /\n/
-				v= "{\n" + v + "\n}"
-				v.gsub!("\n", "\n\t")
-			end
-			left[key] + ": " + (" " * (size - left[key].size)) + v
-		end.join("\n")
+		unless items.find { |x| x=~ /\n/ }
+			items.join(", ")
+		else
+			items.join("\n\n")
+		end
 	end
 
 end

@@ -21,37 +21,24 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/integer"
-require "filehosting/array"
+require "filehosting/error"
 
-class Hash
+module FileHosting
 
-	# Display a number in a human readable way if requested. If
-	# use is given, use specifies which keys are used and in which
-	# order.
-	def to_text(use= nil)
-		left= Hash.new
-		(use or keys).each do |key|
-			left[key]=if key.respond_to?(:to_text)
-				key.to_text
-			else
-				key.to_s
-			end
+	# This error indicates an operation on a not existing User was
+	# requested.
+	class NoSuchUserError < Error
+		
+		attr_reader :user
+
+		def initialize(user)
+			@user= user
 		end
-		size= left.values.inject(0) { |n,m| n > m.size ? n : m.size }
-		(use or keys).collect do |key|
-			v= if self[key].respond_to?(:to_text)
-				self[key].to_text
-			else
-				self[key].to_s
-			end
-			if v=~ /\n/
-				v= "{\n" + v + "\n}"
-				v.gsub!("\n", "\n\t")
-			end
-			left[key] + ": " + (" " * (size - left[key].size)) + v
-		end.join("\n")
+
+		def to_s
+			"the user '#{@user}' does not exist"
+		end
+
 	end
 
 end

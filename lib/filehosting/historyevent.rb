@@ -33,6 +33,8 @@ module FileHosting
 	# This class holds all the informations about a file.
 	class HistoryEvent
 
+		include YAMLPropertiesByEval
+
 		# when did the history action happen
 		attr_accessor :time
 
@@ -56,17 +58,35 @@ module FileHosting
 			@time= Time.now
 		end
 
+		def to_hash
+			{
+				:time   => @time,
+				:user   => @user,
+				:uuid   => @uuid,
+				:action => @action,
+				:data   => @data
+			}
+		end
+
 		def to_text
-			"time:      #{@time}\n"+
-			"user:      #{@user}\n"+
-			"uuid:      #{@uuid}\n"+
-			"action:    #{@action}\n"+
-			"data:      #{@data.to_text}"
+			to_hash.to_text([:time, :user, :uuid, :action, :data])
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@time", "@user", "@uuid.to_s", "@action.to_s", "@data"]
+			{
+				"time"   => lambda { @time },
+				"user"   => lambda { @user },
+				"uuid"   => lambda { @uuid.to_s },
+				"action" => lambda { @action.to_s },
+				"data"   => lambda do
+					res= Hash.new
+					@data.each do |key, value|
+						res[key.to_s]= value
+					end
+					res
+				end
+			}
 		end
 
 		def to_yaml_type
@@ -85,7 +105,10 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "historyevent") do |tag, value
 		res.user= value["user"].to_s
 		res.uuid= UUID.parse(value["uuid"])
 		res.action= value["action"].to_sym
-		res.data= value["data"].to_hash
+		res.data= Hash.new
+		value["data"].to_hash.each do |key, value|
+			res.data[key.to_sym]= value
+		end
 		res
 	rescue
 		raise FileHosting::InternalDataCorruptionError

@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,37 +23,37 @@
 #
 
 require "filehosting/string"
-require "filehosting/integer"
-require "filehosting/array"
+require "filehosting/config"
+require "filehosting/autoconfigreader"
+require "filehosting/configfilereader"
+require "filehosting/configargreader"
+require "filehosting/error"
 
-class Hash
-
-	# Display a number in a human readable way if requested. If
-	# use is given, use specifies which keys are used and in which
-	# order.
-	def to_text(use= nil)
-		left= Hash.new
-		(use or keys).each do |key|
-			left[key]=if key.respond_to?(:to_text)
-				key.to_text
-			else
-				key.to_s
-			end
-		end
-		size= left.values.inject(0) { |n,m| n > m.size ? n : m.size }
-		(use or keys).collect do |key|
-			v= if self[key].respond_to?(:to_text)
-				self[key].to_text
-			else
-				self[key].to_s
-			end
-			if v=~ /\n/
-				v= "{\n" + v + "\n}"
-				v.gsub!("\n", "\n\t")
-			end
-			left[key] + ": " + (" " * (size - left[key].size)) + v
-		end.join("\n")
+class UserHistoryArgReader < FileHosting::ConfigArgReader
+	
+	def banner
+		super + " <user>"
 	end
 
 end
 
+autoreader= FileHosting::AutoConfigReader.new
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+argreader= UserHistoryArgReader.new
+args= argreader.parse(ARGV)
+
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+if args.size != 1
+	STDERR.puts argreader.usage
+	exit 1
+end
+user= args[0]
+
+begin
+	puts config.datasource.history_user(user).to_text
+rescue FileHosting::Error => e
+	STDERR.puts e
+	exit 2
+end

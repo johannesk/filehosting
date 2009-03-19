@@ -25,6 +25,7 @@ require "filehosting/datasource"
 require "filehosting/fileinfo"
 require "filehosting/historyevent"
 require "filehosting/nosuchfileerror"
+require "filehosting/nosuchusererror"
 require "filehosting/fileexistserror"
 require "filehosting/internaldatacorruptionerror"
 
@@ -44,6 +45,7 @@ module FileHosting
 			@filesdir= Pathname.new(storage)+"files"
 			@metadatadir= Pathname.new(storage)+"metadata"
 			@tagsdir= Pathname.new(storage)+"tags"
+			@historyfile= Pathname.new(storage)+"history"
 			@filehistorydir= Pathname.new(storage)+"filehistory"
 			@userhistorydir= Pathname.new(storage)+"userhistory"
 			[@filesdir, @metadatadir, @tagsdir, @filehistorydir, @userhistorydir].each do |dir|
@@ -84,6 +86,20 @@ module FileHosting
 			raise InternalDataCorruptionError unless FileInfo === res
 			raise InternalDataCorruptionError unless res.uuid == uuid
 			res
+		end
+
+		# returns the history of a user
+		def history_user(user= @user)
+			file= @userhistorydir + user.to_s
+			raise NoSuchUserError.new(user) unless file.file?
+			read_array(file, HistoryEvent)
+		end
+
+		# returns the history of a file
+		def history_file(uuid)
+			file= @filehistorydir + uuid.to_s
+			raise NoSuchFileError.new(uuid) unless file.file?
+			read_array(file, HistoryEvent)
 		end
 
 		def add_file(fileinfo, file)
@@ -262,13 +278,18 @@ module FileHosting
 		end
 
 		def store_history(action, uuid, data)
+			data.delete(:uuid) # we store the uuid separate
 			event= HistoryEvent.new(@user, action, uuid, data)
+			file= @historyfile
 			ffile= @filehistorydir + event.uuid.to_s
 			ufile= @userhistorydir + event.user.to_s
+			history= read_array(file, HistoryEvent)
 			fhistory= read_array(ffile, HistoryEvent)
 			uhistory= read_array(ufile, HistoryEvent)
+			history<< event
 			fhistory<< event
 			uhistory<< event
+			store_yaml(file, history)
 			store_yaml(ffile, fhistory)
 			store_yaml(ufile, uhistory)
 		end
