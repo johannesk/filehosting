@@ -37,7 +37,8 @@ module FileHosting
 			@values= {
 				:datasource      => DataSource,
 				:datasource_args => [],
-				:human       => false
+				:human           => false,
+				:user            => "unknown"
 			}
 			data.each do |d|
 				@values.merge!(case d
@@ -49,7 +50,7 @@ module FileHosting
 			end
 			$human= @values[:human]
 			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]
-			@datasource= @values[:datasource].new(*@values[:datasource_args])
+			@datasource= @values[:datasource].new(@values[:user], *@values[:datasource_args])
 		end
 
 		# Returns a subclass of Datasource only by its name

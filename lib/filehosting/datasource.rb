@@ -29,6 +29,13 @@ module FileHosting
 	# The DataSource knows everything
 	class DataSource
 
+		attr_reader :user
+
+		# You always have to specify a user
+		def initialize(user)
+			@user= user
+		end
+
 		# searches for all files with these tags
 		def search_tags(tags)
 			[]

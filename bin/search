@@ -23,6 +23,7 @@
 #
 
 require "filehosting/config"
+require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
@@ -51,7 +52,7 @@ class SearchArgReader < FileHosting::ConfigArgReader
 	def switch_uuid
 		$uuid= true
 	end
-	alias :switch_u :switch_uuid
+	alias :switch_i :switch_uuid
 
 	def help_count
 		"display only how many files where found"
@@ -65,12 +66,13 @@ class SearchArgReader < FileHosting::ConfigArgReader
 
 end
 
+autoreader= FileHosting::AutoConfigReader.new
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
 argreader= SearchArgReader.new
 args= argreader.parse(ARGV)
 
-config= FileHosting::Config.new(etcreader, homereader, argreader)
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
 if args.size < 1
 	STDERR.puts argreader.usage

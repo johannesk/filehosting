@@ -23,6 +23,7 @@
 
 require "filehosting/datasource"
 require "filehosting/fileinfo"
+require "filehosting/historyevent"
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
 require "filehosting/internaldatacorruptionerror"
@@ -38,11 +39,14 @@ module FileHosting
 	# FileDataSource stores all data in the filesystem
 	class FileDataSource < DataSource
 
-		def initialize(storage)
+		def initialize(user, storage)
+			super(user)
 			@filesdir= Pathname.new(storage)+"files"
 			@metadatadir= Pathname.new(storage)+"metadata"
 			@tagsdir= Pathname.new(storage)+"tags"
-			[@filesdir, @metadatadir, @tagsdir].each do |dir|
+			@filehistorydir= Pathname.new(storage)+"filehistory"
+			@userhistorydir= Pathname.new(storage)+"userhistory"
+			[@filesdir, @metadatadir, @tagsdir, @filehistorydir, @userhistorydir].each do |dir|
 				dir.mkdir unless dir.directory?
 			end
 		end
@@ -100,6 +104,7 @@ module FileHosting
 					raise e
 				end
 			end
+			store_history(:create, fileinfo.uuid, fileinfo.to_hash)
 		end
 
 		def update_filedata(uuid, file)
@@ -120,6 +125,7 @@ module FileHosting
 					raise e
 				end
 			end
+			store_history(:replace, old.uuid, new-old)
 		end
 
 		def update_fileinfo(fileinfo)
@@ -137,6 +143,7 @@ module FileHosting
 					raise e
 				end
 			end
+			store_history(:update, old.uuid, fileinfo-old)
 		end
 
 		def remove_file(uuid)
@@ -153,6 +160,7 @@ module FileHosting
 					raise e
 				end
 			end
+			store_history(:remove, old.uuid, Hash.new)
 		end
 
 		private
@@ -179,7 +187,10 @@ module FileHosting
 		end
 
 		def read_tag(tag)
-			file= @tagsdir+tag.to_s
+			read_array(@tagsdir+tag.to_s, String)
+		end
+
+		def read_array(file, type)
 			return [] unless file.file?
 			begin
 				res= YAML.load(file.read)
@@ -188,7 +199,7 @@ module FileHosting
 			end
 			raise InternalDataCorruptionError unless Array === res
 			res.each do |s|
-				raise InternalDataCorruptionError unless String === s
+				raise InternalDataCorruptionError unless type === s
 			end
 			res
 		end
@@ -198,9 +209,7 @@ module FileHosting
 				uuids= read_tag(tag)
 				uuids<< uuid.to_s
 				file= @tagsdir+tag.to_s
-				File.open(file, "w") do |f|
-					f.write(uuids.to_yaml)
-				end
+				store_yaml(file, uuids)
 			end
 		end
 
@@ -210,9 +219,7 @@ module FileHosting
 				uuids.delete(uuid.to_s)
 				file= @tagsdir+tag.to_s
 				if uuids.size > 0
-					File.open(file, "w") do |f|
-						f.write(uuids.to_yaml)
-					end
+					store_yaml(file, uuids)
 				else
 					FileUtils.rm(file)
 				end
@@ -244,9 +251,26 @@ module FileHosting
 		# stores the fileinfo
 		def store_fileinfo(fileinfo)
 			mfile= @metadatadir + fileinfo.uuid.to_s
-			File.open(mfile, "w") do |f|
-				f.write(fileinfo.to_yaml)
+			store_yaml(mfile, fileinfo)
+		end
+
+		# stores an object converted to yaml in a file
+		def store_yaml(file, data)
+			File.open(file, "w") do |f|
+				f.write(data.to_yaml)
 			end
+		end
+
+		def store_history(action, uuid, data)
+			event= HistoryEvent.new(@user, action, uuid, data)
+			ffile= @filehistorydir + event.uuid.to_s
+			ufile= @userhistorydir + event.user.to_s
+			fhistory= read_array(ffile, HistoryEvent)
+			uhistory= read_array(ufile, HistoryEvent)
+			fhistory<< event
+			uhistory<< event
+			store_yaml(ffile, fhistory)
+			store_yaml(ufile, uhistory)
 		end
 
 	end

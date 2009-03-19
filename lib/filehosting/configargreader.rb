@@ -153,6 +153,15 @@ module FileHosting
 			@values
 		end
 
+		def help_user
+			"select the user"
+		end
+
+		def switch_user(user)
+			@values[:user]= user
+		end
+		alias :switch_u :switch_user
+
 	end
 
 end

@@ -23,6 +23,7 @@
 #
 
 require "filehosting/config"
+require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
@@ -37,12 +38,13 @@ class ReplaceArgReader < FileHosting::ConfigArgReader
 
 end
 
+autoreader= FileHosting::AutoConfigReader.new
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
 argreader= ReplaceArgReader.new
 args= argreader.parse(ARGV)
 
-config= FileHosting::Config.new(etcreader, homereader, argreader)
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
 if args.size != 2
 	STDERR.puts argreader.usage

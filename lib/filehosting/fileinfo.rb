@@ -58,8 +58,28 @@ module FileHosting
 		# the tags of the file
 		attr_accessor :tags
 
-		# the history of this file
-		#attr_accessor :history
+		def -(other)
+			res= Hash.new
+			a= self.to_hash
+			b= other.to_hash
+			a.each_key do |key|
+				res[key]= a[key] unless a[key] == b[key]
+			end
+			res
+		end
+
+		def to_hash
+			{
+				:filename  => @filename,
+				:uuid      => @uuid,
+				:tags      => @tags,
+				:mimetype  => @mimetype,
+				:size      => @size,
+				:hash_type => @hash_type,
+				:hash      => @hash,
+				:source    => @source
+			}
+		end
 
 		def to_text
 			"name:      #{@filename}\n"+
@@ -74,7 +94,7 @@ module FileHosting
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
-			["@uuid.to_s", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]#, "@history"]
+			["@uuid.to_s", "@filename", "@source", "@mimetype", "@size", "@hash_type", "@hash", "@tags"]
 		end
 
 		def to_yaml_type
@@ -96,10 +116,9 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		res.hash_type= value["hash_type"].to_s
 		res.hash= value["hash"].to_s
 		res.tags= value["tags"].collect { |x| x.to_s }
-		#res.history= value["history"]
 		res
 	rescue
-		raise InternalDataCorruptionError
+		raise FileHosting::InternalDataCorruptionError
 	end
 end
 

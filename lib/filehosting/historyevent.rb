@@ -1,0 +1,94 @@
+#
+# Author:: Johannes Krude
+# Copyright:: (c) Johannes Krude 2009
+# License:: AGPL3
+#
+#--
+# This file is part of filehosting.
+#
+# filehosting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# filehosting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
+#++
+#
+
+require "filehosting/hash"
+require "filehosting/yaml"
+require "filehosting/internaldatacorruptionerror"
+
+require "yaml"
+require "uuidtools"
+
+module FileHosting
+
+	# This class holds all the informations about a file.
+	class HistoryEvent
+
+		# when did the history action happen
+		attr_accessor :time
+
+		# which user triggered this entry
+		attr_accessor :user
+
+		# which action was performed
+		attr_accessor :action
+
+		# the object of the action
+		attr_accessor :uuid
+
+		# the data which changed due to the history event
+		attr_accessor :data
+
+		def initialize(user= nil, action= nil, uuid= nil, data= nil)
+			@user= user
+			@action= action
+			@uuid= uuid
+			@data= data
+			@time= Time.now
+		end
+
+		def to_text
+			"time:      #{@time}\n"+
+			"user:      #{@user}\n"+
+			"uuid:      #{@uuid}\n"+
+			"action:    #{@action}\n"+
+			"data:      #{@data.to_text}"
+		end
+
+		# all subclasses of FileInfo should only serialize FileInfo Attributes
+		def to_yaml_properties
+			["@time", "@user", "@uuid.to_s", "@action.to_s", "@data"]
+		end
+
+		def to_yaml_type
+			"!filehosting/historyevent"
+		end
+
+	end
+
+end
+
+YAML.add_domain_type("filehosting.yaml.org,2002", "historyevent") do |tag, value|
+	begin
+		res= FileHosting::HistoryEvent.new
+		res.time= value["time"]
+		raise FileHosting::InternalDataCorruptionError unless Time === res.time
+		res.user= value["user"].to_s
+		res.uuid= UUID.parse(value["uuid"])
+		res.action= value["action"].to_sym
+		res.data= value["data"].to_hash
+		res
+	rescue
+		raise FileHosting::InternalDataCorruptionError
+	end
+end
+
