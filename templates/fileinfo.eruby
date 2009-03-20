@@ -1,0 +1,36 @@
+<div class="fileinfo">
+	<table>
+		<tr>
+			<th>filename</th>
+			<td><%= fileinfo.filename %>
+		</tr>
+		<tr>
+			<th>uuid</th>
+			<td><%= fileinfo.uuid.to_s %>
+		</tr>
+		<tr>
+			<th>tags</th>
+			<td><%= fileinfo.tags.to_text %>
+		</tr>
+		<tr>
+			<th>mimetype</th>
+			<td><%= fileinfo.mimetype %>
+		</tr>
+		<tr>
+			<th>size</th>
+			<td><%= fileinfo.size %>
+		</tr>
+		<tr>
+			<th>hash type</th>
+			<td><%= fileinfo.hash_type %>
+		</tr>
+		<tr>
+			<th>hash</th>
+			<td><%= fileinfo.hash %>
+		</tr>
+		<tr>
+			<th>source</th>
+			<td><%= fileinfo.source %>
+		</tr>
+	</table>
+</div>

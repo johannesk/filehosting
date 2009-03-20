@@ -11,6 +11,13 @@ bin
 	The tools in bin must be called from inside bin , otherwise some
 	librarys won't be found.
 
+cgi
+---
+	The cgi directory contains cgi scripts for an http server. There
+	should be a /etc/filehostingrc.cgi for configuration of this cgi
+	scripts. Both symlinks filehosting and templates should be made
+	inaccessible by the http server.
+
 filehostingrc
 -------------
 	There is a sample filehostingrc in config/filehostingrc. You should
