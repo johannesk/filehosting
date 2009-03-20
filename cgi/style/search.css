@@ -15,3 +15,14 @@ div.search_result td {
 	text-align: left;
 	padding-left: 10px;
 }
+
+div.search_result div.fileinfo table {
+	display: inline-block;
+}
+
+div.search_result div.fileinfo div.actions {
+	display: inline-block;
+	vertical-align: top;
+	text-align: right;
+	width: 20%;
+}

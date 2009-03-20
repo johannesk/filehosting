@@ -75,4 +75,13 @@ module FileHosting
 
 	end
 
+	class HistoryEvent
+
+		def to_html
+			event= self
+			HTML.use_template("historyevent.eruby", binding)
+		end
+
+	end
+
 end

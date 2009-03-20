@@ -58,7 +58,8 @@ end
 
 begin
 	fileinfo= config.datasource.fileinfo(uuid)
-	puts FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
+	body= fileinfo.to_html
+	puts FileHosting::HTML.page(fileinfo.filename.to_html, body, "fileinfo.css")
 rescue FileHosting::Error => e
 	puts FileHosting::HTML.error_page(e)
 	exit
