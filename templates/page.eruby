@@ -18,6 +18,10 @@
 					<input type="text" name="tags" />
 				</form>
 			</div>
+			<ul>
+				<li><a href="/filehosting/feed">Feed</a></li>
+				<li><a href="/filehosting/history">History</a></li>
+			</ul>
 			</div>
 		</div>
 		<%= body %>

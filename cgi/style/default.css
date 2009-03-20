@@ -1,12 +1,30 @@
 body {
-	background-color: #98F5FF;
+	background-color: #F5F5DC;
 	color: black;
 	margin: 0px;
 	padding: 10px;
 	text-align: left;
 }
 
+a {
+	text-decoration: none;
+	color: #8B2323;
+}
+
+img {
+	border-width: 0px;
+}
+
+h1 {
+	font-size: 120%;
+}
+
+h1 a {
+	color: black;
+}
+
 div.head {
+	padding: 1px;
 	border-style: solid;
 	border-color: black;
 	border-width: 1px;
@@ -17,13 +35,13 @@ div.head {
 div.head h1 {
 	margin: 0px;
 	padding: 0px;
-	display: inline-block;
+	font-size: 150%;
 }
 
 div.head div.search {
-	float: right;
-	font-size: 50%;
-	padding: 5px;
+	float :right;
+	font-size: 80%;
+	padding: 3px;
 }
 
 div.head div.search form {
@@ -32,4 +50,17 @@ div.head div.search form {
 
 div.head div.search form input {
 	font-size: 50%;
+}
+
+div.head ul {
+	padding: 0px;
+	margin: 10px 0px 0px 0px;
+}
+
+div.head li {
+	display: inline;
+}
+
+div.head li+li {
+	margin-left: 10px;
 }
