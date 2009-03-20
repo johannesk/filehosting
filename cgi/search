@@ -37,7 +37,7 @@ tags= nil
 if ENV["QUERY_STRING"]
 	vars= FileHosting::HTML.parse_get(ENV["QUERY_STRING"])
 	if vars and vars["tags"]
-		tags= vars["tags"].split(" ")
+		tags= vars["tags"].split("+")
 	end
 end
 

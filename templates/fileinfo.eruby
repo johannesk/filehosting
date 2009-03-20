@@ -1,36 +1,40 @@
 <div class="fileinfo">
+	<h1>
+% mimefile= Pathname.new("mimepictures")+(fileinfo.mimetype.sub("/", "-")+".png")
+% if mimefile.file?
+		<img src="/filehosting/<%= mimefile %>" alt="<%= fileinfo.mimetype %>" />
+% else
+		<img src="/filehosting/mimepictures/unknown.png" alt="<%= fileinfo.mimetype %>" />
+% end
+		<a href="/filehosting/files/<%= fileinfo.uuid %>"><%= fileinfo.filename.to_html %></a>
+	</h1>
 	<table>
 		<tr>
-			<th>filename</th>
-			<td><%= fileinfo.filename %></td>
-		</tr>
-		<tr>
 			<th>uuid</th>
-			<td><%= fileinfo.uuid.to_s %></td>
+			<td><a href="/filehosting/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
 		</tr>
 		<tr>
 			<th>tags</th>
-			<td><%= fileinfo.tags.to_text %></td>
-		</tr>
-		<tr>
-			<th>mimetype</th>
-			<td><%= fileinfo.mimetype %></td>
+			<td><%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"/filehosting/search?tags=#{t}\">#{t}</a>" }.join(", ") %></td>
 		</tr>
 		<tr>
 			<th>size</th>
 			<td><%= fileinfo.size.to_text %></td>
 		</tr>
 		<tr>
-			<th>hash type</th>
-			<td><%= fileinfo.hash_type %></td>
-		</tr>
-		<tr>
 			<th>hash</th>
-			<td><%= fileinfo.hash %></td>
+			<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash.to_html %></td>
 		</tr>
+% if fileinfo.source
 		<tr>
 			<th>source</th>
-			<td><%= fileinfo.source %></td>
+			<td><a href="<%= fileinfo.source.to_html %>" target="<%= fileinfo.source.to_html %>"><%= fileinfo.source.to_html %></a></td>
 		</tr>
+% end
 	</table>
+	<div class="actions">
+		<a href="/filehosting/history/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/history.png" alt="view history" /></a>
+		<a href="/filehosting/update/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/update.png" alt="update" /></a>
+		<a href="/filehosting/remove/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/remove.png" alt="remove" /></a>
+	</div>
 </div>

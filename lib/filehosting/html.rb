@@ -43,11 +43,16 @@ module FileHosting
 			template.result(bind)
 		end
 
+		def self.http_decode(string)
+		end
+
 		def self.parse_get(query_string)
 			query_string=~ /^/
 			res= Hash.new
 			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
-				res[$1]= $2
+				key= $1
+				value= $2
+				res[key.http_decode]= value.http_decode
 			end
 			res
 		end
@@ -56,10 +61,30 @@ module FileHosting
 
 end
 
+class String
+
+	def http_decode
+		res= ""
+		self=~ /^/
+		rem= $'
+		while $'=~ /%([A-Za-z0-9]{2})/
+			rem= $'
+			res+= $`
+			res<< $1.to_i(16)
+		end
+		res+rem
+	end
+
+end
+
 class Object
 
 	def to_html
-		to_s.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
+		if respond_to?(:to_text)
+			to_text
+		else
+			to_s
+		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
 	end
 
 end
