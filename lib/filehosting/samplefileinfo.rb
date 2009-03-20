@@ -33,14 +33,15 @@ module FileHosting
 		def initialize
 			@uuid= UUID.random_create
 			random= rand(3)
-			@mimetype= ["application/pdf", "video/ms-xvideo", "text/x-c++"][random]
+			@mimetype= ["application/pdf", "video/x-msvideo", "text/x-c++"][random]
 			@filename= ["Uebung"+rand(30).to_s+".pdf", "Vorlesung"+rand(30).to_s+".avi", "Programm"+rand(30).to_s+".java"][random]
 			@source= "http://source.example/#{@filename}"
 			@size= (rand*2**(rand*40)).to_i
 			@tags= []
 			@tags<< "#{(rand*2)<1 ? "S" : "W"}S#{rand(30)}"
 			@tags+= [["Uebung"], ["Video", "Vorlesung"], ["Uebung", "Sourcecode"]][random]
-			@history= []
+			@hash_type= "SHA-256"
+			@hash= rand(64**16).to_s(16)
 		end
 
 	end

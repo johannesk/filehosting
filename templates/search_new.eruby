@@ -1,0 +1,7 @@
+<div class="search_box">
+	<h1>search:</h1>
+	<form method="GET">
+		<input type="text" name="tags" />
+		<input type="submit" value="search" />
+	</form>
+</div>

@@ -29,7 +29,7 @@ module FileHosting
 	# Create a webpage
 	class HTML
 
-		def self.page(title, body)
+		def self.page(title, body, styles=[])
 			use_template("page.eruby", binding)
 		end
 
@@ -41,6 +41,15 @@ module FileHosting
 			tfile= Pathname.new("templates") + file
 			template= ERB.new(tfile.read, nil, "%")
 			template.result(bind)
+		end
+
+		def self.parse_get(query_string)
+			query_string=~ /^/
+			res= Hash.new
+			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
+				res[$1]= $2
+			end
+			res
 		end
 
 	end

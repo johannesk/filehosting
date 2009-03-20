@@ -24,6 +24,7 @@
 require "filehosting/integer"
 require "filehosting/yaml"
 require "filehosting/internaldatacorruptionerror"
+require "filehosting/hash"
 
 require "yaml"
 require "uuidtools"

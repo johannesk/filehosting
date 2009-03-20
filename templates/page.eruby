@@ -4,8 +4,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<title><%= title %></title>
+		<link rel="stylesheet" type="text/css" href="/filehosting/style/default.css" />
+% styles.each do |style|
+		<link rel="stylesheet" type="text/css" href="/filehosting/style/<%= style %>" />
+% end
 	</head>
 	<body>
+		<div class="head">
+			<h1>FileHosting</h1>
+			<div class="search">
+				search:
+				<form type="get" action="/filehosting/search">
+					<input type="text" name="tags" />
+				</form>
+			</div>
+			</div>
+		</div>
 		<%= body %>
 	</body>
 </html>

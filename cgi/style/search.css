@@ -1,0 +1,17 @@
+div.search_box {
+	padding-top: 40px;
+	text-align: center;
+}
+
+div.search_box h1 {
+	font-size: 400%;
+}
+
+div.search_result th {
+	text-align: right;
+}
+
+div.search_result td {
+	text-align: left;
+	padding-left: 10px;
+}

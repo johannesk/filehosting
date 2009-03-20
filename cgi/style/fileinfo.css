@@ -1,0 +1,19 @@
+body {
+}
+
+div.fileinfo {
+	text-align: center;
+}
+
+div.fileinfo table {
+	display: inline-block;
+}
+
+div.fileinfo th {
+	text-align: right;
+}
+
+div.fileinfo td {
+	text-align: left;
+	padding-left: 10px;
+}

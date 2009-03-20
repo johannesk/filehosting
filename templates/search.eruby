@@ -1,0 +1,37 @@
+<div class="search_result">
+<p><%= search_result.size %> Files found</p>
+% search_result.each do |fileinfo|
+	<div class="fileinfo">
+		<h1>
+% 	mimefile= Pathname.new("mimepictures")+(fileinfo.mimetype.sub("/", "-")+".png")
+% 	if mimefile.file?
+			<img src="/filehosting/<%= mimefile %>" alt="<%= fileinfo.mimetype %>" />
+% else
+			<img src="/filehosting/mimepictures/unknown.png" alt="<%= fileinfo.mimetype %>" />
+% end
+			<a href="/filehosting/files/<%= fileinfo.uuid %>"><%= fileinfo.filename %></a>
+		</h1>
+		<table>
+			<tr>
+				<th>uuid</th>
+				<td><a href="/filehosting/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
+			</tr>
+			<tr>
+				<th>tags</th>
+				<td><%= fileinfo.tags.to_text %></td>
+			</tr>
+			<tr>
+				<th>size</th>
+				<td><%= fileinfo.size.to_text %></td>
+			</tr>
+			<tr>
+				<th>hash</th>
+				<td><%= fileinfo.hash_type %> <%= fileinfo.hash %></td>
+			</tr>
+			<tr>
+				<th>source</th>
+				<td><%= fileinfo.source %></td>
+			</tr>
+		</table>
+	</div>
+% end

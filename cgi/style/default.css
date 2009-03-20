@@ -1,0 +1,35 @@
+body {
+	background-color: #98F5FF;
+	color: black;
+	margin: 0px;
+	padding: 10px;
+	text-align: left;
+}
+
+div.head {
+	border-style: solid;
+	border-color: black;
+	border-width: 1px;
+	vertical-align: bottom;
+	background-color: #FFD39B;
+}
+
+div.head h1 {
+	margin: 0px;
+	padding: 0px;
+	display: inline-block;
+}
+
+div.head div.search {
+	float: right;
+	font-size: 50%;
+	padding: 5px;
+}
+
+div.head div.search form {
+	display: inline;
+}
+
+div.head div.search form input {
+	font-size: 50%;
+}
