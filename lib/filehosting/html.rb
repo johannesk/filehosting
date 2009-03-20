@@ -34,7 +34,7 @@ module FileHosting
 		end
 
 		def self.error_page(error)
-			page("error", error.to_html)
+			page("error", "<div class=\"error_message\">\n#{error.to_html}\n</div>", "error.css")
 		end
 
 		def self.use_template(file, bind)

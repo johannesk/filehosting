@@ -28,7 +28,6 @@ div.head {
 	border-style: solid;
 	border-color: black;
 	border-width: 1px;
-	vertical-align: bottom;
 	background-color: #FFD39B;
 }
 
@@ -63,4 +62,19 @@ div.head li {
 
 div.head li+li {
 	margin-left: 10px;
+}
+
+div.license {
+	font-size: 80%;
+	text-align: left;
+	padding: 1px 10% 1px 10%;
+	border-style: solid;
+	border-color: black;
+	border-width: 1px;
+	background-color: #FFD39B;
+}
+
+div.license img {
+	float: left;
+	margin-right: 10px;
 }
