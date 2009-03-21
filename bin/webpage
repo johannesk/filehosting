@@ -1,0 +1,67 @@
+#!/usr/bin/ruby
+#
+# Author:: Johannes Krude
+# Copyright:: (c) Johannes Krude 2009
+# License:: AGPL3
+#
+#--
+# This file is part of filehosting.
+#
+# filehosting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# filehosting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
+#++
+#
+
+require "filehosting/config"
+require "filehosting/autoconfigreader"
+require "filehosting/configfilereader"
+require "filehosting/configargreader"
+require "filehosting/error"
+require "filehosting/web"
+
+class WebPageArgReader < FileHosting::ConfigArgReader
+	
+	def banner
+		super + " <page>"
+	end
+
+end
+
+autoreader= FileHosting::AutoConfigReader.new
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+argreader= WebPageArgReader.new
+args= argreader.parse(ARGV)
+
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+if args.size != 1
+	STDERR.puts argreader.usage
+	exit 1
+end
+page= args[0]
+
+begin
+	web= FileHosting::Web.new(config.datasource)
+	io= web.get_page(page)
+	unless io
+		STDERR.puts "page could not be created"
+		exit 3
+	end
+	io.each do |line|
+		puts line
+	end
+rescue FileHosting::Error => e
+	STDERR.puts e
+	exit 2
+end

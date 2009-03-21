@@ -3,3 +3,4 @@
 % search_result.each do |fileinfo|
 	<%= fileinfo.to_html %>
 % end
+</div>
