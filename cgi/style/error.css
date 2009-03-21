@@ -1,6 +1,6 @@
 div.error_message {
-	color: red;
-	font-size: 400%;
-	margin: 100px 0px 100px 0px;
+	margin: 50px 20% 50px 20%;
 	text-align: center;
+	color: red;
+	font-size: 200%;
 }

@@ -1,0 +1,4 @@
+<div class="error_message">
+	<img src="/filehosting/images/error.png" alt="error" />
+	<p><%= error.to_html %></p>
+</div>
