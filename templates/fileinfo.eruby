@@ -1,13 +1,13 @@
 <div class="fileinfo">
 	<h1>
-% mimefile= Pathname.new("mimepictures")+(fileinfo.mimetype.sub("/", "-")+".png")
+% mimefile= Pathname.new("images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
 % if mimefile.file?
 		<img src="/filehosting/<%= mimefile %>" alt="<%= fileinfo.mimetype %>" />
 % else
-		<img src="/filehosting/mimepictures/unknown.png" alt="<%= fileinfo.mimetype %>" />
+		<img src="/filehosting/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
 % end
 		<a href="/filehosting/files/<%= fileinfo.uuid %>"><%= fileinfo.filename.to_html %></a>
-		<a href="/filehosting/history/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/download.png" alt="download" /></a>
+		<a href="/filehosting/history/<%= fileinfo.uuid %>"><img src="/filehosting/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
 		<tr>
@@ -34,8 +34,8 @@
 % end
 	</table>
 	<div class="actions">
-		<a href="/filehosting/history/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/history.png" alt="view history" /></a>
-		<a href="/filehosting/update/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/update.png" alt="update" /></a>
-		<a href="/filehosting/remove/<%= fileinfo.uuid %>"><img src="/filehosting/buttons/remove.png" alt="remove" /></a>
+		<a href="/filehosting/history/<%= fileinfo.uuid %>"><img src="/filehosting/images/history.png" alt="view history" /></a>
+		<a href="/filehosting/update/<%= fileinfo.uuid %>"><img src="/filehosting/images/update.png" alt="update" /></a>
+		<a href="/filehosting/remove/<%= fileinfo.uuid %>"><img src="/filehosting/images/remove.png" alt="remove" /></a>
 	</div>
 </div>
