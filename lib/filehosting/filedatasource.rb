@@ -88,6 +88,12 @@ module FileHosting
 			res
 		end
 
+		def filedata_string(uuid)
+			file= @filesdir+uuid.to_s
+			raise NoSuchFileError.new(uuid) unless file.file?
+			file.to_s
+		end
+
 		# returns the history of a user
 		def history_user(user= @user)
 			file= @userhistorydir + user.to_s

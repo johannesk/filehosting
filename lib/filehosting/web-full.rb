@@ -25,6 +25,7 @@ require "filehosting/web"
 
 require "filehosting/html"
 require "filehosting/error"
+require "filehosting/nosuchfileerror"
 
 require "pathname"
 require "uuidtools"
@@ -33,8 +34,10 @@ module FileHosting
 
 	class Web
 
-		# Returns an IO object where the requested page can be
-		# read. Returns nil if the page can not be viewed.
+		# Returns a String, an IO, or an Array of String's and
+		# IO's. The String holds the data, from an IO can the
+		# data be read. And in case of an Array all String's
+		# and IO's have to be parsed to get the full data.
 		def get_page(path, args)
 			file= StaticDir+path
 			return nil unless file.cleanpath == file
@@ -45,12 +48,40 @@ module FileHosting
 			if file.file?
 				File.new(file)
 			else
+				# This is done here and not it
+				# create_page, because we don't want
+				# caching for files.
+				if path =~ /^files\//
+					res= get_file($')
+					return res if res
+				end
 				create_page(path, args)
 				if file.file?
 					File.new(file)
 				else
 					nil
 				end
+			end
+		end
+
+		def get_file(uuid)
+			begin
+				uuid= UUID.parse(uuid)
+			rescue ArgumentError
+				return nil
+			end
+			begin
+				info= @datasource.fileinfo(uuid)
+				io= @datasource.filedata_io(uuid)
+				return [
+					"Content-Type: #{info.mimetype}\n" +
+					"Content-Length: #{info.size}\n" +
+					"Content-Disposition: attachment;filename=#{info.filename}\n" +
+					"\n",
+					io
+				]
+			rescue NoSuchFileError
+				return nil
 			end
 		end
 
@@ -65,6 +96,12 @@ module FileHosting
 			when "search"
 				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_search(direction, args)
+			when "files" # regular files are handled in get_page, this is only for errors
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_fileinfo(direction, args)
+			else
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				FileHosting::HTML.error_page("wrong arguments")
 			end
 			return unless data
 			data=~ /\n\n/
@@ -77,31 +114,31 @@ module FileHosting
 
 		def page_fileinfo(path, args)
 			if path.size != 1
-				return nil
+				return FileHosting::HTML.error_page("wrong arguments")
 			end
 			begin
 				uuid= UUID.parse(path[0])
-			rescue ArgumentError
-				return nil
+			rescue ArgumentError => e
+				return FileHosting::HTML.error_page(e)
 			end
 			begin
 				fileinfo= @datasource.fileinfo(uuid)
-				return FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
+				FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
 			rescue FileHosting::Error => e
-				return FileHosting::HTML.error_page(e)
+				FileHosting::HTML.error_page(e)
 			end
 		end
 
 		def page_search(path, args)
 			case args["tags"]
 			when nil
-				return FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css")
+				FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css")
 			when String
 				tags= args["tags"].split("+")
 				search_result= @datasource.search_tags(tags)
-				return FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css")
+				FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css")
 			else
-				nil
+				FileHosting::HTML.error_page("wrong arguments")
 			end
 		end
 

@@ -27,14 +27,14 @@ require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
-require "filehosting/web"
 
+require "uuidtools"
 require "io2io"
 
-class WebPageArgReader < FileHosting::ConfigArgReader
+class FileArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <page>"
+		super + " <uuid>"
 	end
 
 end
@@ -42,7 +42,7 @@ end
 autoreader= FileHosting::AutoConfigReader.new
 etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= WebPageArgReader.new
+argreader= FileArgReader.new
 args= argreader.parse(ARGV)
 
 config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
@@ -51,25 +51,16 @@ if args.size != 1
 	STDERR.puts argreader.usage
 	exit 1
 end
-page= args[0]
+begin
+	uuid= UUID.parse(args[0])
+rescue ArgumentError => e
+	STDERR.puts e
+	exit 1
+end
 
 begin
-	web= FileHosting::Web.new(config.datasource)
-	page=~ /\?/
-	io= web.get_page($` || page, $' || Hash.new)
-	unless io
-		STDERR.puts "page could not be created"
-		exit 3
-	end
-	[io].flatten.each do |out|
-		case out
-		when String
-			print out
-			STDOUT.flush # this should be done in IO2IO.forever
-		when IO
-			IO2IO.forever(out.to_i, STDOUT.to_i)
-		end
-	end
+	io= config.datasource.filedata_io(uuid)
+	IO2IO.forever(io.to_i, STDOUT.to_i)
 rescue FileHosting::Error => e
 	STDERR.puts e
 	exit 2

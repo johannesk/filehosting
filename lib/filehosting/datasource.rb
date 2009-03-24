@@ -51,6 +51,16 @@ module FileHosting
 			raise NoSuchFileError.new(uuid)
 		end
 
+		# returns the filename as a string
+		def filedata_string(uuid)
+			raise NoSuchFileError.new(uuid)
+		end
+
+		# returns an io where the filedata can be read
+		def filedata_io(uuid)
+			File.open(filedata_string(uuid))
+		end
+
 		# Adds a file to the datasource. There must be no
 		# existing file with the same uuid. Some data from the
 		# metadata will not be trusted and replaced by own

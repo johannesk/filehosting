@@ -41,8 +41,10 @@ module FileHosting
 			CacheDir.mkdir unless CacheDir.directory?
 		end
 
-		# Returns an IO object where the requested page can be
-		# read. Returns nil if the page can not be viewed.
+		# Returns a String, an IO, or an Array of String's and
+		# IO's. The String holds the data, from an IO can the
+		# data be read. And in case of an Array all String's
+		# and IO's have to be parsed to get the full data.
 		def get_page(path, args)
 			file= StaticDir+path
 			return nil unless file.cleanpath == file

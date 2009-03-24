@@ -13,10 +13,7 @@ bin
 
 cgi
 ---
-	The cgi directory contains cgi scripts for an http server. There
-	should be a /etc/filehostingrc.cgi for configuration of this cgi
-	scripts. Both symlinks filehosting and templates should be made
-	inaccessible by the http server.
+	bin/cgi can be used for a httpserver
 
 filehostingrc
 -------------

@@ -26,7 +26,7 @@
 		</div>
 		<%= body %>
 		<div class="license">
-			<a href="http://www.gnu.org/licenses/agpl-3.0.html"><img alt="AGPLv3" src="images/agplv3.png" /></a>This page was created by FileHosting. FileHosting is licensed under a <a href="http://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License version 3.0</a>. Download FileHosting at <a href="git://johannes.krude.de/filehosting">git://johannes.krude.de/filehosting</a>.
+			<a href="http://www.gnu.org/licenses/agpl-3.0.html"><img alt="AGPLv3" src="/filehosting/images/agplv3.png" /></a>This page was created by FileHosting. FileHosting is licensed under a <a href="http://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License version 3.0</a>. Download FileHosting at <a href="git://johannes.krude.de/filehosting">git://johannes.krude.de/filehosting</a>.
 		</div>
 	</body>
 </html>
