@@ -53,7 +53,8 @@ page= args[0]
 
 begin
 	web= FileHosting::Web.new(config.datasource)
-	io= web.get_page(page)
+	page=~ /\?/
+	io= web.get_page($` || page, $' || Hash.new)
 	unless io
 		STDERR.puts "page could not be created"
 		exit 3

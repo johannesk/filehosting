@@ -1,9 +1,7 @@
+#!/usr/bin/ruby
 #
-# Author:: Johannes Krude
-# Copyright:: (c) Johannes Krude 2009
-# License:: AGPL3
+# © Johannes Krude 2008 - 2009
 #
-#--
 # This file is part of filehosting.
 #
 # filehosting is free software: you can redistribute it and/or modify
@@ -18,12 +16,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
-#++
 #
 
-class String
-
-	alias :to_text :to_s
-
-end
-
+require 'mkmf'
+create_makefile("io2io")

@@ -21,93 +21,87 @@
 #++
 #
 
-require "filehosting/html"
-require "filehosting/error"
+# Most of the content of this file moved to ‘web-full.rb‘. It is only
+# loaded in case it is needed. So we can load already cached files
+# much faster.
 
 require "pathname"
-require "uuidtools"
 
 module FileHosting
 
 	class Web
 
 		CacheDir= Pathname.new("/tmp/filehosting-cache")
+		StaticDir= Pathname.new("web")
+		
+		attr_accessor :datasource
 
-		def initialize(datasource)
+		def initialize(datasource= nil)
 			@datasource= datasource
 			CacheDir.mkdir unless CacheDir.directory?
 		end
 
 		# Returns an IO object where the requested page can be
 		# read. Returns nil if the page can not be viewed.
-		def get_page(page)
-			file= CacheDir+page.dir_encode
-			puts file
+		def get_page(path, args)
+			file= StaticDir+path
+			return nil unless file.cleanpath == file
+			if file.file?
+				return File.new(file)
+			end
+			file= CacheDir+(path.dir_encode+"?"+args.dir_encode)
 			if file.file?
 				File.new(file)
 			else
-				create_page(page)
-				if file.file?
-					File.new(file)
-				else
-					nil
-				end
+				yield if block_given?
+				require "filehosting/web-full"
+				get_page(path, args)
 			end
 		end
 
-		# Creates a page and puts it into the cache.
-		def create_page(page)
-			file= CacheDir+page.dir_encode
-			args= page.split("/")
-			puts args.size
-			puts args
-			data= case args.shift
-			when "fileinfo"
-				"Content-Type: text/html; charset=utf-8\n\n" +
-				page_fileinfo(args)
-			when "search"
-				"Content-Type: text/html; charset=utf-8\n\n" +
-				page_search(args)
+		def self.parse_get(query_string)
+			query_string=~ /^/
+			res= Hash.new
+			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
+				key= $1
+				value= $2
+				res[key.http_decode]= value.http_decode
 			end
-			return unless data
-			data=~ /\n\n/
-			data= "Content-Length: #{$'.size}\n" + data
-			file.dirname.mkpath unless file.dirname.directory?
-			File.open(file, "w") do |f|
-				f.write(data)
-			end
+			res
 		end
 
-		def page_fileinfo(args)
-			if args.size != 1
-				return nil
-			end
-			begin
-				uuid= UUID.parse(args[0])
-			rescue ArgumentError
-				return nil
-			end
-			begin
-				fileinfo= @datasource.fileinfo(uuid)
-				return FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
-			rescue FileHosting::Error => e
-				return FileHosting::HTML.error_page(e)
-			end
-		end
+	end
 
-		def page_search(args)
-			case args.size
-			when 0
-				return FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css")
-			when 1
-				tags= args[0].split("+")
-				search_result= @datasource.search_tags(tags)
-				return FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css")
-			else
-				nil
-			end
-		end
+end
 
+class String
+
+	def dir_encode
+		self.gsub("%", "%%").gsub("/", "%#").gsub(".", "%.")
+	end
+
+	def http_decode
+		res= ""
+		self=~ /^/
+		rem= $'
+		while $'=~ /%([A-Za-z0-9]{2})/
+			rem= $'
+			res+= $`
+			res<< $1.to_i(16)
+		end
+		res+rem
+	end
+
+end
+
+class Hash
+
+	def dir_encode
+		keys.sort.collect do |key|
+			key.to_s.dir_encode.gsub("=", "%=").gsub("&", "&%") +
+			"=" +
+			self[key].to_s.dir_encode.gsub("=", "%=").gsub("&", "&%")
+		end.join("&")
 	end
 
 end

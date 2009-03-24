@@ -49,7 +49,7 @@ module FileHosting
 			@filehistorydir= Pathname.new(storage)+"filehistory"
 			@userhistorydir= Pathname.new(storage)+"userhistory"
 			[@filesdir, @metadatadir, @tagsdir, @filehistorydir, @userhistorydir].each do |dir|
-				dir.mkdir unless dir.directory?
+				dir.mkpath unless dir.directory?
 			end
 		end
 

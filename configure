@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd lib/io2io
+./configure

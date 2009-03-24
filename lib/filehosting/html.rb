@@ -46,33 +46,6 @@ module FileHosting
 		def self.http_decode(string)
 		end
 
-		def self.parse_get(query_string)
-			query_string=~ /^/
-			res= Hash.new
-			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
-				key= $1
-				value= $2
-				res[key.http_decode]= value.http_decode
-			end
-			res
-		end
-
-	end
-
-end
-
-class String
-
-	def http_decode
-		res= ""
-		self=~ /^/
-		rem= $'
-		while $'=~ /%([A-Za-z0-9]{2})/
-			rem= $'
-			res+= $`
-			res<< $1.to_i(16)
-		end
-		res+rem
 	end
 
 end
