@@ -30,12 +30,22 @@ require "filehosting/error"
 
 require "uuidtools"
 require "io2io"
+require "fileutils"
 
 class FileArgReader < FileHosting::ConfigArgReader
 	
 	def banner
 		super + " <uuid>"
 	end
+
+	def help_output
+		"write filedata to file"
+	end
+
+	def switch_output(file)
+		@values[:output]= file
+	end
+	alias switch_o switch_output
 
 end
 
@@ -59,8 +69,14 @@ rescue ArgumentError => e
 end
 
 begin
-	io= config.datasource.filedata_io(uuid)
-	IO2IO.forever(io.to_i, STDOUT.to_i)
+	if config[:output] == "-"
+		io= config.datasource.filedata_io(uuid)
+		IO2IO.forever(io.to_i, STDOUT.to_i)
+	else
+		out= config[:output] || config.datasource.fileinfo(uuid).filename
+		file= config.datasource.filedata_string(uuid)
+		FileUtils.cp(file, out)
+	end
 rescue FileHosting::Error => e
 	STDERR.puts e
 	exit 2

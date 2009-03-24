@@ -76,7 +76,7 @@ module FileHosting
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
 			get= send_query("fileinfo") do |query|
-				send.add_string(uuid.to_s)
+				query.add_string(uuid.to_s)
 			end
 			raise InternalDataCorruptionError unless get.size.size == 1
 			res= YAML.load(get.read_string(0))
@@ -86,17 +86,28 @@ module FileHosting
 
 		# returns the filename as a string
 		def filedata_string(uuid)
+			if local? # try to get a local filename instead of raw data
+				get= send_query("filedata_string") do |query|
+					query.add_string(uuid.to_s)
+				end
+				raise InternalDataCorruptionError unless get.size.size == 1
+				file= Pathname.new(get.read_string(0))
+				if file.readable?
+					return file
+				end
+			end
 			io= filedata_io(uuid)
 			file= `mktemp`.strip
 			File.open(file, "w") do |f|
 				IO2IO.forever(io.to_i, f.to_i)
 			end
+			file
 		end
 
 		# returns an io where the filedata can be read
 		def filedata_io(uuid)
 			get= send_query("filedata") do |query|
-				send.add_string(uuid.to_s)
+				query.add_string(uuid.to_s)
 			end
 			get.read_io(0)
 		end
@@ -113,11 +124,22 @@ module FileHosting
 			file= Pathname.new(file) if String === file
 			if Pathname === file
 				size= file.size
+				if local? # try to deliver a filename instead of raw data
+					get= send_query("add_file_string") do |query|
+						query.add_string(fileinfo.to_yaml)
+						query.add_string(file.realpath.to_s)
+					end
+					return if get.read_string(0) == "success"
+				end
+				file= File.open(file)
+			end
+			raise Int
+				end
 				file= File.open(file)
 			end
 			get= send_query("add_file") do |query|
-				send.add_string(fileinfo.to_yaml)
-				send.add_io(file, size)
+				query.add_string(fileinfo.to_yaml)
+				query.add_io(file, size)
 			end
 			raise InternalDataCorruptionError unless get.size.size == 0
 		end
@@ -125,7 +147,7 @@ module FileHosting
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo)
 			get= send_query("update_fileinfo") do |query|
-				send.add_string(fileinfo.to_yaml)
+				query.add_string(fileinfo.to_yaml)
 			end
 			raise InternalDataCorruptionError unless get.size.size == 0
 		end
@@ -136,11 +158,18 @@ module FileHosting
 			file= Pathname.new(file) if String === file
 			if Pathname === file
 				size= file.size
+				if local? # try to deliver a filename instead of raw data
+					get= send_query("update_filedata_string") do |query|
+						query.add_string(uuid.to_s)
+						query.add_string(file.realpath.to_s)
+					end
+					return if get.read_string(0) == "success"
+				end
 				file= File.open(file)
 			end
 			get= send_query("update_filedata") do |query|
-				send.add_string(uuid.to_s)
-				send.add_io(file, size)
+				query.add_string(uuid.to_s)
+				query.add_io(file, size)
 			end
 			raise InternalDataCorruptionError unless get.size.size == 0
 		end
@@ -148,7 +177,7 @@ module FileHosting
 		# removes a file
 		def remove_file(uuid)
 			get= send_query("remove_file") do |query|
-				send.add_string(uuid.to_s)
+				query.add_string(uuid.to_s)
 			end
 			raise InternalDataCorruptionError unless get.size.size == 0
 		end
@@ -156,7 +185,7 @@ module FileHosting
 		# returns the history of a user
 		def history_user(user= @user)
 			get= send_query("history_user") do |query|
-				send.add_string(user.to_s)
+				query.add_string(user.to_s)
 			end
 			res= []
 			get.size.times do |i|
@@ -169,7 +198,7 @@ module FileHosting
 		# returns the history of a file
 		def history_file(uuid)
 			get= send_query("history_file") do |query|
-				send.add_string(uuid.to_s)
+				query.add_string(uuid.to_s)
 			end
 			res= []
 			get.size.times do |i|
@@ -177,6 +206,13 @@ module FileHosting
 				raise InternalDataCorruptionError unless FileInfo === res[-1]
 			end
 			res
+		end
+
+		# returns wether the remote host is actually local
+		def local?
+			@host == "localhost" or
+			@host == "::1" or
+			@host == "127.0.0.1"
 		end
 
 		private

@@ -53,6 +53,10 @@ module FileHosting
 			@datasource= @values[:datasource].new(@values[:user], *@values[:datasource_args])
 		end
 
+		def [](key)
+			@values[key]
+		end
+
 		# Returns a subclass of Datasource only by its name
 		# possible values are:
 		# - sample
