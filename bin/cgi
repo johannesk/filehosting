@@ -25,7 +25,7 @@
 require "filehosting/web"
 
 web= FileHosting::Web.new
-io= web.get_page(ENV["PATH_INFO"].sub(/^\//, "") || "", FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new) do
+io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new) do
 	require "filehosting/config"
 	require "filehosting/configfilereader"
 

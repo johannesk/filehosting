@@ -1,0 +1,17 @@
+div.search_result {
+	margin: 10px;
+}
+
+div.search_result th {
+	padding-left: 5px;
+}
+
+div.search_result td {
+	font-family: monospace;
+	padding-right: 10px;
+	text-align: left;
+}
+
+div.search_result td.size {
+	text-align: right;
+}

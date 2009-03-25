@@ -96,6 +96,9 @@ module FileHosting
 			when "search"
 				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_search(direction, args)
+			when "classic"
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_classic(direction, args)
 			when "files" # regular files are handled in get_page, this is only for errors
 				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_fileinfo(direction, args)
@@ -140,6 +143,12 @@ module FileHosting
 			else
 				FileHosting::HTML.error_page("wrong arguments")
 			end
+		end
+
+		def page_classic(path, args)
+			tags= path
+			search_result= @datasource.search_tags(tags)
+			FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"])
 		end
 
 	end

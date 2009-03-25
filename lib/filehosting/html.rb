@@ -29,7 +29,8 @@ module FileHosting
 	# Create a webpage
 	class HTML
 
-		def self.page(title, body, styles=[])
+		def self.page(title, body, includes=[])
+			includes= [includes].flatten
 			use_template("page.eruby", binding)
 		end
 

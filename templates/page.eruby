@@ -5,8 +5,11 @@
 	<head>
 		<title><%= title %></title>
 		<link rel="stylesheet" type="text/css" href="/filehosting/style/default.css" />
-% styles.each do |style|
+% includes.grep(/\.css$/).each do |style|
 		<link rel="stylesheet" type="text/css" href="/filehosting/style/<%= style %>" />
+% end
+% includes.grep(/\.js$/).each do |script|
+		<script type="text/javascript" src="/filehosting/js/<%= script %>"></script>
 % end
 	</head>
 	<body>
