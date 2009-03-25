@@ -54,5 +54,13 @@ class Hash
 		end.join("\n")
 	end
 
+	def dir_encode
+		keys.sort.collect do |key|
+			key.to_s.dir_encode.gsub("=", "%=").gsub("&", "&%") +
+			"=" +
+			self[key].to_s.dir_encode.gsub("=", "%=").gsub("&", "&%")
+		end.join("&")
+	end
+
 end
 

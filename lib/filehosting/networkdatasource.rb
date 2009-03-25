@@ -21,6 +21,7 @@
 #++
 #
 
+require "filehosting/datasource"
 require "filehosting/networkdata"
 require "filehosting/internaldatacorruptionerror"
 require "filehosting/fileinfo"
@@ -32,7 +33,7 @@ require "io2io"
 module FileHosting
 
 	# NetworkDataSource is used to connect to a remote datasource
-	class NetworkDataSource
+	class NetworkDataSource < DataSource
 
 		attr_accessor :host
 		attr_accessor :port
@@ -130,10 +131,6 @@ module FileHosting
 						query.add_string(file.realpath.to_s)
 					end
 					return if get.read_string(0) == "success"
-				end
-				file= File.open(file)
-			end
-			raise Int
 				end
 				file= File.open(file)
 			end

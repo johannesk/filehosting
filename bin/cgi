@@ -22,16 +22,18 @@
 #++
 #
 
-require "filehosting/web"
+require "filehosting/web-tiny"
 
-web= FileHosting::Web.new
+require "pathname"
+
+web= FileHosting::Web.new({:cachedir => Pathname.new("/tmp/filehosting-cache")})
 io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new) do
 	require "filehosting/config"
 	require "filehosting/configfilereader"
 
 	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc.cgi")
 	config= FileHosting::Config.new(etcreader)
-	web.datasource= config.datasource
+	web.config= config
 end
 
 unless io

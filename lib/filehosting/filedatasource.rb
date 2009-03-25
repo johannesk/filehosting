@@ -28,6 +28,7 @@ require "filehosting/nosuchfileerror"
 require "filehosting/nosuchusererror"
 require "filehosting/fileexistserror"
 require "filehosting/internaldatacorruptionerror"
+require "filehosting/yamltools"
 
 require "pathname"
 require "yaml"
@@ -98,14 +99,14 @@ module FileHosting
 		def history_user(user= @user)
 			file= @userhistorydir + user.to_s
 			raise NoSuchUserError.new(user) unless file.file?
-			read_array(file, HistoryEvent)
+			YAMLTools.read_array(file, HistoryEvent)
 		end
 
 		# returns the history of a file
 		def history_file(uuid)
 			file= @filehistorydir + uuid.to_s
 			raise NoSuchFileError.new(uuid) unless file.file?
-			read_array(file, HistoryEvent)
+			YAMLTools.read_array(file, HistoryEvent)
 		end
 
 		def add_file(fileinfo, file)
@@ -185,8 +186,6 @@ module FileHosting
 			store_history(:remove, old.uuid, Hash.new)
 		end
 
-		private
-
 		def remove_fileinfo(uuid)
 			file= @metadatadir + uuid.to_s
 			FileUtils.rm(file)
@@ -209,21 +208,7 @@ module FileHosting
 		end
 
 		def read_tag(tag)
-			read_array(@tagsdir+tag.to_s, String)
-		end
-
-		def read_array(file, type)
-			return [] unless file.file?
-			begin
-				res= YAML.load(file.read)
-			rescue
-				raise InternalDataCorruptionError
-			end
-			raise InternalDataCorruptionError unless Array === res
-			res.each do |s|
-				raise InternalDataCorruptionError unless type === s
-			end
-			res
+			YAMLTools.read_array(@tagsdir+tag.to_s, String)
 		end
 
 		def register_uuid_for_tags(uuid, tags)
@@ -231,7 +216,7 @@ module FileHosting
 				uuids= read_tag(tag)
 				uuids<< uuid.to_s
 				file= @tagsdir+tag.to_s
-				store_yaml(file, uuids)
+				YAMLTools.store(file, uuids)
 			end
 		end
 
@@ -241,7 +226,7 @@ module FileHosting
 				uuids.delete(uuid.to_s)
 				file= @tagsdir+tag.to_s
 				if uuids.size > 0
-					store_yaml(file, uuids)
+					YAMLTools.store(file, uuids)
 				else
 					FileUtils.rm(file)
 				end
@@ -273,14 +258,7 @@ module FileHosting
 		# stores the fileinfo
 		def store_fileinfo(fileinfo)
 			mfile= @metadatadir + fileinfo.uuid.to_s
-			store_yaml(mfile, fileinfo)
-		end
-
-		# stores an object converted to yaml in a file
-		def store_yaml(file, data)
-			File.open(file, "w") do |f|
-				f.write(data.to_yaml)
-			end
+			YAMLTools.store(mfile, fileinfo)
 		end
 
 		def store_history(action, uuid, data)
@@ -289,15 +267,15 @@ module FileHosting
 			file= @historyfile
 			ffile= @filehistorydir + event.uuid.to_s
 			ufile= @userhistorydir + event.user.to_s
-			history= read_array(file, HistoryEvent)
-			fhistory= read_array(ffile, HistoryEvent)
-			uhistory= read_array(ufile, HistoryEvent)
+			history= YAMLTools.read_array(file, HistoryEvent)
+			fhistory= YAMLTools.read_array(ffile, HistoryEvent)
+			uhistory= YAMLTools.read_array(ufile, HistoryEvent)
 			history<< event
 			fhistory<< event
 			uhistory<< event
-			store_yaml(file, history)
-			store_yaml(ffile, fhistory)
-			store_yaml(ufile, uhistory)
+			YAMLTools.store(file, history)
+			YAMLTools.store(ffile, fhistory)
+			YAMLTools.store(ufile, uhistory)
 		end
 
 	end

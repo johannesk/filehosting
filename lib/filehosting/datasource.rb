@@ -24,10 +24,19 @@
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
 
+require "observer"
+
 module FileHosting
 
 	# The DataSource knows everything
 	class DataSource
+
+		include Observable
+
+		def notify_observers(*arg)
+			changed
+			super
+		end
 
 		attr_reader :user
 

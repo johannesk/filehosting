@@ -21,7 +21,7 @@
 #++
 #
 
-require "filehosting/datasource"
+require "pathname"
 
 module FileHosting
 
@@ -30,15 +30,12 @@ module FileHosting
 
 		attr :values
 
-		# An instant of a subclass of DataSource
-		attr :datasource
-
 		def initialize(*data)
 			@values= {
-				:datasource      => DataSource,
 				:datasource_args => [],
 				:human           => false,
-				:user            => "unknown"
+				:user            => "unknown",
+				:cachedir        => "/tmp/filehosting-cache/"
 			}
 			data.each do |d|
 				@values.merge!(case d
@@ -49,19 +46,23 @@ module FileHosting
 				end)
 			end
 			$human= @values[:human]
+			@values[:cachedir]= Pathname.new(@values[:cachedir]) unless Pathname === @values[:cachedir]
 			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]
-			@datasource= @values[:datasource].new(@values[:user], *@values[:datasource_args])
+			@values[:datasource]= @values[:datasource].new(@values[:user], *@values[:datasource_args])
 		end
 
 		def [](key)
 			@values[key]
 		end
 
+		def datasource
+			@values[:datasource]
+		end
+
 		# Returns a subclass of Datasource only by its name
 		# possible values are:
 		# - sample
 		def self.datasource_by_name(name)
-			return name if name == DataSource
 			case name.to_s
 			when "sample"
 				require "filehosting/sampledatasource"
@@ -69,6 +70,9 @@ module FileHosting
 			when "file"
 				require "filehosting/filedatasource"
 				FileDataSource
+			else
+				require "filehosting/datasource"
+				DataSource
 			end
 		end
 

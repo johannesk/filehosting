@@ -25,5 +25,9 @@ class String
 
 	alias :to_text :to_s
 
+	def dir_encode
+		self.gsub("%", "%%").gsub("/", "%#").gsub(".", "%.")
+	end
+
 end
 

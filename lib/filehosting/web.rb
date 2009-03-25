@@ -21,25 +21,18 @@
 #++
 #
 
-# Most of the content of this file moved to ‘web-full.rb‘. It is only
-# loaded in case it is needed. So we can load already cached files
-# much faster.
+require "filehosting/web-tiny"
+require "filehosting/html"
+require "filehosting/error"
+require "filehosting/nosuchfileerror"
+require "filehosting/filecache"
 
 require "pathname"
+require "uuidtools"
 
 module FileHosting
 
 	class Web
-
-		CacheDir= Pathname.new("/tmp/filehosting-cache")
-		StaticDir= Pathname.new("web")
-		
-		attr_accessor :datasource
-
-		def initialize(datasource= nil)
-			@datasource= datasource
-			CacheDir.mkdir unless CacheDir.directory?
-		end
 
 		# Returns a String, an IO, or an Array of String's and
 		# IO's. The String holds the data, from an IO can the
@@ -51,59 +44,101 @@ module FileHosting
 			if file.file?
 				return File.new(file)
 			end
-			file= CacheDir+(path.dir_encode+"?"+args.dir_encode)
-			if file.file?
-				File.new(file)
+			cache= FileCache.new(@config[:cachedir])
+			# This is done here and not it
+			# create_page, because we don't want
+			# caching for files.
+			if path =~ /^files\//
+				res= get_file($')
+				return res if res
+			end
+			cache.retrieve("web/"+path.dir_encode+"?"+args.dir_encode) do
+				create_page(path, args)
+			end
+		end
+
+		def get_file(uuid)
+			begin
+				uuid= UUID.parse(uuid)
+			rescue ArgumentError
+				return nil
+			end
+			begin
+				info= @config.datasource.fileinfo(uuid)
+				io= @config.datasource.filedata_io(uuid)
+				return [
+					"Content-Type: #{info.mimetype}\n" +
+					"Content-Length: #{info.size}\n" +
+					"Content-Disposition: attachment;filename=#{info.filename}\n" +
+					"\n",
+					io
+				]
+			rescue NoSuchFileError
+				return nil
+			end
+		end
+
+		# Creates a page and puts it into the cache.
+		def create_page(path, args)
+			direction= path.split("/")
+			data= case direction.shift
+			when "fileinfo"
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_fileinfo(direction, args)
+			when "search"
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_search(direction, args)
+			when "classic"
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_classic(direction, args)
+			when "files" # regular files are handled in get_page, this is only for errors
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				page_fileinfo(direction, args)
 			else
-				yield if block_given?
-				require "filehosting/web-full"
-				get_page(path, args)
+				"Content-Type: text/html; charset=utf-8\n\n" +
+				FileHosting::HTML.error_page("wrong arguments")
+			end
+			return unless data
+			data=~ /\n\n/
+			["Content-Length: #{$'.size}\n" + data, []]
+		end
+
+		def page_fileinfo(path, args)
+			if path.size != 1
+				return FileHosting::HTML.error_page("wrong arguments")
+			end
+			begin
+				uuid= UUID.parse(path[0])
+			rescue ArgumentError => e
+				return FileHosting::HTML.error_page(e)
+			end
+			begin
+				fileinfo= @config.datasource.fileinfo(uuid)
+				FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
+			rescue FileHosting::Error => e
+				FileHosting::HTML.error_page(e)
 			end
 		end
 
-		def self.parse_get(query_string)
-			query_string=~ /^/
-			res= Hash.new
-			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
-				key= $1
-				value= $2
-				res[key.http_decode]= value.http_decode
+		def page_search(path, args)
+			case args["tags"]
+			when nil
+				FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css")
+			when String
+				tags= args["tags"].split("+")
+				search_result= @config.datasource.search_tags(tags)
+				FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css")
+			else
+				FileHosting::HTML.error_page("wrong arguments")
 			end
-			res
 		end
 
-	end
-
-end
-
-class String
-
-	def dir_encode
-		self.gsub("%", "%%").gsub("/", "%#").gsub(".", "%.")
-	end
-
-	def http_decode
-		res= ""
-		self=~ /^/
-		rem= $'
-		while $'=~ /%([A-Za-z0-9]{2})/
-			rem= $'
-			res+= $`
-			res<< $1.to_i(16)
+		def page_classic(path, args)
+			tags= path
+			search_result= @config.datasource.search_tags(tags)
+			FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"])
 		end
-		res+rem
-	end
 
-end
-
-class Hash
-
-	def dir_encode
-		keys.sort.collect do |key|
-			key.to_s.dir_encode.gsub("=", "%=").gsub("&", "&%") +
-			"=" +
-			self[key].to_s.dir_encode.gsub("=", "%=").gsub("&", "&%")
-		end.join("&")
 	end
 
 end
