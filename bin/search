@@ -38,9 +38,8 @@ class SearchArgReader < FileHosting::ConfigArgReader
 		"also find files with only partial matches"
 	end
 
-	$partial_match= false
 	def switch_partialmatch
-		$partial_match= true
+		@values[:partial_match]= true
 	end
 	alias :switch_p :switch_partialmatch
 
@@ -48,9 +47,8 @@ class SearchArgReader < FileHosting::ConfigArgReader
 		"display only uuid's"
 	end
 
-	$uuid= false
 	def switch_uuid
-		$uuid= true
+		@values[:uuid_only]= true
 	end
 	alias :switch_i :switch_uuid
 
@@ -58,9 +56,8 @@ class SearchArgReader < FileHosting::ConfigArgReader
 		"display only how many files where found"
 	end
 
-	$count= false
 	def switch_count
-		$count= true
+		@values[:display_count]= true
 	end
 	alias :switch_c :switch_count
 
@@ -81,19 +78,19 @@ end
 
 begin
 	fileinfos= config.datasource.search_tags(args)
-	fileinfos_partial= config.datasource.search_tags_partial(args) if $partial_match
+	fileinfos_partial= config.datasource.search_tags_partial(args) if config[:partial_match]
 rescue FileHosting::Error => e
 	puts e
 	exit 2
 end
 
-puts "#{fileinfos.size}#{$human ? " Files found" : ""}" if $human or $count
-puts "#{fileinfos_partial.size}#{$human ? " Files with partial match found" : ""}" if $partial_match and ($humon or $count)
-exit 0 if $count
+puts "#{fileinfos.size}#{$human ? " Files found" : ""}" if $human or config[:display_count]
+puts "#{fileinfos_partial.size}#{$human ? " Files with partial match found" : ""}" if config[:partial_match] and ($humon or config[:display_count])
+exit 0 if config[:display_count]
 puts if $human and fileinfos.size > 0
-fileinfos+= fileinfos_partial if $partial_match
+fileinfos+= fileinfos_partial if config[:partial_match]
 puts((fileinfos).collect do |f|
-	unless $uuid
+	unless config[:uuid_only]
 		f.to_text + "\n"
 	else
 		f.uuid.to_s

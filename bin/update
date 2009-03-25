@@ -40,9 +40,8 @@ class ReplaceArgReader < FileHosting::ConfigArgReader
 		"update filename"
 	end
 
-	$filename= nil
 	def switch_filename(filename)
-		$filename= filename
+		@values[:set_filename]= filename
 	end
 	alias :switch_n :switch_filename
 
@@ -50,9 +49,8 @@ class ReplaceArgReader < FileHosting::ConfigArgReader
 		"update source"
 	end
 
-	$source= nil
 	def switch_source(source)
-		$source= source
+		@values[:set_source]= source
 	end
 	alias :switch_c :switch_source
 
@@ -60,9 +58,8 @@ class ReplaceArgReader < FileHosting::ConfigArgReader
 		"update tags"
 	end
 
-	$tags= nil
 	def switch_tags(tags)
-		$tags= tags.split(" ")
+		@values[:set_tags]= tags.split(" ")
 	end
 	alias :switch_t :switch_tags
 
@@ -90,16 +87,16 @@ end
 begin
 	fileinfo= config.datasource.fileinfo(uuid)
 
-	if $filename
-		fileinfo.filename= $filename
+	if config[:set_filename]
+		fileinfo.filename= config[:set_filename]
 	end
 
-	if $source
-		fileinfo.source= $source
+	if config[:set_source]
+		fileinfo.source= config[:set_source]
 	end
 
-	if $tags
-		fileinfo.tags= $tags
+	if config[:set_tags]
+		fileinfo.tags= config[:set_tags]
 	end
 
 	config.datasource.update_fileinfo(fileinfo)

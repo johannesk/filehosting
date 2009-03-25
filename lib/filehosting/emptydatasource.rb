@@ -21,13 +21,14 @@
 #++
 #
 
+require "filehosting/datasource"
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
 
 module FileHosting
 
 	# This DataSource knows nothing
-	class EmptyDataSource > DataSource
+	class EmptyDataSource < DataSource
 
 		# searches for all files with these tags
 		def search_tags(tags)
