@@ -110,6 +110,7 @@ module FileHosting
 		end
 
 		def add_file(fileinfo, file)
+			super
 			mfile= @metadatadir + fileinfo.uuid.to_s
 			raise FileExistsError(fileinfo.uuid) if mfile.exist?
 			ffile= @filesdir + fileinfo.uuid.to_s
@@ -131,6 +132,7 @@ module FileHosting
 		end
 
 		def update_filedata(uuid, file)
+			super
 			old= fileinfo(uuid)
 			new= old.clone
 			ffile= @filesdir + old.uuid.to_s
@@ -152,6 +154,7 @@ module FileHosting
 		end
 
 		def update_fileinfo(fileinfo)
+			super
 			old= fileinfo(fileinfo.uuid)
 			begin
 				unregister_uuid_for_tags(fileinfo.uuid, old.tags-fileinfo.tags)
@@ -170,6 +173,7 @@ module FileHosting
 		end
 
 		def remove_file(uuid)
+			super
 			old= fileinfo(uuid)
 			begin
 				unregister_uuid_for_tags(uuid, old.tags)

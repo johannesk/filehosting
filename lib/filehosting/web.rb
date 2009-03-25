@@ -25,7 +25,6 @@ require "filehosting/web-tiny"
 require "filehosting/html"
 require "filehosting/error"
 require "filehosting/nosuchfileerror"
-require "filehosting/filecache"
 
 require "pathname"
 require "uuidtools"
@@ -44,7 +43,6 @@ module FileHosting
 			if file.file?
 				return File.new(file)
 			end
-			cache= FileCache.new(@config[:cachedir])
 			# This is done here and not it
 			# create_page, because we don't want
 			# caching for files.
@@ -52,7 +50,7 @@ module FileHosting
 				res= get_file($')
 				return res if res
 			end
-			cache.retrieve("web/"+path.dir_encode+"?"+args.dir_encode) do
+			@config.cache.retrieve("web/"+path.dir_encode+"?"+args.dir_encode) do
 				create_page(path, args)
 			end
 		end
@@ -81,26 +79,23 @@ module FileHosting
 		# Creates a page and puts it into the cache.
 		def create_page(path, args)
 			direction= path.split("/")
-			data= case direction.shift
+			data, tags= case direction.shift
+			when nil
+				page_search(direction, args)
 			when "fileinfo"
-				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_fileinfo(direction, args)
 			when "search"
-				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_search(direction, args)
 			when "classic"
-				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_classic(direction, args)
 			when "files" # regular files are handled in get_page, this is only for errors
-				"Content-Type: text/html; charset=utf-8\n\n" +
 				page_fileinfo(direction, args)
 			else
-				"Content-Type: text/html; charset=utf-8\n\n" +
 				FileHosting::HTML.error_page("wrong arguments")
 			end
 			return unless data
 			data=~ /\n\n/
-			["Content-Length: #{$'.size}\n" + data, []]
+			["Content-Length: #{$'.size}\n" + data, tags || []]
 		end
 
 		def page_fileinfo(path, args)
@@ -114,9 +109,9 @@ module FileHosting
 			end
 			begin
 				fileinfo= @config.datasource.fileinfo(uuid)
-				FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css")
+				[FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css"), ["files/#{uuid.to_s}"]]
 			rescue FileHosting::Error => e
-				FileHosting::HTML.error_page(e)
+				[FileHosting::HTML.error_page(e), ["files/#{uuid.to_s}"]]
 			end
 		end
 
@@ -127,7 +122,10 @@ module FileHosting
 			when String
 				tags= args["tags"].split("+")
 				search_result= @config.datasource.search_tags(tags)
-				FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css")
+				[
+					FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css"),
+					tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
+				]
 			else
 				FileHosting::HTML.error_page("wrong arguments")
 			end
@@ -136,7 +134,10 @@ module FileHosting
 		def page_classic(path, args)
 			tags= path
 			search_result= @config.datasource.search_tags(tags)
-			FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"])
+			[
+				FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"]),
+				tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
+			]
 		end
 
 	end

@@ -24,45 +24,34 @@
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
 
-require "observer"
-
 module FileHosting
 
-	# The DataSource knows everything
-	class DataSource
-
-		include Observable
-
-		def notify_observers(*arg)
-			changed
-			super
-		end
-
-		attr_reader :user
-
-		# You always have to specify a user
-		def initialize(user)
-			@user= user
-		end
+	# This DataSource knows nothing
+	class EmptyDataSource > DataSource
 
 		# searches for all files with these tags
 		def search_tags(tags)
+			[]
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags)
+			[]
 		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# returns the filename as a string
 		def filedata_string(uuid)
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# returns an io where the filedata can be read
 		def filedata_io(uuid)
+			File.open(filedata_string(uuid))
 		end
 
 		# Adds a file to the datasource. There must be no
@@ -73,38 +62,31 @@ module FileHosting
 		# must contain the filename, from where to copy the
 		# file.
 		def add_file(fileinfo, file)
-			notify_observers("files/#{fileinfo.uuid}")
-			fileinfo.tags.each do |tag|
-				notify_observers("tags/#{tag}")
-			end
+			raise FileExistsError.new(fileinfo.uuid)
 		end
 
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo)
-			notify_observers("files/#{fileinfo.uuid}")
-			new= fileinfo.tags
-			old= self.fileinfo(fileinfo.uuid).tags
-			((old - new) + (new - old)).each do |tag|
-				notify_observers("tags/#{tag}")
-			end
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# Replaces a file, but not it's metadata
 		def update_filedata(uuid, file)
-			notify_observers("files/#{fileinfo.uuid}")
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# removes a file
 		def remove_file(uuid)
-			notify_observers("files/#{fileinfo.uuid}")
 		end
 
 		# returns the history of a user
 		def history_user(user= @user)
+			[]
 		end
 
 		# returns the history of a file
 		def history_file(uuid)
+			[]
 		end
 
 	end

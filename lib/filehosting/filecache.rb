@@ -23,6 +23,7 @@
 
 require "filehosting/string"
 require "filehosting/yamltools"
+require "filehosting/pathname"
 
 require "fileutils"
 require "pathname"
@@ -37,7 +38,8 @@ module FileHosting
 			dir= Pathname.new(dir) unless Pathname === dir
 			@filesdir= dir + "files"
 			@tagsdir= dir + "tags"
-			[@filesdir, @tagsdir].each do |dir|
+			@reversedir= dir + "reverse"
+			[@filesdir, @tagsdir, @reversedir].each do |dir|
 				dir.mkpath unless dir.directory?
 			end
 		end
@@ -45,15 +47,17 @@ module FileHosting
 		# stores a file in the cache
 		def store(name, data, tags)
 			file= @filesdir + name.dir_encode
-			file.delete if file.file?
+			file.delete?
 			begin
 				add_tags(tags, name)
 				File.open(file, "w") do |f|
 					f.write(data)
 				end
 			rescue Exception => e
-				file.delete if file.file?
+				file.delete?
 				delete_tags(tags, name)
+				reverse_file= @reversedir + name.dir_encode
+				reverse_file.delete?
 				raise e
 			end
 		end
@@ -80,17 +84,31 @@ module FileHosting
 		def delete_for_tag(tag)
 			tag_file= @tagsdir + tag.dir_encode
 			error= nil
-			YAMLTools.read_array(tag_file).each do |file|
-				file= @filesdir + file.dir_encode
+			YAMLTools.read_array(tag_file, String).each do |name|
+				reverse_file= @reversedir + name.dir_encode
+				file= @filesdir + name.dir_encode
 				begin
-					file.delete if file.file?
+					file.delete?
+					delete_tags(YAMLTools.read_array(reverse_file, String), name)
+					reverse_file.delete?
 				rescue Exception => e
 					error= e
 				end
 			end
 			raise error if error
-			tag_file.delete
+			tag_file.delete?
 		end
+		alias :update :delete_for_tag
+
+		# deletes everything in the cache
+		def clear
+			[@filesdir, @tagsdir, @reversedir].each do |dir|
+				dir.rmtree
+				dir.mkpath
+			end
+		end
+
+		#private
 		
 		def add_tags(tags, name)
 			tags.each do |tag|
@@ -99,7 +117,12 @@ module FileHosting
 					(a + [name]).uniq
 				end
 			end
+			reverse_file= @reversedir + name.dir_encode
+			YAMLTools.change_array(reverse_file, String) do |a|
+				(a + tags).uniq
+			end
 		end
+
 		def delete_tags(tags, name)
 			tags.each do |tag|
 				tag_file= @tagsdir + tag.dir_encode

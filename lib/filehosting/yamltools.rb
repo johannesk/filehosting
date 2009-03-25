@@ -21,6 +21,8 @@
 #++
 #
 
+require "filehosting/pathname"
+
 require "yaml"
 
 module FileHosting
@@ -55,7 +57,13 @@ module FileHosting
 		def self.change_array(file, type, &block)
 			array= read_array(file, type)
 			array= yield array
-			store(file, array) if Array === array
+			if Array === array
+				if array.size == 0
+					file.delete?
+				else
+					store(file, array)
+				end
+			end
 		end
 
 	end
