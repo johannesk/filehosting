@@ -1,6 +1,6 @@
 <div class="search_box">
 	<h1>search:</h1>
-	<form method="GET">
+	<form method="GET" action="<%= $webroot %>/search">
 		<input type="text" name="tags" />
 		<input type="submit" value="search" />
 	</form>

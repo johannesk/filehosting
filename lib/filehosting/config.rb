@@ -37,7 +37,8 @@ module FileHosting
 				:datasource_args => [],
 				:human           => false,
 				:user            => "unknown",
-				:cachedir        => "/tmp/filehosting-cache/"
+				:cachedir        => "/tmp/filehosting-cache/",
+				:webroot         => ""
 			}
 			data.each do |d|
 				@values.merge!(case d
@@ -48,6 +49,7 @@ module FileHosting
 				end)
 			end
 			$human= @values[:human]
+			$webroot= @values[:webroot]
 			@values[:cachedir]= Pathname.new(@values[:cachedir]) unless Pathname === @values[:cachedir]
 			@values[:cache]= FileCache.new(@values[:cachedir])
 			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]

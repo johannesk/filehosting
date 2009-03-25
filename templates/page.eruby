@@ -6,12 +6,12 @@ Content-Type: text/html; charset=utf-8
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<title><%= title %></title>
-		<link rel="stylesheet" type="text/css" href="/filehosting/style/default.css" />
+		<link rel="stylesheet" type="text/css" href="<%= $webroot %>/style/default.css" />
 % includes.grep(/\.css$/).each do |style|
-		<link rel="stylesheet" type="text/css" href="/filehosting/style/<%= style %>" />
+		<link rel="stylesheet" type="text/css" href="<%= $webroot %>/style/<%= style %>" />
 % end
 % includes.grep(/\.js$/).each do |script|
-		<script type="text/javascript" src="/filehosting/js/<%= script %>"></script>
+		<script type="text/javascript" src="<%= $webroot %>/js/<%= script %>"></script>
 % end
 	</head>
 	<body>
@@ -19,19 +19,19 @@ Content-Type: text/html; charset=utf-8
 			<h1>FileHosting</h1>
 			<div class="search">
 				search:
-				<form type="get" action="/filehosting/search">
+				<form type="get" action="<%= $webroot %>/search">
 					<input type="text" name="tags" />
 				</form>
 			</div>
 			<ul>
-				<li><a href="/filehosting/feed">Feed</a></li>
-				<li><a href="/filehosting/history">History</a></li>
+				<li><a href="<%= $webroot %>/feed">Feed</a></li>
+				<li><a href="<%= $webroot %>/history">History</a></li>
 			</ul>
 			</div>
 		</div>
 		<%= body %>
 		<div class="license">
-			<a href="http://www.gnu.org/licenses/agpl-3.0.html"><img alt="AGPLv3" src="/filehosting/images/agplv3.png" /></a>This page was created by FileHosting. FileHosting is licensed under a <a href="http://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License version 3.0</a>. Download FileHosting at <a href="git://johannes.krude.de/filehosting">git://johannes.krude.de/filehosting</a>.
+			<a href="http://www.gnu.org/licenses/agpl-3.0.html"><img alt="AGPLv3" src="<%= $webroot %>/images/agplv3.png" /></a>This page was created by FileHosting. FileHosting is licensed under a <a href="http://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License version 3.0</a>. Download FileHosting at <a href="git://johannes.krude.de/filehosting">git://johannes.krude.de/filehosting</a>.
 		</div>
 	</body>
 </html>
