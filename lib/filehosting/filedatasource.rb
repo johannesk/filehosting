@@ -35,6 +35,7 @@ require "yaml"
 require "digest/sha2"
 require "filemagic"
 require "fileutils"
+require "io2io"
 
 module FileHosting
 
@@ -245,7 +246,9 @@ module FileHosting
 			when Pathname
 				FileUtils.cp(file, dest)
 			when IO
-				raise "to be implemented"
+				File.new(dest, "w") do |f|
+					IO2IO.forever(file.to_i, dest.to_i)
+				end
 			end
 			fileinfo.size= file.size
 			fileinfo.hash_type= "SHA-256"
