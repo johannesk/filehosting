@@ -10,7 +10,7 @@
 		<a href="<%= $webroot %>/files/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
-		<form method="PUTS" action="<%= $webroot %>/update">
+		<form method="post" action="<%= $webroot %>/update/<%= uuid.to_html %>">
 			<tr>
 				<th>filename</th>
 				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
@@ -32,7 +32,7 @@
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>
 			<tr>
-				<th></th>
+				<th><% if updated %>saved<% end %></th>
 				<td><input type="submit" value="save" /></td>
 			</tr>
 		</form>

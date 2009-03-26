@@ -37,7 +37,10 @@ module FileHosting
 		# IO's. The String holds the data, from an IO can the
 		# data be read. And in case of an Array all String's
 		# and IO's have to be parsed to get the full data.
-		def get_page(path, args)
+		def get_page(path, args, input= nil, type= nil)
+			if input
+				return create_page(path, args, input, type)[0]
+			end
 			file= StaticDir+path
 			return nil unless file.cleanpath == file
 			if file.file?
@@ -77,9 +80,25 @@ module FileHosting
 		end
 
 		# Creates a page and puts it into the cache.
-		def create_page(path, args)
+		def create_page(path, args, input= nil, type= nil)
 			direction= path.split("/")
-			data, tags= case direction.shift
+			unless input
+				data, tags= page(direction,args)
+			else
+				data= page_input(direction, args, input, type)
+			end
+			return unless data
+			size= if data=~ /\n\n/
+				$'
+			else
+				data
+			end.size
+			data= "Content-Length: #{size}\n" + data
+			[data , tags || []]
+		end
+
+		def page(direction, args)
+			case direction.shift
 			when nil
 				page_search(direction, args)
 			when "fileinfo"
@@ -93,16 +112,23 @@ module FileHosting
 			when "files" # regular files are handled in get_page, this is only for errors
 				page_fileinfo(direction, args)
 			else
+				[FileHosting::HTML.error_page("wrong arguments", 404), []]
+			end
+		end
+
+		def page_input(direction, args, input, type)
+			args= case type
+			when "application/x-www-form-urlencoded"
+				self.class.parse_get(input.read)
+			else
+				Hash.new
+			end
+			case direction.shift
+			when "update"
+				page_input_update(direction, args)
+			else
 				FileHosting::HTML.error_page("wrong arguments", 404)
 			end
-			return unless data
-			size= if data=~ /\n\n/
-				$'
-			else
-				data
-			end.size
-			data= "Content-Length: #{size}\n" + data
-			[data , tags || []]
 		end
 
 		def page_fileinfo(path, args)
@@ -149,6 +175,7 @@ module FileHosting
 				return FileHosting::HTML.error_page(e, 404)
 			end
 			begin
+				updated= false
 				fileinfo= @config.datasource.fileinfo(uuid)
 				[FileHosting::HTML.page("update: #{fileinfo.uuid}", FileHosting::HTML.use_template("update.eruby", binding), "update.css"), ["files/#{uuid.to_s}"]]
 			rescue FileHosting::Error => e
@@ -163,6 +190,28 @@ module FileHosting
 				FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"]),
 				tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
 			]
+		end
+
+		def page_input_update(path, args)
+			if path.size != 1
+				return FileHosting::HTML.error_page("wrong arguments", 404)
+			end
+			begin
+				uuid= UUID.parse(path[0])
+			rescue ArgumentError => e
+				return FileHosting::HTML.error_page(e, 404)
+			end
+			begin
+				fileinfo= @config.datasource.fileinfo(uuid)
+			rescue FileHosting::Error => e
+				FileHosting::HTML.error_page(e)
+			end
+			fileinfo.filename= args["filename"] if args["filename"]
+			fileinfo.source= args["source"] if args["source"]
+			fileinfo.tags= args["tags"].split("+") if args["tags"]
+			@config.datasource.update_fileinfo(fileinfo)
+			updated= true
+			FileHosting::HTML.page("update: #{fileinfo.uuid}", FileHosting::HTML.use_template("update.eruby", binding), "update.css")
 		end
 
 	end

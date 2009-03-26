@@ -43,19 +43,22 @@ module FileHosting
 		# IO's. The String holds the data, from an IO can the
 		# data be read. And in case of an Array all String's
 		# and IO's have to be parsed to get the full data.
-		def get_page(path, args)
-			file= StaticDir+path
-			return nil unless file.cleanpath == file
-			if file.file?
-				return File.new(file)
-			end
-			file= @config[:cachedir] + "files" + ("web/" + path.dir_encode + "?" + args.dir_encode).dir_encode
-			if file.file?
-				File.new(file)
-			else
+		def get_page(path, args, input= nil, type= nil)
+			unless (unless input
+				file= StaticDir+path
+				return nil unless file.cleanpath == file
+				if file.file?
+					return File.new(file)
+				end
+				file= @config[:cachedir] + "files" + ("web/" + path.dir_encode + "?" + args.dir_encode).dir_encode
+				if file.file?
+					return File.new(file)
+				end
+				nil
+			end)
 				yield if block_given?
 				require "filehosting/web"
-				get_page(path, args)
+				get_page(path, args, input, type)
 			end
 		end
 
