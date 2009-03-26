@@ -1,0 +1,3 @@
+<div class="removed">
+	<h1>File ‘<%= fileinfo.uuid.to_html %>’ removed</h1>
+</div>

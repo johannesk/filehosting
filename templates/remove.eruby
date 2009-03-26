@@ -1,0 +1,8 @@
+<div class="remove_form">
+	<h1>Do you realy want to remove ‘<%= fileinfo.uuid.to_html %>’?</h1>
+	<form method="post" action="<%= $webroot %>/remove/<%= fileinfo.uuid.to_html %>">
+		<input type="hidden" name="sure" value="true" />
+		<input type="submit" value="remove" />
+	</form>
+	<%= fileinfo.to_html %>
+</div>

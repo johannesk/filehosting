@@ -1,4 +1,4 @@
-div.fileinfo {
+div.remove_form {
 	text-align: center;
 }
 
@@ -13,4 +13,8 @@ div.fileinfo th {
 div.fileinfo td {
 	text-align: left;
 	padding-left: 10px;
+}
+
+div.removed {
+	text-align: center;
 }

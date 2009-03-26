@@ -2,15 +2,15 @@
 	<h1>
 % mimefile= Pathname.new("images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
 % if mimefile.file?
-		<img src="<%= $webroot %>/<%= mimefile %>" alt="<%= fileinfo.mimetype %>" />
+		<img src="<%= $webroot %>/<%= mimefile.to_html %>" alt="<%= fileinfo.mimetype.to_html %>" />
 % else
 		<img src="<%= $webroot %>/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
 % end
-		<a href="<%= $webroot %>/files/<%= fileinfo.uuid %>"><%= fileinfo.filename.to_html %></a>
-		<a href="<%= $webroot %>/files/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
+		<a href="<%= $webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a>
+		<a href="<%= $webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
-		<form method="post" action="<%= $webroot %>/update/<%= uuid.to_html %>">
+		<form method="post" action="<%= $webroot %>/update/<%= fileinfo.uuid.to_html %>">
 			<tr>
 				<th>filename</th>
 				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
@@ -38,8 +38,8 @@
 		</form>
 	</table>
 	<div class="actions">
-		<a href="<%= $webroot %>/fileinfo/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/view.png" alt="view" /></a>
-		<a href="<%= $webroot %>/history/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
+		<a href="<%= $webroot %>/fileinfo/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/view.png" alt="view" /></a>
+		<a href="<%= $webroot %>/history/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
 		<a href="<%= $webroot %>/remove/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/remove.png" alt="remove" /></a>
 	</div>
 </div>

@@ -21,6 +21,8 @@
 #++
 #
 
+# Please don't read this file. This sourcecode is a realy bad shape.
+
 require "filehosting/web-tiny"
 require "filehosting/html"
 require "filehosting/error"
@@ -79,7 +81,7 @@ module FileHosting
 			end
 		end
 
-		# Creates a page and puts it into the cache.
+		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil)
 			direction= path.split("/")
 			unless input
@@ -109,10 +111,12 @@ module FileHosting
 				page_classic(direction, args)
 			when "update"
 				page_update(direction, args)
+			when "remove"
+				page_remove(direction, args)
 			when "files" # regular files are handled in get_page, this is only for errors
 				page_fileinfo(direction, args)
 			else
-				[FileHosting::HTML.error_page("wrong arguments", 404), []]
+				[HTML.error_page("wrong arguments", 404), []]
 			end
 		end
 
@@ -126,60 +130,94 @@ module FileHosting
 			case direction.shift
 			when "update"
 				page_input_update(direction, args)
+			when "remove"
+				page_input_remove(direction, args)
 			else
-				FileHosting::HTML.error_page("wrong arguments", 404)
+				HTML.error_page("wrong arguments", 404)
 			end
 		end
 
 		def page_fileinfo(path, args)
+			page_with_fileinfo(path) do |fileinfo|
+				[HTML.page(fileinfo.uuid.to_s, fileinfo.to_html , "fileinfo.css"), ["files/#{fileinfo.uuid.to_s}"]]
+			end
+		end
+
+		def page_update(path, args)
+			page_with_fileinfo(path) do |fileinfo|
+				updated= false
+				[HTML.page("update: #{fileinfo.uuid}", HTML.use_template("update.eruby", binding), "update.css"), ["files/#{fileinfo.uuid.to_s}"]]
+			end
+		end
+
+
+		def page_input_update(path, args)
+			page_with_fileinfo(path) do |fileinfo|
+				fileinfo.filename= args["filename"] if args["filename"]
+				fileinfo.source= args["source"] if args["source"]
+				fileinfo.tags= args["tags"].split("+") if args["tags"]
+				begin
+					@config.datasource.update_fileinfo(fileinfo)
+				rescue Error => e
+					return HTML.error_page(e)
+				end
+				updated= true
+				HTML.page("update: #{fileinfo.uuid}", HTML.use_template("update.eruby", binding), "update.css")
+			
+			end
+		end
+
+		def page_remove(path, args)
+			page_with_fileinfo(path) do |fileinfo|
+				[HTML.page("remove :#{fileinfo.uuid.to_s}", HTML.use_template("remove.eruby", binding) , "remove.css"), ["files/#{fileinfo.uuid.to_s}"]]
+			end
+		end
+
+		def page_input_remove(path, args)
+			unless args["sure"] == "true"
+				return HTML.error_page("wrong arguments", 404)
+			end
+			page_with_fileinfo(path) do |fileinfo|
+				begin
+					@config.datasource.remove_file(fileinfo.uuid)
+				rescue Error => e
+					return HTML.error_page(e)
+				end
+				HTML.page("remove :#{fileinfo.uuid.to_s}", HTML.use_template("removed.eruby", binding) , "remove.css")
+			end
+		end
+
+		def page_with_fileinfo(path, &block)
 			if path.size != 1
-				return FileHosting::HTML.error_page("wrong arguments", 404)
+				return HTML.error_page("wrong arguments", 404)
 			end
 			begin
 				uuid= UUID.parse(path[0])
 			rescue ArgumentError => e
-				return FileHosting::HTML.error_page(e, 404)
+				return HTML.error_page(e, 404)
 			end
 			begin
 				fileinfo= @config.datasource.fileinfo(uuid)
-				[FileHosting::HTML.page(fileinfo.uuid, fileinfo.to_html, "fileinfo.css"), ["files/#{uuid.to_s}"]]
-			rescue FileHosting::Error => e
-				[FileHosting::HTML.error_page(e), ["files/#{uuid.to_s}"]]
+			rescue Error => e
+				return HTML.error_page(e)
 			end
+			yield fileinfo
 		end
 
 		def page_search(path, args)
 			case args["tags"]
 			when nil
 				tags= @config.datasource.tags.sort
-				[FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css"), ["tags"]]
+				[HTML.page("search", HTML.use_template("search_new.eruby", binding), "search.css"), ["tags"]]
 			when String
 				tags= args["tags"].split("+")
 				search_result= @config.datasource.search_tags(tags)
 				[
-					FileHosting::HTML.page("search: #{tags}", FileHosting::HTML.use_template("search.eruby", binding), "search.css"),
+					HTML.page("search: #{tags}", HTML.use_template("search.eruby", binding), "search.css"),
 					tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
 				]
 			else
-				FileHosting::HTML.error_page("wrong arguments", 404)
-			end
-		end
-
-		def page_update(path, args)
-			if path.size != 1
-				return FileHosting::HTML.error_page("wrong arguments", 404)
-			end
-			begin
-				uuid= UUID.parse(path[0])
-			rescue ArgumentError => e
-				return FileHosting::HTML.error_page(e, 404)
-			end
-			begin
-				updated= false
-				fileinfo= @config.datasource.fileinfo(uuid)
-				[FileHosting::HTML.page("update: #{fileinfo.uuid}", FileHosting::HTML.use_template("update.eruby", binding), "update.css"), ["files/#{uuid.to_s}"]]
-			rescue FileHosting::Error => e
-				[FileHosting::HTML.error_page(e), ["files/#{uuid.to_s}"]]
+				HTML.error_page("wrong arguments", 404)
 			end
 		end
 
@@ -187,31 +225,9 @@ module FileHosting
 			tags= path
 			search_result= @config.datasource.search_tags(tags)
 			[
-				FileHosting::HTML.page(tags.join("/"), FileHosting::HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"]),
+				HTML.page(tags.join("/"), HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"]),
 				tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
 			]
-		end
-
-		def page_input_update(path, args)
-			if path.size != 1
-				return FileHosting::HTML.error_page("wrong arguments", 404)
-			end
-			begin
-				uuid= UUID.parse(path[0])
-			rescue ArgumentError => e
-				return FileHosting::HTML.error_page(e, 404)
-			end
-			begin
-				fileinfo= @config.datasource.fileinfo(uuid)
-			rescue FileHosting::Error => e
-				FileHosting::HTML.error_page(e)
-			end
-			fileinfo.filename= args["filename"] if args["filename"]
-			fileinfo.source= args["source"] if args["source"]
-			fileinfo.tags= args["tags"].split("+") if args["tags"]
-			@config.datasource.update_fileinfo(fileinfo)
-			updated= true
-			FileHosting::HTML.page("update: #{fileinfo.uuid}", FileHosting::HTML.use_template("update.eruby", binding), "update.css")
 		end
 
 	end
