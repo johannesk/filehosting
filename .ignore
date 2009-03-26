@@ -1,0 +1,5 @@
+--- 
+- !ruby/regexp /^\.git$/
+- !ruby/regexp /\.o$/
+- !ruby/regexp /io2io/Makefile$/
+- !ruby/regexp /io2io/io2io.so$/

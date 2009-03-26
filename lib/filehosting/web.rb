@@ -21,12 +21,13 @@
 #++
 #
 
-# Please don't read this file. This sourcecode is a realy bad shape.
+# Please don't read this file. This sourcecode is in a realy bad shape.
 
 require "filehosting/web-tiny"
 require "filehosting/html"
 require "filehosting/error"
 require "filehosting/nosuchfileerror"
+require "filehosting/yamltools"
 
 require "pathname"
 require "uuidtools"
@@ -50,7 +51,8 @@ module FileHosting
 			end
 			# This is done here and not it
 			# create_page, because we don't want
-			# caching for files.
+			# caching for files and sourcecode.
+			return get_sourcecode if path=="sourcecode"
 			if path =~ /^files\//
 				res= get_file($')
 				return res if res
@@ -79,6 +81,35 @@ module FileHosting
 			rescue NoSuchFileError
 				return nil
 			end
+		end
+
+		def get_sourcecode
+			root= Pathname.new("root")
+			ignore= YAMLTools.read_array(root + ".ignore", Regexp)
+			io= IO.popen("tar -c -C root -T -", "r+")
+			todo= []
+			todo<< root
+			until todo.empty?
+				todo.shift.children.each do |child|
+					rel= child.relative_path_from(root).to_s
+					case
+					when ignore.find { |reg| rel=~ reg }
+					when child.symlink?
+						io.puts rel
+					when child.directory?
+						todo<< child
+					else
+						io.puts rel
+					end
+				end
+			end
+			io.close_write
+			[
+				"Content-Type: application/x-tar\n" +
+				"Content-Disposition: attachment;filename=filehosting-snapshot.tar\n" +
+				"\n",
+				io
+			]
 		end
 
 		# Creates a page and stores it into the cache.
