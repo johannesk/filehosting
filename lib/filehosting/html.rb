@@ -29,13 +29,18 @@ module FileHosting
 	# Create a webpage
 	class HTML
 
-		def self.page(title, body, includes=[])
-			includes= [includes].flatten
+		def self.page(title, body, *includes)
+			includes.flatten!
+			if status= includes.find { |b| Integer === b }
+				includes.delete(status)
+			else
+				status= 200
+			end
 			use_template("page.eruby", binding)
 		end
 
-		def self.error_page(error)
-			page("error", use_template("error.eruby", binding), "error.css")
+		def self.error_page(error, status= 200)
+			page("error", use_template("error.eruby", binding), "error.css", status)
 		end
 
 		def self.use_template(file, bind)
@@ -58,7 +63,7 @@ class Object
 			to_text
 		else
 			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
+		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
 	end
 
 end

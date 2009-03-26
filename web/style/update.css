@@ -1,0 +1,16 @@
+div.update_form {
+	text-align: center;
+}
+
+div.update_form table {
+	display: inline-block;
+}
+
+div.update_form th {
+	text-align: right;
+}
+
+div.update_form td {
+	text-align: left;
+	padding-left: 10px;
+}

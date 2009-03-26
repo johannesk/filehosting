@@ -1,3 +1,4 @@
+Status: <%= status %>
 Content-Type: text/html; charset=utf-8
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -5,7 +6,7 @@ Content-Type: text/html; charset=utf-8
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
-		<title><%= title %></title>
+		<title><%= title.to_html %></title>
 		<link rel="stylesheet" type="text/css" href="<%= $webroot %>/style/default.css" />
 % includes.grep(/\.css$/).each do |style|
 		<link rel="stylesheet" type="text/css" href="<%= $webroot %>/style/<%= style %>" />

@@ -88,28 +88,35 @@ module FileHosting
 				page_search(direction, args)
 			when "classic"
 				page_classic(direction, args)
+			when "update"
+				page_update(direction, args)
 			when "files" # regular files are handled in get_page, this is only for errors
 				page_fileinfo(direction, args)
 			else
-				FileHosting::HTML.error_page("wrong arguments")
+				FileHosting::HTML.error_page("wrong arguments", 404)
 			end
 			return unless data
-			data=~ /\n\n/
-			["Content-Length: #{$'.size}\n" + data, tags || []]
+			size= if data=~ /\n\n/
+				$'
+			else
+				data
+			end.size
+			data= "Content-Length: #{size}\n" + data
+			[data , tags || []]
 		end
 
 		def page_fileinfo(path, args)
 			if path.size != 1
-				return FileHosting::HTML.error_page("wrong arguments")
+				return FileHosting::HTML.error_page("wrong arguments", 404)
 			end
 			begin
 				uuid= UUID.parse(path[0])
 			rescue ArgumentError => e
-				return FileHosting::HTML.error_page(e)
+				return FileHosting::HTML.error_page(e, 404)
 			end
 			begin
 				fileinfo= @config.datasource.fileinfo(uuid)
-				[FileHosting::HTML.page(fileinfo.filename.to_html, fileinfo.to_html, "fileinfo.css"), ["files/#{uuid.to_s}"]]
+				[FileHosting::HTML.page(fileinfo.uuid, fileinfo.to_html, "fileinfo.css"), ["files/#{uuid.to_s}"]]
 			rescue FileHosting::Error => e
 				[FileHosting::HTML.error_page(e), ["files/#{uuid.to_s}"]]
 			end
@@ -124,11 +131,28 @@ module FileHosting
 				tags= args["tags"].split("+")
 				search_result= @config.datasource.search_tags(tags)
 				[
-					FileHosting::HTML.page("search: #{tags.to_html}", FileHosting::HTML.use_template("search.eruby", binding), "search.css"),
+					FileHosting::HTML.page("search: #{tags}", FileHosting::HTML.use_template("search.eruby", binding), "search.css"),
 					tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
 				]
 			else
-				FileHosting::HTML.error_page("wrong arguments")
+				FileHosting::HTML.error_page("wrong arguments", 404)
+			end
+		end
+
+		def page_update(path, args)
+			if path.size != 1
+				return FileHosting::HTML.error_page("wrong arguments", 404)
+			end
+			begin
+				uuid= UUID.parse(path[0])
+			rescue ArgumentError => e
+				return FileHosting::HTML.error_page(e, 404)
+			end
+			begin
+				fileinfo= @config.datasource.fileinfo(uuid)
+				[FileHosting::HTML.page("update: #{fileinfo.uuid}", FileHosting::HTML.use_template("update.eruby", binding), "update.css"), ["files/#{uuid.to_s}"]]
+			rescue FileHosting::Error => e
+				[FileHosting::HTML.error_page(e), ["files/#{uuid.to_s}"]]
 			end
 		end
 
