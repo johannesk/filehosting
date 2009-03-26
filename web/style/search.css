@@ -7,6 +7,26 @@ div.search_box h1 {
 	font-size: 400%;
 }
 
+div.search_box div.tags {
+	font-size: 80%;
+}
+
+div.search_box div.tags h1 {
+	display: inline;
+	font-size: 100%;
+}
+
+div.search_box div.tags ul {
+	margin: 0px;
+	padding: 0px;
+	display: inline;
+}
+
+div.search_box div.tags li {
+	display: inline;
+	padding-left: 5px;
+}
+
 div.search_result th {
 	text-align: right;
 }

@@ -118,7 +118,8 @@ module FileHosting
 		def page_search(path, args)
 			case args["tags"]
 			when nil
-				FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css")
+				tags= @config.datasource.tags.sort
+				[FileHosting::HTML.page("search", FileHosting::HTML.use_template("search_new.eruby", binding), "search.css"), ["tags"]]
 			when String
 				tags= args["tags"].split("+")
 				search_result= @config.datasource.search_tags(tags)

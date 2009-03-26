@@ -53,6 +53,10 @@ module FileHosting
 		def search_tags_partial(tags)
 		end
 
+		# returns all available tags
+		def tags
+		end
+
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
 		end
@@ -77,6 +81,7 @@ module FileHosting
 			fileinfo.tags.each do |tag|
 				notify_observers("tags/#{tag}")
 			end
+			notify_observers("tags") unless (fileinfo.tags - tags).empty?
 		end
 
 		# Changes the metadata of a file
@@ -84,8 +89,13 @@ module FileHosting
 			notify_observers("files/#{fileinfo.uuid}")
 			new= fileinfo.tags
 			old= self.fileinfo(fileinfo.uuid).tags
-			((old - new) + (new - old)).each do |tag|
+			plus= new - old
+			minus= old - new
+			(plus + minus).each do |tag|
 				notify_observers("tags/#{tag}")
+			end
+			if not (plus - tags).empty? or minus.find { |tag| search_tags([tag]).size == 1 }
+				notify_observers("tags")
 			end
 		end
 
@@ -96,7 +106,11 @@ module FileHosting
 
 		# removes a file
 		def remove_file(uuid)
-			notify_observers("files/#{fileinfo.uuid}")
+			notify_observers("files/#{uuid}")
+			tags= fileinfo(uuid).tags
+			if tags.find { |tag| search_tags([tag]).size == 1 }
+				notify_observers("tags")
+			end
 		end
 
 		# returns the history of a user

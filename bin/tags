@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -21,17 +22,34 @@
 #++
 #
 
-class String
+require "filehosting/config"
+require "filehosting/autoconfigreader"
+require "filehosting/configfilereader"
+require "filehosting/configargreader"
+require "filehosting/error"
 
-	alias :to_text :to_s
+require "uuidtools"
+require "io2io"
+require "fileutils"
 
-	def dir_encode
-		self.gsub("%", "%%").gsub("/", "%#").gsub(".", "%.")
-	end
+autoreader= FileHosting::AutoConfigReader.new
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+argreader= FileHosting::ConfigArgReader.new
+args= argreader.parse(ARGV)
 
-	def dir_decode
-		self.gsub("%.", ".").gsub("%#", "/").gsub("%%", "%")
-	end
+config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
+if args.size != 0
+	STDERR.puts argreader.usage
+	exit 1
 end
 
+begin
+	config.datasource.tags.sort.each do |tag|
+		puts tag
+	end
+rescue FileHosting::Error => e
+	STDERR.puts e
+	exit 2
+end

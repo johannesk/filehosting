@@ -40,6 +40,11 @@ module FileHosting
 			[]
 		end
 
+		# returns all available tags
+		def tags
+			[]
+		end
+
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
 			raise NoSuchFileError.new(uuid)

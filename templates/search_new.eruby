@@ -4,4 +4,12 @@
 		<input type="text" name="tags" />
 		<input type="submit" value="search" />
 	</form>
+	<div class="tags">
+		<h1>available tags:</h1>
+		<ul>
+% tags.each do |tag|
+			<li><a href="<%= $webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
+% end
+		</ul>
+	</div>
 </div>

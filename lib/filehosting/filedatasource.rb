@@ -77,6 +77,14 @@ module FileHosting
 			res.collect { |uuid| fileinfo(uuid) }
 		end
 
+		# returns all available tags
+		def tags
+			@tagsdir.children.collect do |child|
+				child.basename.to_s.dir_decode
+			end
+		end
+
+
 		def fileinfo(uuid)
 			file= @metadatadir+uuid.to_s
 			raise NoSuchFileError.new(uuid) unless file.file?
