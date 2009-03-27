@@ -28,6 +28,14 @@ require "filehosting/html"
 require "filehosting/error"
 require "filehosting/nosuchfileerror"
 require "filehosting/yamltools"
+require "filehosting/webfileinfopage"
+require "filehosting/webupdatepage"
+require "filehosting/webremovepage"
+require "filehosting/webaddpage"
+require "filehosting/websearchpage"
+require "filehosting/webclassicpage"
+require "filehosting/websourcecode"
+require "filehosting/webfile"
 
 require "pathname"
 require "uuidtools"
@@ -52,106 +60,49 @@ module FileHosting
 			# This is done here and not it
 			# create_page, because we don't want
 			# caching for files and sourcecode.
-			return get_sourcecode if path=="sourcecode"
+			return WebSourceCode.new(config).to_output if path=="sourcecode"
 			if path =~ /^files\//
-				res= get_file($')
-				return res if res
+				return WebFile.new(config, $').to_output
 			end
 			@config.cache.retrieve("web/"+path.dir_encode+"?"+args.dir_encode) do
 				create_page(path, args)
 			end
 		end
 
-		def get_file(uuid)
-			begin
-				uuid= UUID.parse(uuid)
-			rescue ArgumentError
-				return nil
-			end
-			begin
-				info= @config.datasource.fileinfo(uuid)
-				io= @config.datasource.filedata_io(uuid)
-				return [
-					"Content-Type: #{info.mimetype}\n" +
-					"Content-Length: #{info.size}\n" +
-					"Content-Disposition: attachment;filename=#{info.filename}\n" +
-					"\n",
-					io
-				]
-			rescue NoSuchFileError
-				return nil
-			end
-		end
-
-		def get_sourcecode
-			root= Pathname.new("root")
-			ignore= YAMLTools.read_array(root + ".ignore", Regexp)
-			io= IO.popen("tar -c -C root -T -", "r+")
-			todo= []
-			todo<< root
-			until todo.empty?
-				todo.shift.children.each do |child|
-					rel= child.relative_path_from(root).to_s
-					case
-					when ignore.find { |reg| rel=~ reg }
-					when child.symlink?
-						io.puts rel
-					when child.directory?
-						todo<< child
-					else
-						io.puts rel
-					end
-				end
-			end
-			io.close_write
-			[
-				"Content-Type: application/x-tar\n" +
-				"Content-Disposition: attachment;filename=filehosting-snapshot.tar\n" +
-				"\n",
-				io
-			]
-		end
-
 		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil)
 			direction= path.split("/")
-			unless input
-				data, tags= page(direction,args)
+			page= unless input
+				page_switch(direction,args)
 			else
-				data= page_input(direction, args, input, type)
+				page_input_switch(direction, args, input, type)
 			end
-			return unless data
-			size= if data=~ /\n\n/
-				$'
-			else
-				data
-			end.size
-			data= "Content-Length: #{size}\n" + data
-			[data , tags || []]
+			[page.to_output, page.tags]
 		end
 
-		def page(direction, args)
+		def page_switch(direction, args)
 			case direction.shift
 			when nil
-				page_search(direction, args)
+				WebSearchPage.new(config)
 			when "fileinfo"
-				page_fileinfo(direction, args)
+				WebFileInfoPage.new(config, direction.shift)
 			when "search"
-				page_search(direction, args)
+				tags= (args["tags"] || "").split("+")
+				WebSearchPage.new(config, *tags)
 			when "classic"
-				page_classic(direction, args)
+				WebClassicPage.new(config, *direction)
 			when "update"
-				page_update(direction, args)
+				WebUpdatePage.new(config, direction.shift)
 			when "remove"
-				page_remove(direction, args)
-			when "files" # regular files are handled in get_page, this is only for errors
-				page_fileinfo(direction, args)
+				WebRemovePage.new(config, direction.shift)
+			when "add"
+				WebAddPage.new(config)
 			else
 				[HTML.error_page("wrong arguments", 404), []]
 			end
 		end
 
-		def page_input(direction, args, input, type)
+		def page_input_switch(direction, args, input, type)
 			args= case type
 			when "application/x-www-form-urlencoded"
 				self.class.parse_get(input.read)
@@ -168,20 +119,6 @@ module FileHosting
 			end
 		end
 
-		def page_fileinfo(path, args)
-			page_with_fileinfo(path) do |fileinfo|
-				[HTML.page(fileinfo.uuid.to_s, fileinfo.to_html , "fileinfo.css"), ["files/#{fileinfo.uuid.to_s}"]]
-			end
-		end
-
-		def page_update(path, args)
-			page_with_fileinfo(path) do |fileinfo|
-				updated= false
-				[HTML.page("update: #{fileinfo.uuid}", HTML.use_template("update.eruby", binding), "update.css"), ["files/#{fileinfo.uuid.to_s}"]]
-			end
-		end
-
-
 		def page_input_update(path, args)
 			page_with_fileinfo(path) do |fileinfo|
 				fileinfo.filename= args["filename"] if args["filename"]
@@ -195,12 +132,6 @@ module FileHosting
 				updated= true
 				HTML.page("update: #{fileinfo.uuid}", HTML.use_template("update.eruby", binding), "update.css")
 			
-			end
-		end
-
-		def page_remove(path, args)
-			page_with_fileinfo(path) do |fileinfo|
-				[HTML.page("remove :#{fileinfo.uuid.to_s}", HTML.use_template("remove.eruby", binding) , "remove.css"), ["files/#{fileinfo.uuid.to_s}"]]
 			end
 		end
 
@@ -233,32 +164,6 @@ module FileHosting
 				return HTML.error_page(e)
 			end
 			yield fileinfo
-		end
-
-		def page_search(path, args)
-			case args["tags"]
-			when nil
-				tags= @config.datasource.tags.sort
-				[HTML.page("search", HTML.use_template("search_new.eruby", binding), "search.css"), ["tags"]]
-			when String
-				tags= args["tags"].split("+")
-				search_result= @config.datasource.search_tags(tags)
-				[
-					HTML.page("search: #{tags}", HTML.use_template("search.eruby", binding), "search.css"),
-					tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
-				]
-			else
-				HTML.error_page("wrong arguments", 404)
-			end
-		end
-
-		def page_classic(path, args)
-			tags= path
-			search_result= @config.datasource.search_tags(tags)
-			[
-				HTML.page(tags.join("/"), HTML.use_template("classic.eruby", binding), ["classic.css", "sortable.js"]),
-				tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
-			]
 		end
 
 	end

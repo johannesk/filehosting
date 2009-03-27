@@ -1,4 +1,4 @@
 <div class="error_message">
-	<img src="<%= $webroot %>/images/error.png" alt="error" />
+	<img src="<%= webroot %>/images/error.png" alt="error" />
 	<p><%= error.to_html %></p>
 </div>

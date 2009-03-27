@@ -1,6 +1,6 @@
 <div class="search_box">
 	<h1>search:</h1>
-	<form method="GET" action="<%= $webroot %>/search">
+	<form method="GET" action="<%= webroot %>/search">
 		<input type="text" name="tags" />
 		<input type="submit" value="search" />
 	</form>
@@ -8,7 +8,7 @@
 		<h1>available tags:</h1>
 		<ul>
 % tags.each do |tag|
-			<li><a href="<%= $webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
+			<li><a href="<%= webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
 % end
 		</ul>
 	</div>

@@ -97,12 +97,7 @@ module FileHosting
 					return file
 				end
 			end
-			io= filedata_io(uuid)
-			file= `mktemp`.strip
-			File.open(file, "w") do |f|
-				IO2IO.forever(io.to_i, f.to_i)
-			end
-			file
+			super(uuid)
 		end
 
 		# returns an io where the filedata can be read

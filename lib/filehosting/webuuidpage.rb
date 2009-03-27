@@ -21,37 +21,29 @@
 #++
 #
 
-require "erb"
-require "pathname"
+require "filehosting/webdefaultpage"
+require "filehosting/errorwrapper"
+
+require "uuidtools"
 
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The parent of all uuid WepPages
+	class WebUUIDPage < WebDefaultPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
-		end
+		attr_reader :uuid
 
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def initialize(config, uuid, *includes, &block)
+			@config= config
+			begin
+				@uuid= UUID.parse(uuid)
+			rescue ArgumentError => e
+				raise ErrorWrapper.new(e)
+			end
+			title, body= yield @uuid
+			super(config, title, body, *includes)
 		end
 
 	end
 
 end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
-	end
-
-end
-

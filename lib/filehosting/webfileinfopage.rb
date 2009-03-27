@@ -21,37 +21,30 @@
 #++
 #
 
-require "erb"
-require "pathname"
+require "filehosting/webuuidpage"
+require "filehosting/html"
+
 
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The parent of all fileinfo WepPages
+	class WebFileInfoPage < WebUUIDPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
-		end
+		attr_reader :fileinfo
 
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def initialize(config, uuid, *includes)
+			includes= ["fileinfo.css"] unless block_given?
+			super(config, uuid, *includes) do |uuid|
+				@fileinfo= config.datasource.fileinfo(uuid)
+				if block_given?
+					yield @fileinfo
+				else
+					[uuid.to_s, HTML.use_template("fileinfo.eruby", binding)]
+				end
+			end
+			@tags<< "files/#{@uuid.to_s}"
 		end
 
 	end
 
 end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
-	end
-
-end
-

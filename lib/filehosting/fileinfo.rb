@@ -61,6 +61,10 @@ module FileHosting
 		# the tags of the file
 		attr_accessor :tags
 
+		def initialize
+			@uuid= UUID.random_create
+		end
+
 		def -(other)
 			res= Hash.new
 			a= self.to_hash

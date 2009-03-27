@@ -21,37 +21,24 @@
 #++
 #
 
-require "erb"
-require "pathname"
+require "filehosting/webpage"
+require "filehosting/html"
 
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The parent of all html WepPages
+	class WebDefaultPage < WepPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
+		def initialize(config, title, body, *includes)
+			super(config)
+			@header["Content-Type"]= "text/html; charset=utf-8"
+			@body= HTML.use_template("default.eruby", binding)
 		end
 
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def size
+			@body.size
 		end
 
 	end
 
 end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
-	end
-
-end
-

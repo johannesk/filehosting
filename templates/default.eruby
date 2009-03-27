@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title><%= title.to_html %></title>
+		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/default.css" />
+% includes.grep(/\.css$/).each do |style|
+		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/<%= style %>" />
+% end
+% includes.grep(/\.js$/).each do |script|
+		<script type="text/javascript" src="<%= webroot %>/js/<%= script %>"></script>
+% end
+	</head>
+	<body>
+		<div class="head">
+			<h1>FileHosting</h1>
+			<div class="search">
+				search:
+				<form type="get" action="<%= webroot %>/search">
+					<input type="text" name="tags" />
+				</form>
+			</div>
+			<ul>
+				<li><a href="<%= webroot %>/add">add File</a></li>
+				<li><a href="<%= webroot %>/feed">Feed</a></li>
+				<li><a href="<%= webroot %>/history">History</a></li>
+			</ul>
+			</div>
+		</div>
+		<%= body %>
+		<div class="license">
+			<a href="http://www.gnu.org/licenses/agpl-3.0.html"><img alt="AGPLv3" src="<%= webroot %>/images/agplv3.png" /></a>This page was created by FileHosting. FileHosting is licensed under a <a href="http://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License version 3.0</a>. Download FileHosting <a href="<%= $webroot %>/sourcecode">here</a> or at <a href="git://johannes.krude.de/filehosting">git://johannes.krude.de/filehosting</a>.
+		</div>
+	</body>
+</html>

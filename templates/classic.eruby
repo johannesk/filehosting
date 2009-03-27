@@ -8,7 +8,7 @@
 		</tr>
 % search_result.each do |fileinfo|
 		<tr>
-			<td><a href="<%= $webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a></td>
+			<td><a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a></td>
 			<td></td>
 			<td class="size"><%= fileinfo.size.to_html %></td>
 			<td><%= fileinfo.mimetype.to_html %></td>

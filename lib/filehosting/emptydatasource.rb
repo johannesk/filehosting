@@ -57,7 +57,7 @@ module FileHosting
 
 		# returns an io where the filedata can be read
 		def filedata_io(uuid)
-			File.open(filedata_string(uuid))
+			raise NoSuchFileError.new(uuid)
 		end
 
 		# Adds a file to the datasource. There must be no

@@ -33,5 +33,17 @@ class String
 		self.gsub("%.", ".").gsub("%#", "/").gsub("%%", "%")
 	end
 
+	def http_decode
+		res= ""
+		self=~ /^/
+		rem= $'
+		while $'=~ /%([A-Za-z0-9]{2})/
+			rem= $'
+			res+= $`
+			res<< $1.to_i(16)
+		end
+		res+rem
+	end
+
 end
 

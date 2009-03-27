@@ -21,36 +21,43 @@
 #++
 #
 
-require "erb"
-require "pathname"
+require "filehosting/webpage"
 
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The sourcecode webpage
+	class WepSourceCode < WepPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
+		def initialize(config)
+			super(config)
+			@header["Content-Type"]= "application/x-tar"
+			@header["Content-Disposition"]= "attachment;filename=filehosting-snapshot.tar"
 		end
 
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def body
+			root= Pathname.new("root")
+			ignore= YAMLTools.read_array(root + ".ignore", Regexp)
+			io= IO.popen("tar -c -C root -T -", "r+")
+			todo= []
+			todo<< root
+			until todo.empty?
+				todo.shift.children.each do |child|
+					rel= child.relative_path_from(root).to_s
+					case
+					when ignore.find { |reg| rel=~ reg }
+					when child.symlink?
+						io.puts rel
+					when child.directory?
+						todo<< child
+					else
+						io.puts rel
+					end
+				end
+			end
+			io.close_write
+			io
 		end
 
-	end
-
-end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
 	end
 
 end

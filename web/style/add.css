@@ -1,0 +1,16 @@
+div.add_form {
+	text-align: center;
+}
+
+div.add_form table {
+	display: inline-block;
+}
+
+div.add_form th {
+	text-align: right;
+}
+
+div.add_form td {
+	text-align: left;
+	padding-left: 10px;
+}

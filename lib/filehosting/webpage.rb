@@ -21,36 +21,42 @@
 #++
 #
 
-require "erb"
-require "pathname"
-
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The parent of all WepPages
+	class WepPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
+		attr_reader :header
+		attr_reader :status
+		attr_reader :body
+		attr_reader :size
+		attr_reader :config
+		attr_reader :tags
+
+		def initialize(config)
+			@config= config
+			@status= 200
+			@tags= []
+			@header= Hash.new
+			@size= nil
 		end
 
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def to_output
+			[
+				header.collect do |key, value|
+					"#{key}: #{value}\n"
+				end.join +
+				(size ? "Content-Length: #{size}\n" : "") +
+				"Status: #{status}\n" +
+				"\n",
+				body
+			]
 		end
 
-	end
+		def webroot
+			config[:webroot]
+		end
 
-end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
 	end
 
 end

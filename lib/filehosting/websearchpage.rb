@@ -21,37 +21,32 @@
 #++
 #
 
-require "erb"
-require "pathname"
+require "filehosting/webdefaultpage"
+require "filehosting/html"
 
 module FileHosting
 
-	# Create a webpage
-	class HTML
+	# The search page
+	class WebSearchPage < WebDefaultPage
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
-		end
-
-		def self.use_template(file, bind)
-			tfile= Pathname.new("templates") + file
-			template= ERB.new(tfile.read, nil, "%")
-			template.result(bind)
+		def initialize(config, *tags)
+			@config= config
+			tags.flatten!
+			title= "search"
+			title+= ": #{tags.join(", ")}" unless tags.empty?
+			if tags.empty?
+				tags= config.datasource.tags.sort
+				dep= ["tags"]
+				body= HTML.use_template("search_new.eruby", binding)
+			else
+				search_result= config.datasource.search_tags(tags)
+				dep= tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
+				body= HTML.use_template("search.eruby", binding)
+			end
+			super(config, title, body, "search.css")
+			@tags+= dep
 		end
 
 	end
 
 end
-
-class Object
-
-	def to_html
-		if respond_to?(:to_text)
-			to_text
-		else
-			to_s
-		end.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
-	end
-
-end
-
