@@ -30,9 +30,10 @@ module FileHosting
 	class WebClassicPage < WebDefaultPage
 
 		def initialize(config, *tags)
+			@config= config
 			tags.flatten!
-			title= "search"
-			title+= ": #{tags.join(", ")}" unless tags.empty?
+			title= "/"
+			title+= tags.join("/") unless tags.empty?
 			if tags.empty?
 				tags= config.datasource.tags.sort
 				dep= ["tags"]
@@ -42,7 +43,7 @@ module FileHosting
 				dep= tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
 				body= HTML.use_template("classic.eruby", binding)
 			end
-			super(config, title, body, "search.css", "sortable.js")
+			super(config, title, body, "classic.css", "sortable.js")
 			@tags+= dep
 		end
 

@@ -1,19 +1,29 @@
 /*
-Table sorting script  by Joost de Valk, check it out at http://www.joostdevalk.nl/code/sortable-table/.
-Based on a script from http://www.kryogenix.org/code/browser/sorttable/.
-Distributed under the MIT license: http://www.kryogenix.org/code/browser/licence.html .
-
-Copyright (c) 1997-2007 Stuart Langridge, Joost de Valk.
-Copyright (c) 2008 Johannes Krude.
-
-Version 1.5.7
-*/
+ *
+ * Based on a script from http://www.joostdevalk.nl/code/sortable-table/.
+ * Based on a script from http://www.kryogenix.org/code/browser/sorttable/.
+ * 
+ * Copyright (c) 1997-2007 Stuart Langridge, Joost de Valk.
+ * Copyright (c) 2008-2009 Johannes Krude.
+ * 
+ * This file is part of filehosting.
+ *
+ * filehosting is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * filehosting is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 /* You can change these values */
-var image_path = "/filehosting/js/";
-var image_up = "arrowup.png";
-var image_down = "arrowdown.png";
-var image_none = "arrownone.png";
 var europeandate = true;
 var alternate_row_colors = false;
 
@@ -22,6 +32,8 @@ addEvent(window, "load", sortables_init);
 
 var SORT_COLUMN_INDEX;
 var thead = false;
+var display_up= '&nbsp;&uarr;'
+var display_down= '&nbsp;&darr;'
 
 function sortables_init() {
 	// look if we need to sort NOW
@@ -57,7 +69,7 @@ function ts_makeSortable(t, sort_as) {
 		var cell = firstRow.cells[i];
 		var txt = ts_getInnerText(cell);
 		if (cell.className != "unsortable" && cell.className.indexOf("unsortable") == -1) {
-			cell.innerHTML = '<a href="#sort='+i+'" class="sortheader" onclick="ts_resortTable(this, '+i+');return false;">'+txt+'<span class="sortarrow">&nbsp;&nbsp;<img src="'+ image_path + image_none + '" alt="&darr;"/></span></a>';
+			cell.innerHTML = '<a href="#sort='+i+'" class="sortheader" onclick="ts_resortTable(this, '+i+');return false;">'+txt+'<span class="sortarrow"></span></a>';
 			if (i == sort_as) {
 				ts_resortTable(cell.firstChild, i);
 			}
@@ -131,11 +143,11 @@ function ts_resortTable(lnk, clid) {
 	}
 	newRows.sort(sortfn);
 	if (span.getAttribute("sortdir") == 'down') {
-			ARROW = '&nbsp;&nbsp;<img src="'+ image_path + image_down + '" alt="&darr;"/>';
+			ARROW = display_up;
 			newRows.reverse();
 			span.setAttribute('sortdir','up');
 	} else {
-			ARROW = '&nbsp;&nbsp;<img src="'+ image_path + image_up + '" alt="&uarr;"/>';
+			ARROW = display_down;
 			span.setAttribute('sortdir','down');
 	} 
     // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
@@ -155,7 +167,7 @@ function ts_resortTable(lnk, clid) {
 	for (var ci=0;ci<allspans.length;ci++) {
 		if (allspans[ci].className == 'sortarrow') {
 			if (getParent(allspans[ci],"table") == getParent(lnk,"table")) { // in the same table as us?
-				allspans[ci].innerHTML = '&nbsp;&nbsp;<img src="'+ image_path + image_none + '" alt="&darr;"/>';
+				allspans[ci].innerHTML = '';
 			}
 		}
 	}		
