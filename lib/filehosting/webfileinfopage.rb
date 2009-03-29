@@ -35,7 +35,6 @@ module FileHosting
 		def initialize(config, uuid, *includes)
 			includes= ["fileinfo.css"] unless block_given?
 			super(config, uuid, *includes) do |uuid|
-				@tags= ["files/#{uuid.to_s}"]
 				begin
 					@fileinfo= config.datasource.fileinfo(uuid)
 				rescue NoSuchFileError

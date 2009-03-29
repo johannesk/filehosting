@@ -30,9 +30,17 @@ module FileHosting
 	# The update page
 	class WebUpdatePage < WebFileInfoPage
 
-		def initialize(config, uuid)
+		def initialize(config, uuid, values= nil)
 			super(config, uuid, "update.css") do |fileinfo|
 				updated= false
+				if values
+					fileinfo.filename= values["filename"] if values["filename"]
+					fileinfo.tags= values["tags"].split("+") if values["tags"]
+					fileinfo.source= values["source"] if values["source"]
+					config.datasource.update_fileinfo(fileinfo)
+					updated= true
+					@cachable= false
+				end
 				["update: #{fileinfo.uuid.to_s}", HTML.use_template("update.eruby", binding)]
 			end
 		end

@@ -21,34 +21,30 @@
 #++
 #
 
-require "filehosting/webdefaultpage"
-require "filehosting/errorwrapper"
+require "filehosting/webuuidpage"
+require "filehosting/html"
+require "filehosting/nosuchfileerror"
 
-require "uuidtools"
 
 module FileHosting
 
-	# The parent of all uuid WebPages
-	class WebUUIDPage < WebDefaultPage
+	# The remove page
+	class WebRemovedPage < WebUUIDPage
 
-		attr_reader :uuid
-
-		def initialize(config, uuid, *includes, &block)
-			@config= config
-			begin
-				@uuid= UUID.parse(uuid)
-			rescue ArgumentError
-				@status= 404
+		def initialize(config, uuid)
+			super(config, uuid, "remove.css") do |uuid|
+				begin
+					config.datasource.remove_file(uuid)
+				rescue NoSuchFileError
+					@status= 404
+					return
+				end
+				["removed: #{uuid.to_s}", HTML.use_template("removed.eruby", binding)]
 			end
-			@tags= ["files/#{uuid.to_s}"]
-			title, body= yield @uuid
-			status= @status
-			tags= @tags
-			cachable= @cachable
-			super(config, title, body, *includes)
-			@status= status
-			@tags= tags+@tags
-			@cachable= cachable
+		end
+
+		def cachable
+			false
 		end
 
 	end
