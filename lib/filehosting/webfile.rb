@@ -22,11 +22,12 @@
 #
 
 require "filehosting/webpage"
+require "filehosting/nosuchfileerror"
 
 module FileHosting
 
 	# The sourcecode webpage
-	class WebFile < WepPage
+	class WebFile < WebPage
 
 		attr_reader :uuid
 
@@ -34,11 +35,19 @@ module FileHosting
 			super(config)
 			begin
 				@uuid= UUID.parse(uuid)
-			rescue ArgumentError => e
-				raise ErrorWrapper.new(e)
+			rescue ArgumentError
+				@status= 404
+				@cachable= true
+				return
 			end
 			@tags<< "files/#{uuid.to_s}"
-			fileinfo= @config.datasource.fileinfo(@uuid)
+			begin
+				fileinfo= @config.datasource.fileinfo(@uuid)
+			rescue NoSuchFileError
+				@status= 404
+				@cachable= true
+				return
+			end
 			@header["Content-Type"]= fileinfo.mimetype
 			@header["Content-Disposition"]= "attachment;filename=#{fileinfo.filename}"
 			@size= fileinfo.size

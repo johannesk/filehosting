@@ -23,8 +23,8 @@
 
 module FileHosting
 
-	# The parent of all WepPages
-	class WepPage
+	# The parent of all WebPages
+	class WebPage
 
 		attr_reader :header
 		attr_reader :status
@@ -32,6 +32,7 @@ module FileHosting
 		attr_reader :size
 		attr_reader :config
 		attr_reader :tags
+		attr_reader :cachable
 
 		def initialize(config)
 			@config= config

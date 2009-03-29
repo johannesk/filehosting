@@ -26,13 +26,14 @@ require "filehosting/html"
 
 module FileHosting
 
-	# The parent of all html WepPages
-	class WebDefaultPage < WepPage
+	# The parent of all html WebPages
+	class WebDefaultPage < WebPage
 
 		def initialize(config, title, body, *includes)
 			super(config)
 			@header["Content-Type"]= "text/html; charset=utf-8"
 			@body= HTML.use_template("default.eruby", binding)
+			@cachable= true
 		end
 
 		def size

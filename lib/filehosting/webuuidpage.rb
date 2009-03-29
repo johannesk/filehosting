@@ -28,7 +28,7 @@ require "uuidtools"
 
 module FileHosting
 
-	# The parent of all uuid WepPages
+	# The parent of all uuid WebPages
 	class WebUUIDPage < WebDefaultPage
 
 		attr_reader :uuid
@@ -37,11 +37,15 @@ module FileHosting
 			@config= config
 			begin
 				@uuid= UUID.parse(uuid)
-			rescue ArgumentError => e
-				raise ErrorWrapper.new(e)
+			rescue ArgumentError
+				@status= 404
 			end
 			title, body= yield @uuid
+			status= @status
+			tags= @tags
 			super(config, title, body, *includes)
+			@status= status
+			@tags= tags+@tags
 		end
 
 	end

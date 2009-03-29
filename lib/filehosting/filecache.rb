@@ -28,6 +28,8 @@ require "filehosting/pathname"
 require "fileutils"
 require "pathname"
 
+require "io2io"
+
 module FileHosting
 
 	# The FileCache caches files and automaticly deletes them,
@@ -44,15 +46,44 @@ module FileHosting
 			end
 		end
 
-		# stores a file in the cache
+		# Stores a file in the cache. Data must be either a
+		# String, an IO, or an Array of String's and IO's. The
+		# String holds the data, from an IO can the data be
+		# read. And in case of an Array all String's and IO's
+		# have to be parsed to get the full data.
 		def store(name, data, tags)
 			file= @filesdir + name.dir_encode
 			file.delete?
 			begin
 				add_tags(tags, name)
 				File.open(file, "w") do |f|
-					f.write(data)
+					[data].flatten.each do |input|
+						case input
+						when String
+							f.write(input)
+						when IO
+							f.flush
+							IO2IO.forever(input.to_i, f.to_i)
+						end
+					end
 				end
+			rescue Exception => e
+				file.delete?
+				delete_tags(tags, name)
+				reverse_file= @reversedir + name.dir_encode
+				reverse_file.delete?
+				raise e
+			end
+		end
+
+		# stores a file as link to another file
+		def store_link(name, target, tags)
+			file= @filesdir + name.dir_encode
+			file.delete if file.symlink?
+			file.delete?
+			begin
+				add_tags(tags, name)
+				file.make_symlink(target.dir_encode)
 			rescue Exception => e
 				file.delete?
 				delete_tags(tags, name)
@@ -67,17 +98,29 @@ module FileHosting
 		# block must return an Array of the following form
 		# [data, [tag, ..., tag]]. If the file was created
 		# the data is returned.
-		def retrieve(name, io= false)
+		def retrieve_io(name)
 			file= @filesdir + name.dir_encode
 			if file.file?
-				file.read
+				File.new(file)
 			else
 				return nil unless block_given?
 				data, tags= yield
 				return nil unless data
 				store(name, data, tags)
-				data
+				File.new(file)
 			end
+		end
+
+		def retrieve(name)
+			io= retrieve_io(name)
+			unless io
+				return nil unless block_given?
+				data, tags= yield
+				return nil unless data
+				store(name, data, tags)
+				return data
+			end
+			io.read
 		end
 
 		# Deletes all file associated with this tag.
@@ -135,4 +178,3 @@ module FileHosting
 	end
 
 end
-

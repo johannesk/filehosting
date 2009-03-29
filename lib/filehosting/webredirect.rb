@@ -21,35 +21,34 @@
 #++
 #
 
-require "filehosting/webuuidpage"
-require "filehosting/html"
-
+require "filehosting/webpage"
 
 module FileHosting
 
-	# The parent of all fileinfo WebPages
-	class WebFileInfoPage < WebUUIDPage
+	# a page only to redirect to another page
+	class WebRedirect < WebPage
 
-		attr_reader :fileinfo
+		attr_reader :location
 
-		def initialize(config, uuid, *includes)
-			includes= ["fileinfo.css"] unless block_given?
-			super(config, uuid, *includes) do |uuid|
-				@tags= ["files/#{uuid.to_s}"]
-				begin
-					@fileinfo= config.datasource.fileinfo(uuid)
-				rescue NoSuchFileError
-					@status= 404
-					next ["", ""]
-				end
-				if block_given?
-					yield @fileinfo
-				else
-					[uuid.to_s, HTML.use_template("fileinfo.eruby", binding)]
-				end
-			end
+		def initialize(config, location)
+			super(config)
+			@location= location
+			@header["Location"]= webroot.to_s+location
+		end
+
+		def status
+			301
+		end
+
+		def body
+			""
+		end
+
+		def size
+			0
 		end
 
 	end
 
 end
+

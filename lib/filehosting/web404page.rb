@@ -21,33 +21,23 @@
 #++
 #
 
-require "filehosting/webuuidpage"
+require "filehosting/webdefaultpage"
 require "filehosting/html"
 
 
 module FileHosting
 
-	# The parent of all fileinfo WebPages
-	class WebFileInfoPage < WebUUIDPage
+	# The 404 Page
+	class Web404Page < WebDefaultPage
 
-		attr_reader :fileinfo
+		def initialize(config)
+			@config= config
+			error= "file not found"
+			super(config, "file not found", HTML.use_template("error.eruby", binding), "error.css")
+		end
 
-		def initialize(config, uuid, *includes)
-			includes= ["fileinfo.css"] unless block_given?
-			super(config, uuid, *includes) do |uuid|
-				@tags= ["files/#{uuid.to_s}"]
-				begin
-					@fileinfo= config.datasource.fileinfo(uuid)
-				rescue NoSuchFileError
-					@status= 404
-					next ["", ""]
-				end
-				if block_given?
-					yield @fileinfo
-				else
-					[uuid.to_s, HTML.use_template("fileinfo.eruby", binding)]
-				end
-			end
+		def status
+			404
 		end
 
 	end

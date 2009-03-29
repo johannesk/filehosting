@@ -28,19 +28,22 @@ require "filehosting/html"
 require "filehosting/error"
 require "filehosting/nosuchfileerror"
 require "filehosting/yamltools"
-require "filehosting/webfileinfopage"
-require "filehosting/webupdatepage"
-require "filehosting/webremovepage"
-require "filehosting/webaddpage"
-require "filehosting/websearchpage"
-require "filehosting/webclassicpage"
-require "filehosting/websourcecode"
-require "filehosting/webfile"
+require "filehosting/webredirect"
 
 require "pathname"
 require "uuidtools"
 
 module FileHosting
+
+	autoload :WebFileInfoPage, "filehosting/webfileinfopage"
+	autoload :WebUpdatePage,  "filehosting/webupdatepage"
+	autoload :WebRemovePage, "filehosting/webremovepage"
+	autoload :WebAddPage, "filehosting/webaddpage"
+	autoload :WebSearchPage, "filehosting/websearchpage"
+	autoload :WebClassicPage, "filehosting/webclassicpage"
+	autoload :WebSourceCode, "filehosting/websourcecode"
+	autoload :WebFile, "filehosting/webfile"
+	autoload :Web404Page, "filehosting/web404page"
 
 	class Web
 
@@ -50,55 +53,78 @@ module FileHosting
 		# and IO's have to be parsed to get the full data.
 		def get_page(path, args, input= nil, type= nil)
 			if input
-				return create_page(path, args, input, type)[0]
+				return create_page(path, args, input, type)
 			end
 			file= StaticDir+path
 			return nil unless file.cleanpath == file
 			if file.file?
 				return File.new(file)
 			end
-			# This is done here and not it
-			# create_page, because we don't want
-			# caching for files and sourcecode.
-			return WebSourceCode.new(config).to_output if path=="sourcecode"
-			if path =~ /^files\//
-				return WebFile.new(config, $').to_output
-			end
-			@config.cache.retrieve("web/"+path.dir_encode+"?"+args.dir_encode) do
-				create_page(path, args)
-			end
+			create_page(path, args, input, type)
 		end
 
 		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil)
+			cache_name= "web/"+path.dir_encode+"?"+args.dir_encode
+			res= @config.cache.retrieve_io(cache_name)
+			return res if res
 			direction= path.split("/")
 			page= unless input
 				page_switch(direction,args)
 			else
 				page_input_switch(direction, args, input, type)
 			end
-			[page.to_output, page.tags]
+			case
+			when page.status == 404
+				@config.cache.store_link(cache_name, "weberror/404", page.tags)
+				create_404_page
+			when WebRedirect === page
+				location= page.location.sub(/^\//, "")
+				location=~ /\?/
+				path= $` || location
+				args= self.class.parse_get($' || "")
+				@config.cache.store_link(cache_name, "web/"+path.dir_encode+"?"+args.dir_encode, page.tags)
+				create_page(path, args)
+			when (not page.cachable)
+				page.to_output
+			else
+				@config.cache.store(cache_name, page.to_output, page.tags)
+				create_page(path, args)
+			end
+		end
+
+		def create_404_page
+			cache_name= "weberror/404"
+			res= @config.cache.retrieve_io(cache_name)
+			return res if res
+			page= Web404Page.new(config)
+			@config.cache.store(cache_name, page.to_output, page.tags)
+			create_404_page
 		end
 
 		def page_switch(direction, args)
-			case direction.shift
-			when nil
-				WebSearchPage.new(config)
-			when "fileinfo"
-				WebFileInfoPage.new(config, direction.shift)
-			when "search"
+			case
+			when direction == []
+				WebRedirect.new(config, "/search")
+			when direction == ["add"]
+				WebAddPage.new(config)
+			when direction == ["sourcecode"]
+				WebSourceCode.new(config)
+			when (direction == ["search"] and (args.keys - ["tags"]) == [])
 				tags= (args["tags"] || "").split("+")
 				WebSearchPage.new(config, *tags)
-			when "classic"
-				WebClassicPage.new(config, *direction)
-			when "update"
-				WebUpdatePage.new(config, direction.shift)
-			when "remove"
-				WebRemovePage.new(config, direction.shift)
-			when "add"
-				WebAddPage.new(config)
+			when (direction.size == 2 and direction[0] == "files")
+				WebFile.new(config, direction[1])
+			when (direction.size == 2 and direction[0] == "fileinfo")
+				WebFileInfoPage.new(config, direction[1])
+			when (direction.size == 2 and direction[0] == "update")
+				WebUpdatePage.new(config, direction[1])
+			when (direction.size == 2 and direction[0] == "remove")
+				WebRemovePage.new(config, direction[1])
+			when direction[0] == "classic"
+				WebClassicPage.new(config, *direction[1..-1])
 			else
-				[HTML.error_page("wrong arguments", 404), []]
+				Web404Page.new(config)
 			end
 		end
 

@@ -26,7 +26,7 @@ require "filehosting/webpage"
 module FileHosting
 
 	# The sourcecode webpage
-	class WepSourceCode < WepPage
+	class WebSourceCode < WebPage
 
 		def initialize(config)
 			super(config)
@@ -56,6 +56,10 @@ module FileHosting
 			end
 			io.close_write
 			io
+		end
+
+		def cachable
+			true
 		end
 
 	end
