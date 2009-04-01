@@ -125,16 +125,66 @@ module FileHosting
 			args= case type
 			when "application/x-www-form-urlencoded"
 				self.class.parse_get(input.read)
+			when /^multipart\/form-data;\s+boundary=(.+)$/
+				self.class.parse_multipart_formdata(input, "--" + $1)
 			else
 				Hash.new
 			end
 			case
+			when direction == ["add"]
+				WebAddPage.new(config, args)
 			when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source"]).empty?)
 				WebUpdatePage.new(config, direction[1], args)
 			when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
 				WebRemovedPage.new(config, direction[1])
 			else
 				Web404Page.new(config)
+			end
+		end
+
+		# Parses the extra information in an http var.
+		# example: "Content-Disposition: form-data; name=filedata; filname=example.pdf
+		# the extra data is the one after the first ; 
+		# You may only provide this data.
+		def self.parse_http_var_extra(data)
+			res= Hash.new
+			data.split(";").each do |arg|
+				arg=~ /^\s*(\w+)=["'](.*?)["']$/
+				res[$1]= $2
+			end
+			res
+		end
+
+		def self.read_until_delimiter(io, delimiter)
+			data= ""
+			loop do
+				input= io.read(delimiter.size+2)
+				while input=~ /\r\n/
+					data+= $`
+					input= $'
+					if input == delimiter[0,input.size]
+						x= io.read(delimiter.size-input.size)
+						return data if x == delimiter[input.size..-1]
+						input+= x
+					end
+						data+= "\r\n"
+				end
+				data+= input
+			end
+		end
+
+		def self.parse_multipart_formdata(io, delimiter)
+			res= Hash.new
+			io.find { |line| line == delimiter + "\r\n" }
+			loop do
+				header= nil
+				io.each do |line|
+					line.strip!
+					break if line.empty?
+					header= self.parse_http_var_extra($') if line=~ /^Content-Disposition:\s+form-data;/
+				end
+				res[header["name"]]= self.read_until_delimiter(io, delimiter)
+				return res unless io.read(2) == "\r\n"
 			end
 		end
 

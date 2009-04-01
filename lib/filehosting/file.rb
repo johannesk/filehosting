@@ -21,36 +21,18 @@
 #++
 #
 
-require "filehosting/webdefaultpage"
-require "filehosting/errorwrapper"
+class File
 
-require "uuidtools"
-
-module FileHosting
-
-	# The parent of all uuid WebPages
-	class WebUUIDPage < WebDefaultPage
-
-		attr_reader :uuid
-
-		def initialize(config, uuid, *includes, &block)
-			@config= config
-			begin
-				@uuid= UUID.parse(uuid)
-			rescue ArgumentError
-				@status= 404
+		# Creates a temporary file and opens it for writing.
+		# Behaves like open with a block if a block is given.
+		def self.mktemp
+			path= `mktemp`.strip
+			if block_given?
+				File.open(path, "w") { |f| yield f }
+			else
+				File.open(path, "w")
 			end
-			@tags= ["files/#{uuid.to_s}"]
-			title, body= yield @uuid
-			status= @status
-			tags= @tags
-			cachable= @cachable
-			super(config, title, body, *includes)
-			@status= status unles nil == status
-			@tags= tags+@tags unless nil == tags
-			@cachable= cachable unless nil == cachable
 		end
 
-	end
-
 end
+

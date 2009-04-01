@@ -23,6 +23,7 @@
 
 require "filehosting/nosuchfileerror"
 require "filehosting/fileexistserror"
+require "filehosting/file"
 
 require "observer"
 
@@ -64,11 +65,10 @@ module FileHosting
 		# returns the filename as a string
 		def filedata_string(uuid)
 			io= filedata_io(uuid)
-			file= `mktemp`.strip
-			File.open(file, "w") do |f|
+			File.mktemp(file, "w") do |f|
 				IO2IO.forever(io.to_i, f.to_i)
+				f.path
 			end
-			file
 		end
 
 		# returns an io where the filedata can be read

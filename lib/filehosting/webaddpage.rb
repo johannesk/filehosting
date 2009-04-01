@@ -30,7 +30,7 @@ module FileHosting
 	# The add page
 	class WebAddPage < WebDefaultPage
 
-		def initialize(config)
+		def initialize(config, args= Hash.new)
 			@config= config
 			super(config, "add file", HTML.use_template("add.eruby", binding), "add.css")
 		end
