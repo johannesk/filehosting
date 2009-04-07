@@ -22,11 +22,15 @@
 #
 
 require "filehosting/web-tiny"
+require "filehosting/web_c"
 require "filehosting/html"
 require "filehosting/error"
 require "filehosting/nosuchfileerror"
 require "filehosting/yamltools"
 require "filehosting/webredirect"
+require "filehosting/file"
+
+require "fileutils"
 
 module FileHosting
 
@@ -130,16 +134,24 @@ module FileHosting
 			else
 				Hash.new
 			end
-			case
-			when direction == ["add"]
-				WebAddPage.new(config, args)
-			when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source"]).empty?)
-				WebUpdatePage.new(config, direction[1], args)
-			when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
-				WebRemovedPage.new(config, direction[1])
-			else
-				Web404Page.new(config)
+			files= args.values.grep(File)
+			begin
+				res= case
+				when direction == ["add"]
+					WebAddPage.new(config, args)
+				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source"]).empty?)
+					WebUpdatePage.new(config, direction[1], args)
+				when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
+					WebRemovedPage.new(config, direction[1])
+				else
+					Web404Page.new(config)
+				end
+			ensure
+				files.each do |file|
+					FileUtils.rm(file.path)
+				end
 			end
+			return res
 		end
 
 		# Parses the extra information in an http var.
@@ -157,9 +169,10 @@ module FileHosting
 
 		def self.read_until_delimiter(io, delimiter)
 			data= ""
+			delimiter= "\n" + delimiter
 			loop do
-				input= io.read(delimiter.size+2)
-				while input=~ /\r\n/
+				input= io.read(delimiter.size+1)
+				while input=~ /\r/
 					data+= $`
 					input= $'
 					if input == delimiter[0,input.size]
@@ -167,7 +180,7 @@ module FileHosting
 						return data if x == delimiter[input.size..-1]
 						input+= x
 					end
-						data+= "\r\n"
+						data+= "\r"
 				end
 				data+= input
 			end
@@ -183,7 +196,14 @@ module FileHosting
 					break if line.empty?
 					header= self.parse_http_var_extra($') if line=~ /^Content-Disposition:\s+form-data;/
 				end
-				res[header["name"]]= self.read_until_delimiter(io, delimiter)
+				res[header["name"]]= if header["filename"]
+					file= File.mktemp
+					read_until_delimiter_io(io, file, delimiter)
+					file.seek(0)
+					file
+				else
+					self.read_until_delimiter(io, delimiter)
+				end
 				return res unless io.read(2) == "\r\n"
 			end
 		end

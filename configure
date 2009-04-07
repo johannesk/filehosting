@@ -2,3 +2,5 @@
 
 cd lib/io2io
 ./configure
+cd ../filehosting/web
+./configure
