@@ -14,3 +14,8 @@ div.update_form td {
 	text-align: left;
 	padding-left: 10px;
 }
+
+div.update_form th.wrong_data {
+	color: red;
+	font-weight: bold;
+}

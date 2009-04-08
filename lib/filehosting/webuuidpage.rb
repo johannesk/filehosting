@@ -46,7 +46,7 @@ module FileHosting
 			tags= @tags
 			cachable= @cachable
 			super(config, title, body, *includes)
-			@status= status unles nil == status
+			@status= status unless nil == status
 			@tags= tags+@tags unless nil == tags
 			@cachable= cachable unless nil == cachable
 		end

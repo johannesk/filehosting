@@ -65,7 +65,7 @@ module FileHosting
 		def self.parse_get(query_string)
 			query_string=~ /^/
 			res= Hash.new
-			while $'=~ /^([^&=]+)=([^&]+)(&|$)/
+			while $'=~ /^([^&=]+)=([^&]*)(&|$)/
 				key= $1
 				value= $2
 				res[key.http_decode]= value.http_decode
