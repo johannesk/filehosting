@@ -255,7 +255,7 @@ module FileHosting
 				FileUtils.cp(file, dest)
 			when IO
 				File.new(dest, "w") do |f|
-					IO2IO.forever(file.to_i, dest.to_i)
+					IO2IO.do(file, dest)
 				end
 			end
 			fileinfo.size= file.size

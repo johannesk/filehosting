@@ -65,9 +65,8 @@ begin
 		case out
 		when String
 			print out
-			STDOUT.flush # this should be done in IO2IO.forever
 		when IO
-			IO2IO.forever(out.to_i, STDOUT.to_i)
+			IO2IO.do(out, STDOUT)
 		end
 	end
 rescue FileHosting::Error => e

@@ -28,7 +28,6 @@ require "filehosting/fileinfo"
 require "filehosting/historyevent"
 
 require "socket"
-require "io2io"
 
 module FileHosting
 

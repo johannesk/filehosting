@@ -66,7 +66,7 @@ module FileHosting
 		def filedata_string(uuid)
 			io= filedata_io(uuid)
 			File.mktemp(file, "w") do |f|
-				IO2IO.forever(io.to_i, f.to_i)
+				IO2IO.do(io, f)
 				f.path
 			end
 		end

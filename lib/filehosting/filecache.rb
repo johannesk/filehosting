@@ -62,8 +62,7 @@ module FileHosting
 						when String
 							f.write(input)
 						when IO
-							f.flush
-							IO2IO.forever(input.to_i, f.to_i)
+							IO2IO.do(input, f)
 						end
 					end
 				end

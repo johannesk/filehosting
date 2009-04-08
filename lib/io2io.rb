@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,36 +21,26 @@
 #++
 #
 
-require "filehosting/web-tiny"
+require "io2io_c"
 
-require "pathname"
+module IO2IO
 
-input = if (ENV["CONTENT_LENGTH"] || "0").to_i > 0
-	STDIN
-else
-	nil
-end
-
-web= FileHosting::Web.new({:cachedir => Pathname.new("/tmp/filehosting-cache")})
-io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new, input, ENV["CONTENT_TYPE"]) do
-	require "filehosting/config"
-	require "filehosting/configfilereader"
-
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc.cgi")
-	config= FileHosting::Config.new(etcreader)
-	web.config= config
-end
-
-unless io
-	exit 1
-end
-
-require "io2io"
-[io].flatten.each do |out|
-	case out
-	when String
-		print out
-	when IO
-		IO2IO.do(out, STDOUT)
+	def self.do(input, output, size= nil, interval= nil)
+		if block_given? and interval
+			done= 0
+			while !size or (done + interval) <= size
+				tmp= do_c(input, output, interval)
+				done+= tmp
+				yield done
+				return done if tmp < interval
+			end
+			if done!= size
+				do_c(input, output, size-(done-interval))
+				yield size
+			end
+		else
+			do_c(input, output, size)
+		end
 	end
+
 end

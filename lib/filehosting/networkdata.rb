@@ -113,8 +113,7 @@ module FileHosting
 					when String
 						io.print data
 					when IO
-						io.flush # this should be done in IO2IO
-						IO2IO.forever(data.to_i, io.to_i) # FIXME size is ignored
+						IO2IO.do(data, io, @size[i])
 					else
 						raise "Dont know how to transmit '#{data.class}'"
 					end
