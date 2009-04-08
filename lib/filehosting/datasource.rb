@@ -106,9 +106,10 @@ module FileHosting
 			end
 		end
 
-		# Replaces a file, but not it's metadata
+		# Replaces a file, but not it's metadata.
+		# Returns the fileinfo
 		def update_filedata(uuid, file)
-			notify_observers("files/#{fileinfo.uuid}")
+			notify_observers("files/#{uuid}")
 		end
 
 		# removes a file

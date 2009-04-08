@@ -10,7 +10,7 @@
 		<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
-		<form method="post" action="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>">
+		<form method="post" enctype="multipart/form-data" action="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>">
 			<tr>
 				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
 				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
@@ -30,6 +30,22 @@
 			<tr>
 				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
+			</tr>
+			<tr>
+				<th>hash</th>
+				<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash.to_html %></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>Only update a file when you want to replace the filedata.</td>
+			</tr>
+			<tr>
+				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
+				<td><input type="file" name="filedata" size="50" /></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>Uploading a file may take some time.</td>
 			</tr>
 			<tr>
 				<th><% if updated %>saved<% end %></th>

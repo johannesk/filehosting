@@ -139,7 +139,7 @@ module FileHosting
 				res= case
 				when direction == ["add"]
 					WebAddPage.new(config, args)
-				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source"]).empty?)
+				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source", "filedata"]).empty?)
 					WebUpdatePage.new(config, direction[1], args)
 				when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
 					WebRemovedPage.new(config, direction[1])

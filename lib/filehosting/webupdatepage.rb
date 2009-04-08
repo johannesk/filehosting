@@ -36,11 +36,17 @@ module FileHosting
 				wrong_filename= false
 				wrong_tags= false
 				wrong_source= false
+				wrong_filedata= false
 				if values
 					@cachable= false
+					old= fileinfo.clone
 					fileinfo.filename= values["filename"] if values["filename"]
 					fileinfo.tags= values["tags"].split("+") if values["tags"]
 					fileinfo.source= values["source"] if values["source"]
+					if File === values["filedata"]
+						file= Pathname.new(values["filedata"].path)
+						file= nil if file.size == 0
+					end
 					if fileinfo.filename.empty?
 						wrong_filename= true
 					end
@@ -51,9 +57,16 @@ module FileHosting
 						wrong_source= true
 					end
 					unless wrong_filename or wrong_tags or wrong_source
-						config.datasource.update_fileinfo(fileinfo)
-						updated= true
-						@status= 201
+						if fileinfo != old
+							config.datasource.update_fileinfo(fileinfo)
+							updated= true
+							@status= 201
+						end
+						if file
+							fileinfo= config.datasource.update_filedata(fileinfo.uuid, file)
+							updated= true
+							@status= 201
+						end
 					end
 				end
 				["update: #{fileinfo.uuid.to_s}", HTML.use_template("update.eruby", binding)]

@@ -160,6 +160,7 @@ module FileHosting
 				end
 			end
 			store_history(:replace, old.uuid, new-old)
+			new
 		end
 
 		def update_fileinfo(fileinfo)

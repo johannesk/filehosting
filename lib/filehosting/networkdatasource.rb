@@ -162,7 +162,10 @@ module FileHosting
 				query.add_string(uuid.to_s)
 				query.add_io(file, size)
 			end
-			raise InternalDataCorruptionError unless get.size.size == 0
+			raise InternalDataCorruptionError unless get.size.size == 1
+			res= YAML.load(get.read_string(0))
+			raise InternalDataCorruptionError unless FileInfo === res
+			res
 		end
 
 		# removes a file

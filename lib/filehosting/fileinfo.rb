@@ -75,6 +75,10 @@ module FileHosting
 			res
 		end
 
+		def ==(other)
+			to_hash == other.to_hash
+		end
+
 		def to_hash
 			{
 				:filename  => @filename,

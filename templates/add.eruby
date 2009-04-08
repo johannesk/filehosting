@@ -4,15 +4,15 @@
 		<form method="post" enctype="multipart/form-data" action="<%= webroot %>/add">
 			<tr>
 				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
-				<td><input type="text" name="filename" value="<%= fileinfo.filename %>" size="50" /></td>
+				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
-				<td><input type="text" name="tags" value="<%= fileinfo.tags %>" size="50" /></td>
+				<td><input type="text" name="tags" value="<%= fileinfo.tags.join(" ").to_html %>" size="50" /></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
-				<td><input type="text" name="source" value="<%= fileinfo.source %>" size="50" /></td>
+				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
