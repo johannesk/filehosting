@@ -109,7 +109,12 @@ module FileHosting
 				WebSourceCode.new(config)
 			when (direction == ["search"] and (args.keys - ["tags"]).empty?)
 				tags= (args["tags"] || "").split(" ")
-				WebSearchPage.new(config, *tags)
+				better= @config.datasource.optimize_search(tags)
+				if better != tags
+					WebRedirect.new(config, "/search?tags=" + better.join(" ").uri_encode, "tags")
+				else
+					WebSearchPage.new(config, *tags)
+				end
 			when (direction.size == 2 and direction[0] == "files")
 				WebFile.new(config, direction[1])
 			when (direction.size == 2 and direction[0] == "fileinfo")

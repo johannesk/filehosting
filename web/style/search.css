@@ -27,6 +27,14 @@ div.search_box div.tags li {
 	padding-left: 5px;
 }
 
+div.search_result h1 {
+	font-size: 100%;
+}
+
+div.search_result h2 {
+	font-size: 100%;
+}
+
 div.search_result th {
 	text-align: right;
 }

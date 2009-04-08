@@ -26,6 +26,7 @@ require "filehosting/fileexistserror"
 require "filehosting/file"
 
 require "observer"
+require "text"
 
 module FileHosting
 
@@ -42,8 +43,44 @@ module FileHosting
 		attr_reader :user
 
 		# You always have to specify a user
-		def initialize(user)
-			@user= user
+		def initialize(config)
+			@config= config
+		end
+
+		# Returns a better set of search tags
+		def optimize_search(*search)
+			search.flatten!
+			search.uniq!
+			available= tags
+			(search-tags).each do |wrong|
+				better= @config.cache.retrieve("search_optimize/"+wrong.dir_encode) do
+					available.sort! { |a,b| (a.size-wrong.size).abs <=> (b.size-wrong.size).abs }
+					found= nil
+					min= 1.0/0
+					s= 0
+					catch :finished do
+						available.each do |tag|
+							throw :finished if (wrong.size - tag.size).abs > min
+							r= Text::Levenshtein.distance(tag, wrong)
+							n= (tag.split(//) & wrong.split(//)).size
+							next if n == 0
+							if r < min
+								min= r
+								found= tag
+								s= 0
+							elsif r == min
+								if n > s
+									s= n
+									found= tag
+								end
+							end
+						end
+					end
+					[found || "", ["tags"]]
+				end
+				search[search.index(wrong)]= better unless better.empty?
+			end
+			search
 		end
 
 		# searches for all files with these tags

@@ -56,7 +56,7 @@ page= args[0]
 begin
 	web= FileHosting::Web.new(config)
 	page=~ /\?/
-	io= web.get_page($` || page, $' || Hash.new)
+	io= web.get_page($` || page, FileHosting::Web.parse_get($') || Hash.new)
 	unless io
 		STDERR.puts "page could not be created"
 		exit 3

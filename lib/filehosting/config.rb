@@ -52,7 +52,7 @@ module FileHosting
 			@values[:cachedir]= Pathname.new(@values[:cachedir]) unless Pathname === @values[:cachedir]
 			@values[:cache]= FileCache.new(@values[:cachedir])
 			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]
-			@values[:datasource]= @values[:datasource].new(@values[:user], *@values[:datasource_args])
+			@values[:datasource]= @values[:datasource].new(self, *@values[:datasource_args])
 			@values[:datasource].add_observer(@values[:cache])
 		end
 
@@ -66,6 +66,10 @@ module FileHosting
 
 		def cache
 			@values[:cache]
+		end
+
+		def user
+			@values[:user]
 		end
 
 		# Returns a subclass of Datasource only by its name

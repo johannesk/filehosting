@@ -77,6 +77,7 @@ if args.size < 1
 end
 
 begin
+	args= config.datasource.optimize_search(args) if $human
 	fileinfos= config.datasource.search_tags(args)
 	fileinfos_partial= config.datasource.search_tags_partial(args) if config[:partial_match]
 rescue FileHosting::Error => e

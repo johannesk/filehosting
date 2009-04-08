@@ -33,7 +33,7 @@ class String
 		self.gsub("%.", ".").gsub("%#", "/").gsub("%%", "%")
 	end
 
-	def http_decode
+	def uri_decode
 		res= ""
 		self.gsub("+", " ")=~ /^/
 		rem= $'
@@ -43,6 +43,10 @@ class String
 			res<< $1.to_i(16)
 		end
 		res+rem
+	end
+
+	def uri_encode
+		self.gsub("%", "%25").gsub("+", "%2B").gsub(" ", "+")
 	end
 
 end

@@ -1,5 +1,6 @@
 <div class="search_result">
-	<p><%= search_result.size %> Files found</p>
+	<h1>search result for: <%= tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
+	<h2><%= search_result.size %> Files found</h2>
 % search_result.each do |fileinfo|
 	<div class="fileinfo">
 		<h1>

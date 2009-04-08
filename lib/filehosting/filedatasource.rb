@@ -105,7 +105,7 @@ module FileHosting
 		end
 
 		# returns the history of a user
-		def history_user(user= @user)
+		def history_user(user= config.user)
 			file= @userhistorydir + user.to_s
 			raise NoSuchUserError.new(user) unless file.file?
 			YAMLTools.read_array(file, HistoryEvent)
@@ -279,7 +279,7 @@ module FileHosting
 
 		def store_history(action, uuid, data)
 			data.delete(:uuid) # we store the uuid separate
-			event= HistoryEvent.new(@user, action, uuid, data)
+			event= HistoryEvent.new(@config.user, action, uuid, data)
 			file= @historyfile
 			ffile= @filehistorydir + event.uuid.to_s
 			ufile= @userhistorydir + event.user.to_s

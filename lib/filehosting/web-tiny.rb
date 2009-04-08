@@ -68,7 +68,7 @@ module FileHosting
 			while $'=~ /^([^&=]+)=([^&]*)(&|$)/
 				key= $1
 				value= $2
-				res[key.http_decode]= value.http_decode
+				res[key.uri_decode]= value.uri_decode
 			end
 			res
 		end
@@ -79,7 +79,7 @@ end
 
 class String
 
-	def http_decode
+	def uri_decode
 		res= ""
 		self.gsub("+", " ")=~ /^/
 		rem= $'
