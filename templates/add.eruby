@@ -3,20 +3,24 @@
 	<table>
 		<form method="post" enctype="multipart/form-data" action="<%= webroot %>/add">
 			<tr>
-				<th>filename</th>
-				<td><input type="text" name="filename" size="50" /></td>
+				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
+				<td><input type="text" name="filename" value="<%= fileinfo.filename %>" size="50" /></td>
 			</tr>
 			<tr>
-				<th>tags</th>
-				<td><input type="text" name="tags" size="50" /></td>
+				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
+				<td><input type="text" name="tags" value="<%= fileinfo.tags %>" size="50" /></td>
 			</tr>
 			<tr>
-				<th>source</th>
-				<td><input type="text" name="source" size="50" /></td>
+				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
+				<td><input type="text" name="source" value="<%= fileinfo.source %>" size="50" /></td>
 			</tr>
 			<tr>
-				<th>filedata</th>
+				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
 				<td><input type="file" name="filedata" size="50" /></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>Uploading a file may take some time.</td>
 			</tr>
 			<tr>
 				<th></th>

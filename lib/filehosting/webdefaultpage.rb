@@ -30,10 +30,18 @@ module FileHosting
 	class WebDefaultPage < WebPage
 
 		def initialize(config, title, body, *includes)
+			header= @header
+			status= @status
+			tags= @tags
+			cachable= @cachable
 			super(config)
 			@header["Content-Type"]= "text/html; charset=utf-8"
 			@body= HTML.use_template("default.eruby", binding)
 			@cachable= true
+			@header.merge(header) unless header.nil?
+			@status= status unless status.nil?
+			@tags= tags+@tags unless tags.nil?
+			@cachable= cachable unless cachable.nil?
 		end
 
 		def size

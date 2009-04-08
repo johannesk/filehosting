@@ -42,13 +42,7 @@ module FileHosting
 			end
 			@tags= ["files/#{uuid.to_s}"]
 			title, body= yield @uuid
-			status= @status
-			tags= @tags
-			cachable= @cachable
 			super(config, title, body, *includes)
-			@status= status unless nil == status
-			@tags= tags+@tags unless nil == tags
-			@cachable= cachable unless nil == cachable
 		end
 
 	end

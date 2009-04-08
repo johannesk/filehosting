@@ -33,26 +33,27 @@ module FileHosting
 		def initialize(config, uuid, values= nil)
 			super(config, uuid, "update.css") do |fileinfo|
 				updated= false
-				filename_wrong= false
-				tags_wrong= false
-				source_wrong= false
+				wrong_filename= false
+				wrong_tags= false
+				wrong_source= false
 				if values
 					@cachable= false
 					fileinfo.filename= values["filename"] if values["filename"]
 					fileinfo.tags= values["tags"].split("+") if values["tags"]
 					fileinfo.source= values["source"] if values["source"]
 					if fileinfo.filename.empty?
-						filename_wrong= true
+						wrong_filename= true
 					end
 					if fileinfo.tags.empty?
-						tags_wrong= true
+						wrong_tags= true
 					end
 					if fileinfo.source.empty?
-						source_wrong= true
+						wrong_source= true
 					end
-					unless filename_wrong or tags_wrong or source_wrong
+					unless wrong_filename or wrong_tags or wrong_source
 						config.datasource.update_fileinfo(fileinfo)
 						updated= true
+						@status= 201
 					end
 				end
 				["update: #{fileinfo.uuid.to_s}", HTML.use_template("update.eruby", binding)]

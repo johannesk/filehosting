@@ -14,3 +14,8 @@ div.add_form td {
 	text-align: left;
 	padding-left: 10px;
 }
+
+div.add_form th.wrong_data {
+	color: red;
+	font-weight: bold;
+}

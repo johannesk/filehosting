@@ -23,6 +23,7 @@
 
 require "filehosting/webdefaultpage"
 require "filehosting/html"
+require "filehosting/fileinfo"
 
 
 module FileHosting
@@ -30,8 +31,41 @@ module FileHosting
 	# The add page
 	class WebAddPage < WebDefaultPage
 
-		def initialize(config, args= Hash.new)
+		def initialize(config, values= nil)
 			@config= config
+			fileinfo= FileInfo.new
+			wrong_filename= false
+			wrong_tags= false
+			wrong_source= false
+			if values
+				@cachable= false
+				fileinfo.filename= values["filename"]
+				fileinfo.tags= values["tags"].split(" ") if values["tags"]
+				fileinfo.source= values["source"]
+				if fileinfo.filename.nil? or fileinfo.filename.empty?
+					wrong_filename= true
+				end
+				if fileinfo.tags.nil? or fileinfo.tags.empty?
+					wrong_tags= true
+				end
+				if fileinfo.source.nil?
+					fileinfo.source= ""
+				end
+				unless File === values["filedata"]
+					wrong_filedata= true
+				else
+					file= Pathname.new(values["filedata"].path)
+					if file.size == 0
+						wrong_filedata= true
+					end
+				end
+				unless wrong_filename or wrong_tags or wrong_source or wrong_filedata
+					config.datasource.add_file(fileinfo, file)
+					@status= 201
+					super(config, "added file", HTML.use_template("fileinfo.eruby", binding), "fileinfo.css")
+					return
+				end
+			end
 			super(config, "add file", HTML.use_template("add.eruby", binding), "add.css")
 		end
 

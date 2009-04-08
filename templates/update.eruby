@@ -12,7 +12,7 @@
 	<table>
 		<form method="post" action="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>">
 			<tr>
-				<th<%  if filename_wrong %> class="wrong_data"<% end %>>filename</th>
+				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
 				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
 			</tr>
 			<tr>
@@ -20,7 +20,7 @@
 				<td><a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
 			</tr>
 			<tr>
-				<th<%  if tags_wrong %> class="wrong_data"<% end %>>tags</th>
+				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
 				<td><input type="text" name="tags" value="<%= fileinfo.tags.join(" ").to_html %>" size="50" /></td>
 			</tr>
 			<tr>
@@ -28,7 +28,7 @@
 				<td><%= fileinfo.size.to_html %></td>
 			</tr>
 			<tr>
-				<th<%  if source_wrong %> class="wrong_data"<% end %>>source</th>
+				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>
 			<tr>

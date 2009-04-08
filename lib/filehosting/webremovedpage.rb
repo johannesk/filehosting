@@ -35,6 +35,7 @@ module FileHosting
 			super(config, uuid, "remove.css") do |uuid|
 				begin
 					config.datasource.remove_file(uuid)
+					@status= 201
 				rescue NoSuchFileError
 					@status= 404
 					return
