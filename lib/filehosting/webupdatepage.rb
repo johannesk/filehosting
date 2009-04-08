@@ -41,7 +41,7 @@ module FileHosting
 					@cachable= false
 					old= fileinfo.clone
 					fileinfo.filename= values["filename"] if values["filename"]
-					fileinfo.tags= values["tags"].split("+") if values["tags"]
+					fileinfo.tags= values["tags"].split(" ") if values["tags"]
 					fileinfo.source= values["source"] if values["source"]
 					if File === values["filedata"]
 						file= Pathname.new(values["filedata"].path)

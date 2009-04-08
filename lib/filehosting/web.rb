@@ -108,7 +108,7 @@ module FileHosting
 			when direction == ["sourcecode"]
 				WebSourceCode.new(config)
 			when (direction == ["search"] and (args.keys - ["tags"]).empty?)
-				tags= (args["tags"] || "").split("+")
+				tags= (args["tags"] || "").split(" ")
 				WebSearchPage.new(config, *tags)
 			when (direction.size == 2 and direction[0] == "files")
 				WebFile.new(config, direction[1])

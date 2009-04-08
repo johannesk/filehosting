@@ -81,7 +81,7 @@ class String
 
 	def http_decode
 		res= ""
-		self=~ /^/
+		self.gsub("+", " ")=~ /^/
 		rem= $'
 		while $'=~ /%([A-Za-z0-9]{2})/
 			rem= $'
