@@ -1,5 +1,10 @@
 <div class="search_result">
 	<h1>search result for: <%= tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
+% if rules
+% 	rules.each do |rule|
+	<h3><%= rule.to_html %></h3>
+% 	end
+% end
 	<h2><%= search_result.size %> Files found</h2>
 % search_result.each do |fileinfo|
 	<div class="fileinfo">

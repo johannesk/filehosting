@@ -44,11 +44,10 @@ module FileHosting
 		end
 
 		# searches for all files with these tags
-		def search_tags(tags)
+		def search_tags(tags, rule= nil)
 			get= send_query("search_tags") do |query|
-				tags.each do |tag|
-					query.add_string(tag.to_s)
-				end
+				query.add_string(tags.to_yaml)
+				query.add_string(rule.to_yaml) if rule
 			end
 			res= []
 			get.size.times do |i|
@@ -59,11 +58,10 @@ module FileHosting
 		end
 
 		# searches for all files with at least on of this tags
-		def search_tags_partial(tags)
+		def search_tags_partial(tags, rule= nil)
 			get= send_query("search_tags_partial") do |query|
-				tags.each do |tag|
-					query.add_string(tag.to_s)
-				end
+				query.add_string(tags.to_yaml)
+				query.add_string(rule.to_yaml) if rule
 			end
 			res= []
 			get.size.times do |i|

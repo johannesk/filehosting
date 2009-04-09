@@ -22,26 +22,44 @@
 #
 
 require "filehosting/webdefaultpage"
+require "filehosting/rule"
 require "filehosting/html"
+require "filehosting/ruleerror"
 
 module FileHosting
 
 	# The search page
 	class WebSearchPage < WebDefaultPage
 
-		def initialize(config, *tags)
+		def initialize(config, search=[], rules= nil)
 			@config= config
-			tags.flatten!
+			search.flatten!
 			title= "search"
-			title+= ": #{tags.join(", ")}" unless tags.empty?
-			if tags.empty?
+			title+= ": #{search.join(", ")}" unless search.empty?
+			error= nil
+			if search.empty?
 				tags= config.datasource.tags.sort
 				dep= ["tags"]
 				body= HTML.use_template("search_new.eruby", binding)
 			else
-				search_result= config.datasource.search_tags(tags)
-				dep= tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
-				body= HTML.use_template("search.eruby", binding)
+				begin
+					rule= nil
+					if rules
+						rule= FileHosting::Rule.new(true)
+						rules.each do |r|
+							next if r.strip.empty?
+							rule.add_raw(r)
+						end
+					end
+					search_result= config.datasource.search_tags(search, rule)
+					dep= search.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
+					body= HTML.use_template("search.eruby", binding)
+				rescue RuleError => e
+					error= e.to_s
+					tags= config.datasource.tags.sort
+					dep= ["tags"]
+					body= HTML.use_template("search_new.eruby", binding)
+				end
 			end
 			super(config, title, body, "search.css")
 			@tags+= dep

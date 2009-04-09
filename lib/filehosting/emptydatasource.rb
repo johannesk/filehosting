@@ -31,12 +31,12 @@ module FileHosting
 	class EmptyDataSource < DataSource
 
 		# searches for all files with these tags
-		def search_tags(tags)
+		def search_tags(tags, rule= nil)
 			[]
 		end
 
 		# searches for all files with at least on of this tags
-		def search_tags_partial(tags)
+		def search_tags_partial(tags, rule= nil)
 			[]
 		end
 

@@ -21,36 +21,23 @@
 #++
 #
 
-class String
+require "filehosting/ruleerror"
 
-	alias :to_text :to_s
+module FileHosting
 
-	def dir_encode
-		self.gsub("%", "%%").gsub("/", "%#").gsub(".", "%.")
-	end
+	# This error indicates an error while evaluating a Rule.
+	class RuleOperandError < RuleError
 
-	def dir_decode
-		self.gsub("%.", ".").gsub("%#", "/").gsub("%%", "%")
-	end
-
-	def uri_decode
-		res= ""
-		self.gsub("+", " ")=~ /^/
-		rem= $'
-		while $'=~ /%([A-Za-z0-9]{2})/
-			rem= $'
-			res+= $`
-			res<< $1.to_i(16)
+		attr_reader :operand
+		
+		def initialize(operand)
+			@operand= operand
 		end
-		res+rem
-	end
 
-	def uri_encode
-		self.gsub("%", "%25").gsub("+", "%2B").gsub(" ", "+")
-	end
+		def to_s
+			"malformed operand '#{operand}'"
+		end
 
-	def user_decode
-		self.gsub("\\\\", "\\").gsub("\\n", "\n").gsub("\\r", "\r").gsub("\\\"", "\"").gsub(/\\(.)/, "\\1")
 	end
 
 end

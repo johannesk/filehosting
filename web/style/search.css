@@ -7,6 +7,23 @@ div.search_box h1 {
 	font-size: 400%;
 }
 
+div.search_box div.error {
+	color: red;
+}
+
+div.search_box table {
+	display: inline-block;
+}
+
+div.search_box th {
+	text-align: right;
+}
+
+div.search_box td {
+	text-align: left;
+	padding-left: 10px;
+}
+
 div.search_box div.tags {
 	font-size: 80%;
 }
@@ -33,6 +50,11 @@ div.search_result h1 {
 
 div.search_result h2 {
 	font-size: 100%;
+}
+
+div.search_result h3 {
+	font-size: 80%;
+	font-variant: monospace;
 }
 
 div.search_result th {

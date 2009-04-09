@@ -27,6 +27,8 @@ require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
+require "filehosting/rule"
+require "filehosting/ruleerror"
 
 class SearchArgReader < FileHosting::ConfigArgReader
 	
@@ -61,6 +63,21 @@ class SearchArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_c :switch_count
 
+	def help_rule
+		"display only files matching the rule"
+	end
+
+	def switch_rule(rule)
+		@values[:rule]= FileHosting::Rule.new(true) unless @values[:rule]
+		begin
+			@values[:rule].add_raw(rule)
+		rescue FileHosting::RuleError
+			STDERR.puts "error in rule '#{rule}'"
+			exit 1
+		end
+	end
+	alias :switch_r :switch_rule
+
 end
 
 autoreader= FileHosting::AutoConfigReader.new
@@ -78,8 +95,8 @@ end
 
 begin
 	args= config.datasource.optimize_search(args) if $human
-	fileinfos= config.datasource.search_tags(args)
-	fileinfos_partial= config.datasource.search_tags_partial(args) if config[:partial_match]
+	fileinfos= config.datasource.search_tags(args, config[:rule])
+	fileinfos_partial= config.datasource.search_tags_partial(args, config[:rule]) if config[:partial_match]
 rescue FileHosting::Error => e
 	puts e
 	exit 2

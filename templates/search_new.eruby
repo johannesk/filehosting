@@ -1,9 +1,37 @@
 <div class="search_box">
 	<h1>search:</h1>
 	<form method="GET" action="<%= webroot %>/search">
-		<input type="text" name="tags" />
+% if error
+		<div class="error"><%= error %></div>
+% end
+% if rules
+		<table>
+			<tr>
+				<th>tags</th>
+				<td>
+% end
+		<input type="text" name="tags" size="33" value="<%= search.join(" ").to_html %>" />
+% if rules
+				</td>
+			</tr>
+			<tr>
+				<th>rules</th>
+				<td><textarea name="rules" rows="6" cols="50"><%= rules.collect { |r| r.to_html }.join("\n") %></textarea></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>
+% end
 		<input type="submit" value="search" />
+% if rules
+				</td>
+			</tr>
+		</table>
+% end
 	</form>
+% if !rules
+	<p><a href="<%= webroot %>/search?rules=">advanced search</a></p>
+% end
 	<div class="tags">
 		<h1>available tags:</h1>
 		<ul>

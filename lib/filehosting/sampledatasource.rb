@@ -29,7 +29,7 @@ module FileHosting
 	# Sample DataSource generates Sample FileInfo's
 	class SampleDataSource < DataSource
 
-		def search_tags(tags)
+		def search_tags(tags, rule= nil)
 			(1..rand(6)).collect { |x| SampleFileInfo.new }
 		end
 

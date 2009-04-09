@@ -55,16 +55,18 @@ module FileHosting
 			end
 		end
 
-		def search_tags(tags)
+		def search_tags(tags, rule= nil)
 			tags= tags.clone
 			res= uuids_by_tag(tags.pop)
 			tags.each do |tag|
 				res&= uuids_by_tag(tag)
 			end
-			res.collect { |uuid| fileinfo(uuid) }
+			res= res.collect { |uuid| fileinfo(uuid) }
+			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
+			res
 		end
 
-		def search_tags_partial(tags)
+		def search_tags_partial(tags, rule= nil)
 			count= Hash.new(0)
 			tags.each do |tag|
 				uuids_by_tag(tag).each do |uuid|
@@ -74,7 +76,9 @@ module FileHosting
 			res= count.keys
 			res.delete_if { |x| count[x] == tags.size }
 			res.sort! { |a,b| count[b] <=> count[a] }
-			res.collect { |uuid| fileinfo(uuid) }
+			res= res.collect { |uuid| fileinfo(uuid) }
+			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
+			res
 		end
 
 		# returns all available tags

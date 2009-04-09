@@ -47,48 +47,15 @@ module FileHosting
 			@config= config
 		end
 
-		# Returns a better set of search tags
-		def optimize_search(*search)
-			search.flatten!
-			search.uniq!
-			available= tags
-			(search-tags).each do |wrong|
-				better= @config.cache.retrieve("search_optimize/"+wrong.dir_encode) do
-					available.sort! { |a,b| (a.size-wrong.size).abs <=> (b.size-wrong.size).abs }
-					found= nil
-					min= 1.0/0
-					s= 0
-					catch :finished do
-						available.each do |tag|
-							throw :finished if (wrong.size - tag.size).abs > min
-							r= Text::Levenshtein.distance(tag, wrong)
-							n= (tag.split(//) & wrong.split(//)).size
-							next if n == 0
-							if r < min
-								min= r
-								found= tag
-								s= 0
-							elsif r == min
-								if n > s
-									s= n
-									found= tag
-								end
-							end
-						end
-					end
-					[found || "", ["tags"]]
-				end
-				search[search.index(wrong)]= better unless better.empty?
-			end
-			search
-		end
+		# The following methods should be reimplemented in a
+		# child class of DataSource.
 
 		# searches for all files with these tags
-		def search_tags(tags)
+		def search_tags(tags, rule= nil)
 		end
 
 		# searches for all files with at least on of this tags
-		def search_tags_partial(tags)
+		def search_tags_partial(tags, rule=nil)
 		end
 
 		# returns all available tags
@@ -164,6 +131,45 @@ module FileHosting
 
 		# returns the history of a file
 		def history_file(uuid)
+		end
+
+		# The following methods need not to be reimplemented
+		# in a child class of DataSource.
+
+		# Returns a better set of search tags
+		def optimize_search(*search)
+			search.flatten!
+			search.uniq!
+			available= tags
+			(search-tags).each do |wrong|
+				better= @config.cache.retrieve("search_optimize/"+wrong.dir_encode) do
+					available.sort! { |a,b| (a.size-wrong.size).abs <=> (b.size-wrong.size).abs }
+					found= nil
+					min= 1.0/0
+					s= 0
+					catch :finished do
+						available.each do |tag|
+							throw :finished if (wrong.size - tag.size).abs > min
+							r= Text::Levenshtein.distance(tag, wrong)
+							n= (tag.split(//) & wrong.split(//)).size
+							next if n == 0
+							if r < min
+								min= r
+								found= tag
+								s= 0
+							elsif r == min
+								if n > s
+									s= n
+									found= tag
+								end
+							end
+						end
+					end
+					[found || "", ["tags"]]
+				end
+				search[search.index(wrong)]= better unless better.empty?
+			end
+			search
 		end
 
 	end
