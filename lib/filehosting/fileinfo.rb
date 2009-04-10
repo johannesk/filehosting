@@ -109,6 +109,7 @@ module FileHosting
 				"tags"      => lambda { @tags }
 			}
 		end
+		alias :rule_operand :to_yaml_properties
 
 		def to_yaml_type
 			"!filehosting/fileinfo"

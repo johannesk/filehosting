@@ -62,7 +62,7 @@ module FileHosting
 				res&= uuids_by_tag(tag)
 			end
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
+			res= res.find_all { |info| rule.test({"fileinfo" => info}) } if rule
 			res
 		end
 

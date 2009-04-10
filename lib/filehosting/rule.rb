@@ -23,7 +23,6 @@
 
 require "filehosting/ruleevalerror"
 require "filehosting/ruleoperanderror"
-require "filehosting/rulewhaterror"
 require "filehosting/string"
 require "filehosting/yaml"
 
@@ -41,50 +40,38 @@ module FileHosting
 			@conditions= conditions
 		end
 
-		def add_condition(what, test, operand)
-			@conditions<< [what, test, operand]
+		def add_condition(a, test, b)
+			@conditions<< [a, test, b]
 		end
 
 		def add_raw(raw)
-			if raw=~ /^\s*([^\s]+)\s+([^\s]+)\s+(.*?[^\s])\s*$/
-				add_condition($1, $2, parse_operand($3))
+			if raw=~ /^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$/
+				add_condition($1, $2, $3)
 			else
 				raise RuleEvalError.new(raw)
 			end
 		end
 
 		def test(data)
-			@conditions.each do |what, test, operand|
-				return @nil unless test_condition(parse_data(what, data), test, operand)
+			@conditions.each do |a, test, b|
+				return @nil unless test_condition(parse_operand(a, data), test, parse_operand(b, data))
 			end
 			return @result
 		end
 
-		def parse_data(what, data)
-			case what
-			when "fileinfo.uuid"
-				data[:fileinfo].uuid.to_s
-			when "fileinfo.filename"
-				data[:fileinfo].filename
-			when "fileinfo.mimetype"
-				data[:fileinfo].mimetype
-			when "fileinfo.size"
-				data[:fileinfo].size
-			when "fileinfo.hash_type"
-				data[:fileinfo].hash_type
-			when "fileinfo.hash"
-				data[:fileinfo].hash
-			when "fileinfo.tags"
-				data[:fileinfo].tags
-			when "fileinfo.source"
-				data[:fileinfo].source
-			else
-				raise RuleWhatError.new(what)
-			end
-		end
-
-		def parse_operand(operand)
+		def parse_operand(operand, data)
 			case operand
+			when /^(\w+)((\.\w+)+)$/
+				op= $2[1..-1]
+				res= data[$1]
+				raise RuleOperandError.new(operand) unless res
+				while op=~ /^(\w+)((\.\w+)*)$/
+					op= $2[1..-1] || ""
+					bl= res.rule_operand[$1]
+					raise RuleOperandError.new(operand) unless bl
+					res= bl.call
+				end
+				res
 			when /^\d+$/
 				operand.to_i
 			when /^(\d+)([,.](\d*))?([kmgtpKMGTP])$/
@@ -158,4 +145,31 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "rule") do |tag, value|
 	end
 end
 
+class Object
+
+	def rule_operand
+		Hash.new
+	end
+
+end
+
+class Array
+
+	def rule_operand
+		{
+			"size" => lambda { size }
+		}
+	end
+
+end
+
+class String
+
+	def rule_operand
+		{
+			"size" => lambda { size }
+		}
+	end
+
+end
 

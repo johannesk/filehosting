@@ -40,17 +40,24 @@ module FileHosting
 
 		def parse(args)
 			m= switches
+			res= []
 			args= self.class.split_shortarg(args)
 			while args.size > 0
-				break unless args[0]=~ /^--?(\w+)$/
-				arg= args.shift
-				switch_help unless m.include?(arg)
-				block= method("switch_#{$1}")
-				a= []
-				block.arity.times { a << args.shift }
-				block.call(*a)
+				case arg= args.shift
+				when "--"
+					return res + args
+				when /^--?(\w+)$/
+					switch_help unless m.include?(arg)
+					block= method("switch_#{$1}")
+					a= []
+					switch_help unless args.size >= block.arity
+					block.arity.times { a << args.shift }
+					block.call(*a)
+				else
+					res << arg
+				end
 			end
-			args
+			res
 		end
 
 		# converts ["-abc"] into ["-a", "-b", "-c"]
