@@ -63,7 +63,7 @@ module FileHosting
 		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil)
 			cache_name= "web#{input ? "post" : ""}/"+path.dir_encode+"?"+args.dir_encode
-			res= @config.cache.retrieve_io(cache_name)
+			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			direction= path.split("/")
 			page= unless input
@@ -85,18 +85,20 @@ module FileHosting
 			when (not page.cachable)
 				page.to_output
 			else
-				@config.cache.store(cache_name, page.to_output, page.tags)
-				create_page(path, args)
+				res= page.to_output
+				@config.cache.store(cache_name, res, page.tags)
+				res
 			end
 		end
 
 		def create_404_page
 			cache_name= "weberror/404"
-			res= @config.cache.retrieve_io(cache_name)
+			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			page= Web404Page.new(config)
-			@config.cache.store(cache_name, page.to_output, page.tags)
-			create_404_page
+			res= page.to_output
+			@config.cache.store(cache_name, res, page.tags)
+			res
 		end
 
 		def page_switch(direction, args)

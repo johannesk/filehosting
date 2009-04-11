@@ -1,4 +1,6 @@
 ---
+storage: file
+storage_args: /tmp/filehosting
 datasource: file
 datasource_args: /tmp
 human: true

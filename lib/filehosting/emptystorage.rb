@@ -21,24 +21,53 @@
 #++
 #
 
-require "filehosting/ruleerror"
+require "filehosting/storage"
 
 module FileHosting
 
-	# This error indicates an error while evaluating a Rule.
-	class RuleWhatError < RuleError
+	# EmptyStorage stores nothing.
+	class EmptyStorage < Storage
 
-		attr_reader :what
-		
-		def initialize(what)
-			@what= what
+		# Reads a record.
+		def read(prefix, name, type= String)
+			nil
 		end
 
-		def to_s
-			"no data for '#{what}' found"
+		# Checks whether a record exists.
+		def exists?(prefix, name)
+			false
+		end
+
+		# Searches all record names for an index.
+		def index(prefix, index)
+			[]
+		end
+
+		# Returns all record names
+		def records(prefix)
+			[]
+		end
+
+		# Stores an index
+		def store_index(prefix, index, name)
+		end
+
+		# Stores data.
+		def store_data(prefix, name, data)
+		end
+
+		# Links one's data to target data.
+		def store_link(prefix, name, target)
+		end
+
+		# Removes a record.
+		def remove(prefix, name)
+		end
+
+		# Removes an index for a record.
+		def remove_index(prefix, index, name)
 		end
 
 	end
 
 end
-

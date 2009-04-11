@@ -1,5 +1,5 @@
 <div class="search_result">
-	<h1>search result for: <%= tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
+	<h1>search result for: <%= search.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
 % if rules
 % 	rules.each do |rule|
 	<h3><%= rule.to_html %></h3>

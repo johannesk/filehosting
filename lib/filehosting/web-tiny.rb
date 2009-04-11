@@ -50,7 +50,7 @@ module FileHosting
 				if file.file?
 					return File.new(file)
 				end
-				file= @config[:cachedir] + "files" + ("web/" + path.dir_encode + "?" + args.dir_encode).dir_encode
+				file= @config[:cachedir] + "cache" + "data" + ("web/" + path.dir_encode + "?" + args.dir_encode).dir_encode
 				if file.file?
 					return File.new(file)
 				end

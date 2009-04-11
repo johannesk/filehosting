@@ -21,7 +21,7 @@
 #++
 #
 
-require "filehosting/filecache"
+require "filehosting/cache"
 
 require "pathname"
 
@@ -35,9 +35,9 @@ module FileHosting
 		def initialize(*data)
 			@values= {
 				:datasource_args => [],
+				:storage_args    => [],
 				:human           => false,
 				:user            => "unknown",
-				:cachedir        => "/tmp/filehosting-cache/",
 				:webroot         => ""
 			}
 			data.each do |d|
@@ -49,9 +49,10 @@ module FileHosting
 				end)
 			end
 			$human= @values[:human]
-			@values[:cachedir]= Pathname.new(@values[:cachedir]) unless Pathname === @values[:cachedir]
-			@values[:cache]= FileCache.new(@values[:cachedir])
-			@values[:datasource]= self.class.datasource_by_name(@values[:datasource]) if @values[:datasource]
+			@values[:storage]= self.class.storage_by_name(@values[:storage])
+			@values[:storage]= @values[:storage].new(*@values[:storage_args])
+			@values[:cache]= Cache.new(self)
+			@values[:datasource]= self.class.datasource_by_name(@values[:datasource])
 			@values[:datasource]= @values[:datasource].new(self, *@values[:datasource_args])
 			@values[:datasource].add_observer(@values[:cache])
 		end
@@ -68,6 +69,10 @@ module FileHosting
 			@values[:cache]
 		end
 
+		def storage
+			@values[:storage]
+		end
+
 		def user
 			@values[:user]
 		end
@@ -75,6 +80,7 @@ module FileHosting
 		# Returns a subclass of Datasource only by its name
 		# possible values are:
 		# - sample
+		# - file
 		def self.datasource_by_name(name)
 			case name.to_s
 			when "sample"
@@ -89,7 +95,24 @@ module FileHosting
 			end
 		end
 
+		# Returns a subclass of Storage only by its name
+		# possible values are:
+		# - empty
+		# - file
+		def self.storage_by_name(name)
+			case name.to_s
+			when "empty"
+				require "filehosting/emptystorage"
+				EmptyStorage
+			when "file"
+				require "filehosting/filestorage"
+				FileStorage
+			else
+				require "filehosting/emptystorage"
+				EmptyStorage
+			end
+		end
+
 	end
 
 end
-

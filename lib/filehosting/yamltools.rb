@@ -24,6 +24,7 @@
 require "filehosting/pathname"
 
 require "yaml"
+require "fileutils"
 
 module FileHosting
 
@@ -47,8 +48,15 @@ module FileHosting
 
 		# stores an object converted to YAML in a file
 		def self.store(file, data)
-			File.open(file, "w") do |f|
-				f.write(data.to_yaml)
+			tmp= file.dirname + (file.basename.to_s + ".tmp")
+			begin
+				File.open(tmp, "w") do |f|
+					f.write(data.to_yaml)
+				end
+				FileUtils.mv(tmp, file)
+			rescue Exception => e
+				tmp.rm
+				raise e
 			end
 		end
 

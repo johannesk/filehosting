@@ -24,7 +24,11 @@
 class Pathname
 
 	def delete?
-		self.delete if self.file?
+		self.delete if self.linkfile?
+	end
+
+	def linkfile?
+		self.symlink? or self.file?
 	end
 
 end
