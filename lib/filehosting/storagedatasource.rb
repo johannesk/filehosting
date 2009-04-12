@@ -24,11 +24,8 @@
 require "filehosting/datasource"
 require "filehosting/fileinfo"
 require "filehosting/historyevent"
-require "filehosting/nosuchfileerror"
-require "filehosting/nosuchusererror"
-require "filehosting/fileexistserror"
-require "filehosting/internaldatacorruptionerror"
 require "filehosting/yamltools"
+require "filehosting/user"
 
 require "pathname"
 require "yaml"
@@ -38,6 +35,12 @@ require "fileutils"
 require "io2io"
 
 module FileHosting
+
+	autoload :NoSuchFileError, "filehosting/nosuchfileerror"
+	autoload :FileExistsError, "filehosting/fileexistserror"
+	autoload :NoSuchUserError, "filehosting/nosuchusererror"
+	autoload :UserExistsError, "filehosting/userexistserror"
+	autoload :InternalDataCorruptionError , "filehosting/internaldatacorruptionerror"
 
 	# FileDataSource stores all data in the filesystem
 	class StorageDataSource < DataSource
@@ -98,13 +101,6 @@ module FileHosting
 			data
 		end
 
-		# returns the history of a user
-		def history_user(user= config.user)
-			data= @storage.read(userhistory_name(user))
-			raise NoSuchUserError.new(user) unless data
-			YAMLTools.parse_array(data, HistoryEvent)
-		end
-
 		# returns the history of a file
 		def history_file(uuid)
 			data= @storage.read(filehistory_name(uuid))
@@ -128,13 +124,13 @@ module FileHosting
 				end
 				raise e
 			end
-			store_history(:create, fileinfo.uuid, fileinfo.to_hash)
+			store_history(:file_create, fileinfo.uuid.to_s, fileinfo.to_hash)
 		end
 
 		def update_filedata(uuid, file)
 			super
 			new= store_file(fileinfo(uuid), file)
-			store_history(:replace, old.uuid, new-old)
+			store_history(:file_replace, old.uuid.to_s, new-old)
 			new
 		end
 
@@ -169,7 +165,7 @@ module FileHosting
 					raise e
 				end
 			end
-			store_history(:update, old.uuid, fileinfo-old)
+			store_history(:file_update, old.uuid.to_s, fileinfo-old)
 		end
 
 		def remove_file(uuid)
@@ -183,7 +179,48 @@ module FileHosting
 			rescue
 				@storage.store(name, old.to_yaml, index)
 			end
-			store_history(:remove, old.uuid, Hash.new)
+			store_history(:file_remove, old.uuid.to_s, Hash.new)
+		end
+
+		# returns information about a user
+		def user(username= @user.username)
+			name= user_name(username)
+			res= @storage.read(user_name(username))
+			raise NoSuchUserError.new(username) unless res
+			res= YAML.load(res)
+			raise InternalDataCorruptionError unless User === res
+			res
+		end
+
+		# creates a new user
+		def add_user(user)
+			name= user_name(user)
+			raise UserExistsError.new(user.username) if @storage.exists?(name)
+			@storage.store_data(name, user.to_yaml)
+			store_history(:user_create, user.username, user.to_hash)
+		end
+
+		# updates a user
+		def update_user(user)
+			name= user_name(user)
+			old= user(user.username)
+			@storage.store_data(name, user.to_yaml)
+			store_history(:user_update, user.username, user-old)
+		end
+
+		# removes a user
+		def remove_user(username)
+			name= user_name(user)
+			raise NoSuchUserError unless @storage.exists?(name)
+			@storage.remove(name)
+			store_history(:user_remove, user.username, Hash.new)
+		end
+
+		# returns the history of a user
+		def history_user(user= config.user)
+			data= @storage.read(userhistory_name(user))
+			raise NoSuchUserError.new(user) unless data
+			YAMLTools.parse_array(data, HistoryEvent)
 		end
 
 		private
@@ -239,10 +276,14 @@ module FileHosting
 			fileinfo
 		end
 
-		def store_history(action, uuid, data)
-			data.delete(:uuid) # we store the uuid separate
-			event= HistoryEvent.new(@config.user, action, uuid, data)
-			fhistory_name= filehistory_name(event.uuid)
+		def store_history(action, entity, data)
+			event= HistoryEvent.new(@user, action, entity, data)
+			fhistory_name= case action.to_s
+			when /^file/
+				filehistory_name(entity)
+			when /^user/
+				userhistory_name(entity)
+			end
 			uhistory_name= userhistory_name(event.user)
 			history= YAMLTools.parse_array(@storage.read(history_name), HistoryEvent)
 			fhistory= YAMLTools.parse_array(@storage.read(fhistory_name), HistoryEvent)
@@ -282,6 +323,15 @@ module FileHosting
 
 		def tag_name(tag)
 			"tag/" + tag.to_s
+		end
+
+		def user_name(user)
+			case user
+			when User
+				"user/" + user
+			when String
+				"user/" + user.username
+			end
 		end
 
 		def uuid_from_name(name)

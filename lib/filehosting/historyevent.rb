@@ -26,7 +26,6 @@ require "filehosting/yaml"
 require "filehosting/internaldatacorruptionerror"
 
 require "yaml"
-require "uuidtools"
 
 module FileHosting
 
@@ -45,15 +44,15 @@ module FileHosting
 		attr_accessor :action
 
 		# the object of the action
-		attr_accessor :uuid
+		attr_accessor :entity
 
 		# the data which changed due to the history event
 		attr_accessor :data
 
-		def initialize(user= nil, action= nil, uuid= nil, data= nil)
+		def initialize(user= nil, action= nil, entity= nil, data= nil)
 			@user= user
 			@action= action
-			@uuid= uuid
+			@entity= entity
 			@data= data
 			@time= Time.now
 		end
@@ -62,7 +61,7 @@ module FileHosting
 			{
 				:time   => @time,
 				:user   => @user,
-				:uuid   => @uuid,
+				:entity   => @entity,
 				:action => @action,
 				:data   => @data
 			}
@@ -72,12 +71,11 @@ module FileHosting
 			to_hash.to_text([:time, :user, :uuid, :action, :data])
 		end
 
-		# all subclasses of FileInfo should only serialize FileInfo Attributes
 		def to_yaml_properties
 			{
 				"time"   => lambda { @time },
 				"user"   => lambda { @user },
-				"uuid"   => lambda { @uuid.to_s },
+				"entity" => lambda { @entity.to_s },
 				"action" => lambda { @action.to_s },
 				"data"   => lambda do
 					res= Hash.new
@@ -103,7 +101,7 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "historyevent") do |tag, value
 		res.time= value["time"]
 		raise FileHosting::InternalDataCorruptionError unless Time === res.time
 		res.user= value["user"].to_s
-		res.uuid= UUID.parse(value["uuid"])
+		res.entity= value["entity"].to_s
 		res.action= value["action"].to_sym
 		res.data= Hash.new
 		value["data"].to_hash.each do |key, value|

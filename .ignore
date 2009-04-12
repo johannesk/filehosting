@@ -3,3 +3,5 @@
 - !ruby/regexp /\.o$/
 - !ruby/regexp /io2io/Makefile$/
 - !ruby/regexp /io2io/io2io.so$/
+- !ruby/regexp /web/Makefile$/
+- !ruby/regexp /web/web.so$/

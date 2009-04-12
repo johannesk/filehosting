@@ -120,13 +120,33 @@ module FileHosting
 			end
 		end
 
-		# returns the history of a user
-		def history_user(user= @user)
+		# returns the history of a file
+		def history_file(uuid)
 			raise NotImplementedError
 		end
 
-		# returns the history of a file
-		def history_file(uuid)
+		# returns information about a user
+		def user(username= nil)
+			raise NotImplementedError
+		end
+
+		# creates a new user
+		def add_user(user)
+			raise NotImplementedError
+		end
+
+		# updates a user
+		def update_user(user)
+			raise NotImplementedError
+		end
+
+		# removes a user
+		def remove_user(username)
+			raise NotImplementedError
+		end
+
+		# returns the history of a user
+		def history_user(user= @user)
 			raise NotImplementedError
 		end
 
