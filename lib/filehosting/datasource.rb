@@ -52,32 +52,27 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
+			raise NotImplementedError
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
+			raise NotImplementedError
 		end
 
 		# returns all available tags
 		def tags
+			raise NotImplementedError
 		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
+			raise NotImplementedError
 		end
 
-		# returns the filename as a string
-		def filedata_string(uuid)
-			io= filedata_io(uuid)
-			File.mktemp(file, "w") do |f|
-				IO2IO.do(io, f)
-				f.path
-			end
-		end
-
-		# returns an io where the filedata can be read
-		def filedata_io(uuid)
-			File.open(filedata_string(uuid))
+		# returns the filedata
+		def filedata(uuid, type= File)
+			raise NotImplementedError
 		end
 
 		# Adds a file to the datasource. There must be no
@@ -127,10 +122,12 @@ module FileHosting
 
 		# returns the history of a user
 		def history_user(user= @user)
+			raise NotImplementedError
 		end
 
 		# returns the history of a file
 		def history_file(uuid)
+			raise NotImplementedError
 		end
 
 		# The following methods need not to be reimplemented

@@ -70,6 +70,15 @@ module FileHosting
 			YAMLTools.read_array(prefix_index_file(prefix, index), String)
 		end
 
+		# Searches all index's for a record
+		def reverse(prefix, name= nil)
+			if name
+				YAMLTools.read_array(prefix_reverse_file(prefix, name), String)
+			else
+				prefix_index_dir(prefix).children.collect { |p| p.basename.to_s.dir_decode }
+			end
+		end
+
 		# Returns all record names
 		def records(prefix)
 			prefix_data_dir(prefix).children.collect { |p| p.basename.to_s.dir_decode }

@@ -26,12 +26,18 @@ class File
 		# Creates a temporary file and opens it for writing.
 		# Behaves like open with a block if a block is given.
 		def self.mktemp
+			@tmpfile= true
 			path= `mktemp`.strip
 			if block_given?
 				File.open(path, "w") { |f| yield f }
 			else
 				File.open(path, "w")
 			end
+		end
+
+		# Test whether this file was created with mktemp.
+		def tmpfile?
+			@tmpfile
 		end
 
 end

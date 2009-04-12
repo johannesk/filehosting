@@ -68,6 +68,11 @@ module FileHosting
 			raise NotImplementedError
 		end
 
+		# Searches all index's for a record or all records.
+		def reverse(prefix, name= nil)
+			raise NotImplementedError
+		end
+
 		# Returns all record names
 		def records(prefix)
 			raise NotImplementedError
@@ -102,17 +107,23 @@ module FileHosting
 
 		def store_safe(prefix, name, index, &block)
 			index= [index].flatten
-			index.delete_if do |ind| 
-				index(prefix, ind).include?(name)
-			end
+			rev= reverse(prefix, name)
+			plus= index - rev
+			minus= rev - index
 			begin
-				index.each do |ind|
+				plus.each do |ind|
 					store_index(prefix, ind, name)
+				end
+				minus.each do |ind|
+					remove_index(prefix, ind, name)
 				end
 				block.call
 			rescue Exception => e
-				index.each do |ind|
+				plus.each do |ind|
 					remove_index(prefix, ind, name)
+				end
+				minus.each do |ind|
+					store_index(prefix, ind, name)
 				end
 				raise e
 			end

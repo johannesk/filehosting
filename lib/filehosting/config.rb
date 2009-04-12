@@ -27,6 +27,12 @@ require "pathname"
 
 module FileHosting
 
+	autoload :EmptyStorage, "filehosting/emptystorage"
+	autoload :FileStorage, "filehosting/filestorage"
+	autoload :EmptyDataSource, "filehosting/emptydatasource"
+	autoload :SampleDataSource, "filehosting/sampledatasource"
+	autoload :StorageDataSource, "filehosting/storagedatasource"
+
 	# This Class holds the Configuration
 	class Config
 
@@ -79,18 +85,16 @@ module FileHosting
 
 		# Returns a subclass of Datasource only by its name
 		# possible values are:
+		# - emtpy
 		# - sample
-		# - file
+		# - storage
 		def self.datasource_by_name(name)
 			case name.to_s
 			when "sample"
-				require "filehosting/sampledatasource"
 				SampleDataSource
-			when "file"
-				require "filehosting/filedatasource"
-				FileDataSource
+			when "storage"
+				StorageDataSource
 			else
-				require "filehosting/emptydatasource"
 				EmptyDataSource
 			end
 		end
@@ -101,14 +105,9 @@ module FileHosting
 		# - file
 		def self.storage_by_name(name)
 			case name.to_s
-			when "empty"
-				require "filehosting/emptystorage"
-				EmptyStorage
 			when "file"
-				require "filehosting/filestorage"
 				FileStorage
 			else
-				require "filehosting/emptystorage"
 				EmptyStorage
 			end
 		end

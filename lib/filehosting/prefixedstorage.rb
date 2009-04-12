@@ -61,6 +61,11 @@ module FileHosting
 			@storage.index(@prefix, index)
 		end
 
+		# Searches all index's for a record or all records.
+		def reverse(name= nil)
+			@storage.reverse(@prefix, name)
+		end
+
 		# Returns all record names
 		def records
 			@storage.records(@prefix)

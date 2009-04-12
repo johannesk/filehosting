@@ -1,10 +1,21 @@
 FileHosting Readme
 ==================
 
-backend
+Datasource
+----------
+	- empty
+		The empty Datasource always returns nothing.
+	- sample
+		The sample Datasource always returns some random data.
+	- storage
+		The storage Datasource uses the storage to store data.
+
+Storage
 -------
-	There is no real backend yet. The only available backend always
-	returns some random data.
+	- empty
+		The empty Storage alway returns nothing.
+	- file
+		The file Storage uses the filesystem to store data.
 
 bin
 ---

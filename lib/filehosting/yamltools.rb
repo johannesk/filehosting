@@ -31,11 +31,18 @@ module FileHosting
 	# a collection of useful YAML methods
 	module YAMLTools
 
-		# reads an YAML array and checks for correct type
+		# reads an YAML array from file and checks for correct
+		# type
 		def self.read_array(file, type)
 			return [] unless file.file?
+			parse_array(file.read, type)
+		end
+
+		# parses an YAML array and checks for correct type
+		def self.parse_array(data, type)
+			return [] unless data
 			begin
-				res= YAML.load(file.read)
+				res= YAML.load(data)
 			rescue
 				raise InternalDataCorruptionError
 			end

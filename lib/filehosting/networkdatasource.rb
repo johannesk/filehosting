@@ -82,27 +82,39 @@ module FileHosting
 			res
 		end
 
-		# returns the filename as a string
-		def filedata_string(uuid)
-			if local? # try to get a local filename instead of raw data
+		# returns the filedata
+			type= File if type == IO
+			if [IO, File].include?(type) and local? # try to get a local filename instead of raw data
 				get= send_query("filedata_string") do |query|
 					query.add_string(uuid.to_s)
 				end
 				raise InternalDataCorruptionError unless get.size.size == 1
 				file= Pathname.new(get.read_string(0))
 				if file.readable?
-					return file
+					return File.new(file)
 				end
 			end
-			super(uuid)
+			get= send_query("filedata") do |query|
+				query.add_string(uuid.to_s)
+			end
+			case type
+			when IO
+				get.read_io(0)
+			when String
+				get.read_string(0)
+			when File
+				begin
+					tmp= File.mktemp
+					IO2IO.do(get.read_io, tmp, get.size[0])
+				ensure
+					tmp.close
+				end
+				tmp
+			end
 		end
 
 		# returns an io where the filedata can be read
 		def filedata_io(uuid)
-			get= send_query("filedata") do |query|
-				query.add_string(uuid.to_s)
-			end
-			get.read_io(0)
 		end
 
 		# Adds a file to the datasource. There must be no

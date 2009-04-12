@@ -113,7 +113,11 @@ module FileHosting
 				tags= (args["tags"] || "").split(" ")
 				better= @config.datasource.optimize_search(tags)
 				if better != tags
-					rules= "&rules=#{args["rules"].uri_encode}"
+					rules= if args["rules"]
+						"&rules=#{args["rules"].uri_encode}" if args["rules"]
+					else
+						""
+					end
 					WebRedirect.new(config, "/search?tags=" + better.join(" ").uri_encode+rules, "tags")
 				else
 					rules= nil
