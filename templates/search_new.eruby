@@ -1,6 +1,6 @@
-<div class="search_box">
-	<h1>search:</h1>
-	<form method="GET" action="<%= webroot %>/search">
+<form method="get" action="<%= webroot %>/search">
+	<div class="search_box">
+		<h1>search:</h1>
 % if error
 		<div class="error"><%= error %></div>
 % end
@@ -28,16 +28,16 @@
 			</tr>
 		</table>
 % end
-	</form>
 % if !rules
-	<p><a href="<%= webroot %>/search?rules=">advanced search</a></p>
+		<p><a href="<%= webroot %>/search?rules=">advanced search</a></p>
 % end
-	<div class="tags">
-		<h1>available tags:</h1>
-		<ul>
+		<div class="tags">
+			<h1>available tags:</h1>
+			<ul>
 % tags.each do |tag|
-			<li><a href="<%= webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
+				<li><a href="<%= webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
 % end
-		</ul>
+			</ul>
+		</div>
 	</div>
-</div>
+</form>

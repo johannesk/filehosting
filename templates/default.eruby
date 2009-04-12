@@ -15,18 +15,17 @@
 	<body>
 		<div class="head">
 			<h1>FileHosting</h1>
-			<div class="search">
+			<form method="get" action="<%= webroot %>/search">
+				<div class="search">
 				search:
-				<form type="get" action="<%= webroot %>/search">
 					<input type="text" name="tags" />
-				</form>
-			</div>
+				</div>
+			</form>
 			<ul>
 				<li><a href="<%= webroot %>/add">add File</a></li>
 				<li><a href="<%= webroot %>/feed">Feed</a></li>
 				<li><a href="<%= webroot %>/history">History</a></li>
 			</ul>
-			</div>
 		</div>
 		<%= body %>
 		<div class="license">
