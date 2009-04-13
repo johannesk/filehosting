@@ -39,22 +39,22 @@ class GenerateRandomFilesArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= GenerateRandomFilesArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 1 or args[0]=~ /[^0-9]/
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-count= args[0].to_i
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= GenerateRandomFilesArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 1 or args[0]=~ /[^0-9]/
+		STDERR.puts argreader.usage
+		exit 1
+	end
+
+	count= args[0].to_i
+
 	count.times do
 		file= `mktemp`.strip
 		`dd if=/dev/zero of=#{file} bs=1 seek=#{(rand*2**(rand*27)).to_i} count=0 2> /dev/null`

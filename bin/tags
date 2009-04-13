@@ -32,20 +32,20 @@ require "uuidtools"
 require "io2io"
 require "fileutils"
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= FileHosting::ConfigArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 0
-	STDERR.puts argreader.usage
-	exit 1
-end
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= FileHosting::ConfigArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 0
+		STDERR.puts argreader.usage
+		exit 1
+	end
+
 	config.datasource.tags.sort.each do |tag|
 		puts tag
 	end

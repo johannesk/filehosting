@@ -38,30 +38,35 @@ class ReplaceArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= ReplaceArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 2
-	STDERR.puts argreader.usage
-	exit 1
-end
-
 begin
-	uuid= UUID.parse(args.shift)
-rescue ArgumentError => e
-	STDERR.puts e
-	exit 1
-end
-file= Pathname.new(args.shift)
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= ReplaceArgReader.new
+	args= argreader.parse(ARGV)
 
-begin
-	config.datasource.update_filedata(uuid, file)
-rescue FileHosting::Error, Errno::ENOENT => e
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 2
+		STDERR.puts argreader.usage
+		exit 1
+	end
+
+	begin
+		uuid= UUID.parse(args.shift)
+	rescue ArgumentError => e
+		STDERR.puts e
+		exit 1
+	end
+	file= Pathname.new(args.shift)
+
+	begin
+		config.datasource.update_filedata(uuid, file)
+	rescue Errno::ENOENT => e
+		puts e
+		exit 2
+	end
+rescue FileHosting::Error => e
 	puts e
 	exit 2
 end

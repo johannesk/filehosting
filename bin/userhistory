@@ -37,21 +37,21 @@ class UserHistoryArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= UserHistoryArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-user= args[0]
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= UserHistoryArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size > 2
+		STDERR.puts argreader.usage
+		exit 1
+	end
+	user= args[0] || config.datasource.user.username
+
 	puts config.datasource.history_user(user).to_text
 rescue FileHosting::Error => e
 	STDERR.puts e

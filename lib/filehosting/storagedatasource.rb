@@ -46,8 +46,8 @@ module FileHosting
 	class StorageDataSource < DataSource
 
 		def initialize(config)
-			super(config)
 			@storage= config.storage.prefix("datasource")
+			super(config)
 		end
 
 		def search_tags(tags, rule= nil)
@@ -185,8 +185,8 @@ module FileHosting
 		# returns information about a user
 		def user(username= @user.username)
 			name= user_name(username)
+			raise NoSuchUserError.new(username) unless @storage.exists?(name)
 			res= @storage.read(user_name(username))
-			raise NoSuchUserError.new(username) unless res
 			res= YAML.load(res)
 			raise InternalDataCorruptionError unless User === res
 			res
@@ -277,11 +277,13 @@ module FileHosting
 		end
 
 		def store_history(action, entity, data)
-			event= HistoryEvent.new(@user, action, entity, data)
+			event= HistoryEvent.new(@user.username, action, entity, data)
 			fhistory_name= case action.to_s
 			when /^file/
+				data.delete(:uuid)
 				filehistory_name(entity)
 			when /^user/
+				data.delete(:username)
 				userhistory_name(entity)
 			end
 			uhistory_name= userhistory_name(event.user)
@@ -327,9 +329,9 @@ module FileHosting
 
 		def user_name(user)
 			case user
-			when User
-				"user/" + user
 			when String
+				"user/" + user
+			when User
 				"user/" + user.username
 			end
 		end

@@ -53,23 +53,24 @@ module FileHosting
 		# the password hash
 		attr_accessor :hash
 
-		def initialize(username, password)
+		def initialize(username= nil, password= nil)
 			@active= true
 			@username= username if username
 			if password
 				@salt= String.random
 				@hash_type= "SHA-256"
-				generate_hash
+				generate_hash(password)
 			end
+			@groups= []
 		end
 
 		def generate_hash(password)
-			@hash= hash(password)
+			@hash= make_hash(password)
 		end
 
 		def check_password(password)
 			@active and
-			@hash == hash(password)
+			@hash == make_hash(password)
 		end
 
 		def -(other)
@@ -118,7 +119,7 @@ module FileHosting
 
 		private
 
-		def hash(password)
+		def make_hash(password)
 			cleartext= password+@salt
 			case @hash_type
 			when "SHA-256"
@@ -138,9 +139,9 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "user") do |tag, value|
 		res.username= value["username"].to_s
 		res.groups= value["groups"].collect { |s| s.to_s }
 		res.active= value["active"]
-		res.salt= valuel["salt"].to_s
-		res.hash_type= valuel["hash_type"].to_s
-		res.hash= valuel["hash"].to_s
+		res.salt= value["salt"].to_s
+		res.hash_type= value["hash_type"].to_s
+		res.hash= value["hash"].to_s
 		res
 	rescue
 		raise FileHosting::InternalDataCorruptionError

@@ -3,3 +3,5 @@ storage: file
 storage_args: /tmp/filehosting
 datasource: storage
 human: true
+# username: anonymous
+# password: ""

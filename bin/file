@@ -49,26 +49,26 @@ class FileArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= FileArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
 begin
-	uuid= UUID.parse(args[0])
-rescue ArgumentError => e
-	STDERR.puts e
-	exit 1
-end
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= FileArgReader.new
+	args= argreader.parse(ARGV)
 
-begin
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 1
+		STDERR.puts argreader.usage
+		exit 1
+	end
+	begin
+		uuid= UUID.parse(args[0])
+	rescue ArgumentError => e
+		STDERR.puts e
+		exit 1
+	end
+
 	if config[:output] == "-"
 		io= config.datasource.filedata_io(uuid)
 		IO2IO.do(io, STDOUT)

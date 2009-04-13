@@ -39,29 +39,35 @@ class AddArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= AddArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size < 2
-	STDERR.puts argreader.usage
-	exit 1
-end
-
-file= Pathname.new(args.shift)
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= AddArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size < 2
+		STDERR.puts argreader.usage
+		exit 1
+	end
+
+	file= Pathname.new(args.shift)
+
 	fileinfo= FileHosting::FileInfo.new
 	fileinfo.uuid= UUID.random_create.to_s
 	fileinfo.source= file.to_s
 	fileinfo.filename= file.basename.to_s
 	fileinfo.tags= args
 
-	config.datasource.add_file(fileinfo, file)
-rescue FileHosting::Error, Errno::ENOENT => e
+	begin
+		config.datasource.add_file(fileinfo, file)
+	rescue Errno::ENOENT => e
+		puts e
+		exit 2
+	end
+rescue FileHosting::Error
 	puts e
+	exit 2
 end

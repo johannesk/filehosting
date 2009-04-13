@@ -39,21 +39,21 @@ class WebPageArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= WebPageArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-page= args[0]
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= WebPageArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 1
+		STDERR.puts argreader.usage
+		exit 1
+	end
+	page= args[0]
+
 	web= FileHosting::Web.new(config)
 	page=~ /\?/
 	io= web.get_page($` || page, FileHosting::Web.parse_get($') || Hash.new)

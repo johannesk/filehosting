@@ -68,7 +68,7 @@ module FileHosting
 		end
 
 		def to_text
-			to_hash.to_text([:time, :user, :uuid, :action, :data])
+			to_hash.to_text([:time, :user, :entity, :action, :data])
 		end
 
 		def to_yaml_properties

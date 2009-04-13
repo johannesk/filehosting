@@ -80,20 +80,20 @@ class SearchArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= SearchArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size < 1
-	STDERR.puts argreader.usage
-	exit 1
-end
-
 begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= SearchArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size < 1
+		STDERR.puts argreader.usage
+		exit 1
+	end
+
 	args= config.datasource.optimize_search(args) if $human
 	fileinfos= config.datasource.search_tags(args, config[:rule])
 	fileinfos_partial= config.datasource.search_tags_partial(args, config[:rule]) if config[:partial_match]

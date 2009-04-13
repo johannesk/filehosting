@@ -21,14 +21,15 @@
 #++
 #
 
-require "filehosting/nosuchfileerror"
-require "filehosting/fileexistserror"
-require "filehosting/file"
+require "filehosting/user"
 
 require "observer"
 require "text"
 
 module FileHosting
+
+	autoload :NoSuchUserError, "filehosting/nosuchusererror"
+	autoload :UserAuthenticationError, "filehosting/userauthenticationerror"
 
 	# The DataSource knows everything
 	class DataSource
@@ -40,11 +41,21 @@ module FileHosting
 			super
 		end
 
-		attr_reader :user
-
 		# You always have to specify a user
 		def initialize(config)
 			@config= config
+			username= @config[:username]
+			if username == "anonymous"
+				begin
+					user("anonymous")
+				rescue NoSuchUserError
+					@user= User.new("anonymous", "")
+					add_user(@user)
+				end
+			end
+			user= user(username)
+			raise UserAuthenticationError.new(username) unless user.check_password(@config[:password])
+			@user= user
 		end
 
 		# The following methods should be reimplemented in a

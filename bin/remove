@@ -40,32 +40,36 @@ class RemoveArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= RemoveArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size < 1
-	STDERR.puts argreader.usage
-	exit 1
-end
 begin
-	uuids= args.collect { |s|  UUID.parse(s) }
-rescue ArgumentError => e
-	STDERR.puts e
-	exit 1
-end
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= RemoveArgReader.new
+	args= argreader.parse(ARGV)
 
-uuids.each do |uuid|
-	begin
-		config.datasource.remove_file(uuid)
-	rescue FileHosting::Error => e
-		STDERR.puts e
-	rescue FileHosting::InternalDataCorruptionError => e
-		STDERR.puts e
-		exit 2
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size < 1
+		STDERR.puts argreader.usage
+		exit 1
 	end
+	begin
+		uuids= args.collect { |s|  UUID.parse(s) }
+	rescue ArgumentError => e
+		STDERR.puts e
+		exit 1
+	end
+
+	uuids.each do |uuid|
+		begin
+			config.datasource.remove_file(uuid)
+		rescue FileHosting::Error => e
+			STDERR.puts e
+		rescue FileHosting::InternalDataCorruptionError => e
+			STDERR.puts e
+			exit 2
+		end
+	end
+rescue FileHosting::Error => e
+	STDERR.puts e
 end

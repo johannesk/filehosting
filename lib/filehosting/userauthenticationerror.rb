@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,32 +21,23 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
 require "filehosting/error"
 
-require "uuidtools"
-require "io2io"
-require "fileutils"
+module FileHosting
 
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= FileHosting::ConfigArgReader.new
-	args= argreader.parse(ARGV)
+	class UserAuthenticationError < Error
+		
+		attr_reader :user
 
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+		def initialize(user)
+			@user= user
+		end
 
-	if args.size != 0
-		STDERR.puts argreader.usage
-		exit 1
+		def to_s
+			"the user '#{@user}' failed to properly authenticate himself"
+		end
+
 	end
 
-	config.cache.clear
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
 end
+

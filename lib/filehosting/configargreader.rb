@@ -161,9 +161,18 @@ module FileHosting
 		end
 
 		def switch_user(user)
-			@values[:user]= user
+			@values[:usernume]= user
 		end
 		alias :switch_u :switch_user
+
+		def help_password
+			"select the password"
+		end
+
+		def switch_password(password)
+			@values[:password]= password
+		end
+		alias :switch_p :switch_password
 
 	end
 

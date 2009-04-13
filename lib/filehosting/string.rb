@@ -56,6 +56,7 @@ class String
 	def self.random(size= 32)
 		res= ""
 		size.times { res<< rand(256) }
+		res
 	end
 
 end

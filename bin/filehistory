@@ -39,26 +39,26 @@ class FileHistoryArgReader < FileHosting::ConfigArgReader
 
 end
 
-autoreader= FileHosting::AutoConfigReader.new
-etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-argreader= FileHistoryArgReader.new
-args= argreader.parse(ARGV)
-
-config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-if args.size != 1
-	STDERR.puts argreader.usage
-	exit 1
-end
 begin
-	uuid= UUID.parse(args[0])
-rescue ArgumentError => e
-	STDERR.puts e
-	exit 1
-end
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= FileHistoryArgReader.new
+	args= argreader.parse(ARGV)
 
-begin
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 1
+		STDERR.puts argreader.usage
+		exit 1
+	end
+	begin
+		uuid= UUID.parse(args[0])
+	rescue ArgumentError => e
+		STDERR.puts e
+		exit 1
+	end
+
 	puts config.datasource.history_file(uuid).to_text
 rescue FileHosting::Error => e
 	STDERR.puts e
