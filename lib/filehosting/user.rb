@@ -57,14 +57,14 @@ module FileHosting
 			@active= true
 			@username= username if username
 			if password
-				@salt= String.random
-				@hash_type= "SHA-256"
 				generate_hash(password)
 			end
 			@groups= []
 		end
 
 		def generate_hash(password)
+			@salt= String.random
+			@hash_type= "SHA-256"
 			@hash= make_hash(password)
 		end
 

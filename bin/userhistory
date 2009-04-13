@@ -46,7 +46,7 @@ begin
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size > 2
+	if args.size > 1
 		STDERR.puts argreader.usage
 		exit 1
 	end

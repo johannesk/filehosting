@@ -161,7 +161,7 @@ module FileHosting
 		end
 
 		def switch_user(user)
-			@values[:usernume]= user
+			@values[:username]= user
 		end
 		alias :switch_u :switch_user
 

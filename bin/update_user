@@ -26,16 +26,48 @@ require "filehosting/config"
 require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
-require "filehosting/fileinfo"
 require "filehosting/error"
 
-require "uuidtools"
-
-class AddArgReader < FileHosting::ConfigArgReader
+class UpdateUserArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <file> <tag ... tag>"
+		super + "[username]"
 	end
+
+	def help_newpassword
+		"update password"
+	end
+
+	def switch_newpassword(password)
+		@values[:set_password]= password
+	end
+	alias :switch_n :switch_newpassword
+
+	def help_active
+		"update active state"
+	end
+
+	def switch_active(active)
+		@values[:set_active]= case active.downcase
+		when "true"
+			true
+		when "false"
+			false
+		else
+			STDERR.puts "active can only be 'true' or 'false'"
+			exit 1
+		end
+	end
+	alias :switch_a :switch_active
+
+	def help_groups
+		"update groups"
+	end
+
+	def switch_groups(groups)
+		@values[:set_groups]= groups.split(" ")
+	end
+	alias :switch_g :switch_groups
 
 end
 
@@ -43,30 +75,32 @@ begin
 	autoreader= FileHosting::AutoConfigReader.new
 	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddArgReader.new
+	argreader= UpdateUserArgReader.new
 	args= argreader.parse(ARGV)
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size < 2
+	if args.size > 1
 		STDERR.puts argreader.usage
 		exit 1
 	end
+	username= args[0] || config.datasource.user.username
 
-	file= Pathname.new(args.shift)
+	user= config.datasource.user(username)
 
-	fileinfo= FileHosting::FileInfo.new
-	fileinfo.uuid= UUID.random_create.to_s
-	fileinfo.source= file.to_s
-	fileinfo.filename= file.basename.to_s
-	fileinfo.tags= args
-
-	begin
-		config.datasource.add_file(fileinfo, file)
-	rescue Errno::ENOENT => e
-		puts e
-		exit 2
+	if config[:set_password]
+		user.generate_hash(config[:set_password])
 	end
+
+	if !config[:set_active].nil?
+		user.active= config[:set_active]
+	end
+
+	if config[:set_groups]
+		user.groups= config[:set_groups]
+	end
+
+	config.datasource.update_user(user)
 rescue FileHosting::Error => e
 	puts e
 	exit 2

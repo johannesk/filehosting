@@ -32,3 +32,8 @@ filehostingrc
 	copy it (and modify if you like) to either /etc/filehostingrc or
 	~/.filehostingrc or both locations. I that case settings made in
 	~/.filehostingrc override the ones made in /etc/filehostingrc.
+
+User
+----
+	There is a standard user called 'anonymous'. It is not recomended to
+	change this users password.

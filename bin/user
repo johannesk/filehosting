@@ -22,19 +22,17 @@
 #++
 #
 
+require "filehosting/string"
 require "filehosting/config"
 require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
-require "filehosting/fileinfo"
 require "filehosting/error"
 
-require "uuidtools"
-
-class AddArgReader < FileHosting::ConfigArgReader
+class UserArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <file> <tag ... tag>"
+		super + " [username]"
 	end
 
 end
@@ -43,31 +41,20 @@ begin
 	autoreader= FileHosting::AutoConfigReader.new
 	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddArgReader.new
+	argreader= UserArgReader.new
 	args= argreader.parse(ARGV)
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size < 2
+	if args.size > 1
 		STDERR.puts argreader.usage
 		exit 1
 	end
+	username= args[0] || config.datasource.user.username
 
-	file= Pathname.new(args.shift)
-
-	fileinfo= FileHosting::FileInfo.new
-	fileinfo.uuid= UUID.random_create.to_s
-	fileinfo.source= file.to_s
-	fileinfo.filename= file.basename.to_s
-	fileinfo.tags= args
-
-	begin
-		config.datasource.add_file(fileinfo, file)
-	rescue Errno::ENOENT => e
-		puts e
-		exit 2
-	end
+	user= config.datasource.user(username)
+	puts user.to_text
 rescue FileHosting::Error => e
-	puts e
+	STDERR.puts e
 	exit 2
 end

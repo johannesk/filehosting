@@ -30,7 +30,7 @@ require "filehosting/error"
 
 require "uuidtools"
 
-class ReplaceArgReader < FileHosting::ConfigArgReader
+class UpdateArgReader < FileHosting::ConfigArgReader
 	
 	def banner
 		super + " <uuid>"
@@ -69,7 +69,7 @@ begin
 	autoreader= FileHosting::AutoConfigReader.new
 	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= ReplaceArgReader.new
+	argreader= UpdateArgReader.new
 	args= argreader.parse(ARGV)
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
