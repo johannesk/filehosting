@@ -31,7 +31,7 @@ require "filehosting/error"
 class UpdateUserArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + "[username]"
+		super + " [username]"
 	end
 
 	def help_newpassword

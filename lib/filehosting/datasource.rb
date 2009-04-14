@@ -46,15 +46,17 @@ module FileHosting
 		def initialize(config)
 			@config= config
 			username= @config[:username]
-			if username == "anonymous"
+			if ["anonymous", "root"].include?(username)
 				begin
-					user("anonymous")
+					user= user(username)
 				rescue NoSuchUserError
-					@user= User.new("anonymous", "")
+					@user= User.new(username, "")
 					add_user(@user)
+					user= @user
 				end
+			else
+				user= user(username)
 			end
-			user= user(username)
 			raise UserAuthenticationError.new(username) unless user.check_password(@config[:password])
 			@user= user
 		end
@@ -179,6 +181,8 @@ module FileHosting
 
 		# check if something is allowed
 		def check_rule(ruleset, data)
+			data["user"]= @user
+			return nil if data["user"].username == "root"
 			rules(ruleset).each do |rule|
 				res= rule.test(data)
 				return res unless res.nil?

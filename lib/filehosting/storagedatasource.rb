@@ -59,7 +59,7 @@ module FileHosting
 				res&= uuids_by_tag(tag)
 			end
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rule("search", {"user" => @user, "fileinfo" => info}) }
+			res= res.find_all { |info| !check_rule("search", {"fileinfo" => info}) }
 			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res
 		end
@@ -75,7 +75,7 @@ module FileHosting
 			res.delete_if { |x| count[x] == tags.size }
 			res.sort! { |a,b| count[b] <=> count[a] }
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rule("search", {"user" => @user, "fileinfo" => info}) }
+			res= res.find_all { |info| !check_rule("search", {"fileinfo" => info}) }
 			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
 			res

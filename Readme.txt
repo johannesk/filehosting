@@ -35,8 +35,9 @@ filehostingrc
 
 User
 ----
-	There is a standard user called 'anonymous'. It is not recomended to
-	change this users password.
+	There is a standard user called 'anonymous' and a standard user called
+	'root'. Root is is allowed to do eveything. It is recomended to change
+	root's password.
 
 Rules
 -----
