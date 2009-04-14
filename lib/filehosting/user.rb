@@ -112,6 +112,7 @@ module FileHosting
 				"hash"        => lambda { @hash },
 			}
 		end
+		alias :rule_operand :to_yaml_properties
 
 		def to_yaml_type
 			"!filehosting/user"

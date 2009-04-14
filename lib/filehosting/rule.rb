@@ -32,8 +32,8 @@ module FileHosting
 		
 		include YAMLPropertiesByEval
 
-		attr :result
-		attr :conditions
+		attr_accessor :result
+		attr_accessor :conditions
 
 		def initialize(result= nil, conditions= [])
 			@result= result
@@ -84,6 +84,16 @@ module FileHosting
 			else
 				raise RuleOperandError.new(operand)
 			end
+		end
+
+		def to_s
+			"#{@result} if #{@conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" and ")}"
+		end
+		alias :to_text :to_s
+
+		def ==(other)
+			@result == other.result
+			@conditions.sort == other.conditions.sort
 		end
 
 		def test_condition(data, test, operand)

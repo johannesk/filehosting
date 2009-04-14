@@ -26,6 +26,7 @@ require "filehosting/fileinfo"
 require "filehosting/historyevent"
 require "filehosting/yamltools"
 require "filehosting/user"
+require "filehosting/rule"
 
 require "pathname"
 require "yaml"
@@ -40,6 +41,7 @@ module FileHosting
 	autoload :FileExistsError, "filehosting/fileexistserror"
 	autoload :NoSuchUserError, "filehosting/nosuchusererror"
 	autoload :UserExistsError, "filehosting/userexistserror"
+	autoload :NoSuchRuleError, "filehosting/nosuchruleerror"
 	autoload :InternalDataCorruptionError , "filehosting/internaldatacorruptionerror"
 
 	# FileDataSource stores all data in the filesystem
@@ -57,7 +59,8 @@ module FileHosting
 				res&= uuids_by_tag(tag)
 			end
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| rule.test({"fileinfo" => info}) } if rule
+			res= res.find_all { |info| !check_rule("search", {"user" => @user, "fileinfo" => info}) }
+			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res
 		end
 
@@ -72,6 +75,8 @@ module FileHosting
 			res.delete_if { |x| count[x] == tags.size }
 			res.sort! { |a,b| count[b] <=> count[a] }
 			res= res.collect { |uuid| fileinfo(uuid) }
+			res= res.find_all { |info| !check_rule("search", {"user" => @user, "fileinfo" => info}) }
+			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
 			res
 		end
@@ -223,6 +228,33 @@ module FileHosting
 			YAMLTools.parse_array(data, HistoryEvent)
 		end
 
+		# reads a rule set
+		def rules(ruleset)
+			super(ruleset)
+			name= ruleset_name(ruleset)
+			YAMLTools.parse_array(@storage.read(name), Rule)
+		end
+
+		# adds a rule to a rule set
+		def add_rule(ruleset, rule, position= nil)
+			super(ruleset, rule, position)
+			name= ruleset_name(ruleset)
+			change_array(name, Rule) do |a|
+				a.insert(position || a.size, rule)
+			end
+		end
+
+		# removes a rule from a rule set
+		def remove_rule(ruleset, rule)
+			super(ruleset, rule)
+			name= ruleset_name(ruleset)
+			change_array(name, Rule) do |a|
+				raise NoSuchRuleError.new(rule) unless a.include?(rule)
+				a.delete(rule)
+				a
+			end
+		end
+
 		private
 
 		# get all files uuid with this tag
@@ -276,6 +308,18 @@ module FileHosting
 			fileinfo
 		end
 
+		def change_array(name, type, &block)
+			data= YAMLTools.parse_array(@storage.read(name), type)
+			data= block.call(data)
+			if Array === data
+				if data.size == 0
+					@storage.remove(name)
+				else
+					@storage.store_data(name, data.to_yaml)
+				end
+			end
+		end
+
 		def store_history(action, entity, data)
 			event= HistoryEvent.new(@user.username, action, entity, data)
 			fhistory_name= case action.to_s
@@ -316,11 +360,15 @@ module FileHosting
 		end
 
 		def userhistory_name(user)
-			"filehistory/" + user.to_s
+			"userhistory/" + user.to_s
 		end
 
 		def history_name
 			"history"
+		end
+
+		def ruleset_name(ruleset)
+			"ruleset/" + ruleset
 		end
 
 		def tag_name(tag)

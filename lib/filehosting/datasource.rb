@@ -30,6 +30,7 @@ module FileHosting
 
 	autoload :NoSuchUserError, "filehosting/nosuchusererror"
 	autoload :UserAuthenticationError, "filehosting/userauthenticationerror"
+	autoload :InvalidRuleSetError , "filehosting/invalidruleseterror"
 
 	# The DataSource knows everything
 	class DataSource
@@ -161,6 +162,31 @@ module FileHosting
 			raise NotImplementedError
 		end
 
+		# reads a rule set
+		def rules(ruleset)
+			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+		end
+
+		# adds a rule to a rule set
+		def add_rule(ruleset, rule, position)
+			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+		end
+
+		# removes a rule from a rule set
+		def remove_rule(ruleset, rule)
+			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+		end
+
+		# check if something is allowed
+		def check_rule(ruleset, data)
+			rules(ruleset).each do |rule|
+				res= rule.test(data)
+				return res unless res.nil?
+			end
+			nil
+		end
+		private :check_rule
+
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.
 
@@ -198,6 +224,11 @@ module FileHosting
 				search[search.index(wrong)]= better unless better.empty?
 			end
 			search
+		end
+
+		# check if ruleset is a valid ruleset
+		def ruleset_valid?(ruleset)
+			["search"].include?(ruleset)
 		end
 
 	end

@@ -22,19 +22,17 @@
 #++
 #
 
+require "filehosting/string"
 require "filehosting/config"
 require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
-require "filehosting/user"
 
-require "password"
-
-class AddUserArgReader < FileHosting::ConfigArgReader
+class RulesArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <user> <group ... group>"
+		super + " <ruleset>"
 	end
 
 end
@@ -43,28 +41,22 @@ begin
 	autoreader= FileHosting::AutoConfigReader.new
 	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
 	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddUserArgReader.new
+	argreader= RulesArgReader.new
 	args= argreader.parse(ARGV)
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size < 1
+	if args.size != 1
 		STDERR.puts argreader.usage
 		exit 1
 	end
+	ruleset= args.shift
 
-	username= args.shift
-	password= Password.get("password: ")
-	unless password == Password.get("retype:   ")
-		STDERR.puts "passwords didn't match"
-		exit 2
+	rules= config.datasource.rules(ruleset)
+	rules.each do |rule|
+		puts rule.to_text
 	end
-
-	user= FileHosting::User.new(username, password)
-	user.groups= args
-
-	config.datasource.add_user(user)
 rescue FileHosting::Error => e
-	puts e
+	STDERR.puts e
 	exit 2
 end

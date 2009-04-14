@@ -37,3 +37,9 @@ User
 ----
 	There is a standard user called 'anonymous'. It is not recomended to
 	change this users password.
+
+Rules
+-----
+	The following rule sets are available
+	- search
+		Filter search results. true results in filtering.
