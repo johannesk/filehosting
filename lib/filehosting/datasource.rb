@@ -66,31 +66,39 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
-			if check_rules("search", {"user" => user, "tags" => tags})
-				raise OperationNotPermitedError.new("search(#{ruleset.inspect})")
+			if check_rules("search", {"tags" => tags})
+				raise OperationNotPermitedError.new("search(#{tags.inspect})")
 			end
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
-			if check_rules("search_partial", {"user" => user, "tags" => tags})
-				raise OperationNotPermitedError.new("search_partial(#{ruleset.inspect})")
+			if check_rules("search", {"tags" => tags})
+				raise OperationNotPermitedError.new("search_partial(#{tags.inspect})")
 			end
 		end
 
 		# returns all available tags
 		def tags
-			raise NotImplementedError
+			if check_rules("tags")
+				raise OperationNotPermitedError.new("tags()")
+			end
 		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
-			raise NotImplementedError
+			if check_rules("file", {"uuid" => uuid.to_s}) or
+			   check_rules("file_fileinfo", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("file_info(#{uuid.to_s})")
+			end
 		end
 
 		# returns the filedata
 		def filedata(uuid, type= File)
-			raise NotImplementedError
+			if check_rules("file", {"uuid" => uuid.to_s}) or
+			   check_rules("file_filedata", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("file_data(#{uuid.to_s})")
+			end
 		end
 
 		# Adds a file to the datasource. There must be no
@@ -101,6 +109,10 @@ module FileHosting
 		# must contain the filename, from where to copy the
 		# file.
 		def add_file(fileinfo, file)
+			if check_rules("file", {"uuid" => fileinfo.uuid.to_s}) or
+			   check_rules("file_add", {"file" => fileinfo})
+				raise OperationNotPermitedError.new("file_add(#{fileinfo.uuid.to_s})")
+			end
 			notify_observers("files/#{fileinfo.uuid}")
 			fileinfo.tags.each do |tag|
 				notify_observers("tags/#{tag}")
@@ -110,9 +122,14 @@ module FileHosting
 
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo)
+			oldinfo= self.fileinfo(fileinfo.uuid)
+			if check_rules("file", {"uuid" => fileinfo.uuid.to_s}) or
+			   check_rules("file_update", {"file" => fileinfo, "old" => oldinfo})
+				raise OperationNotPermitedError.new("file_update(#{fileinfo.uuid.to_s})")
+			end
 			notify_observers("files/#{fileinfo.uuid}")
 			new= fileinfo.tags
-			old= self.fileinfo(fileinfo.uuid).tags
+			old= oldinfo.tags
 			plus= new - old
 			minus= old - new
 			(plus + minus).each do |tag|
@@ -126,11 +143,19 @@ module FileHosting
 		# Replaces a file, but not it's metadata.
 		# Returns the fileinfo
 		def update_filedata(uuid, file)
+			if check_rules("file", {"uuid" => uuid.to_s}) or
+			   check_rules("file_updatedata", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("file_updatedata(#{uuid.to_s})")
+			end
 			notify_observers("files/#{uuid}")
 		end
 
 		# removes a file
 		def remove_file(uuid)
+			if check_rules("file", {"uuid" => uuid.to_s}) or
+			   check_rules("file_remove", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("file_remove(#{uuid.to_s})")
+			end
 			notify_observers("files/#{uuid}")
 			tags= fileinfo(uuid).tags
 			if tags.find { |tag| search_tags([tag]).size == 1 }
@@ -140,9 +165,10 @@ module FileHosting
 
 		# returns the history of a file
 		def history_file(uuid)
-			if check_rules("history", {"user" => user}) or
-			   check_rules("history_file", {"ruleset" => user})
-				raise OperationNotPermitedError.new("history_user(#{ruleset.inspect})")
+			if check_rules("history") or
+			   check_rules("file", {"uuid" => uuid.to_s}) or
+			   check_rules("history_file", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("history_user(#{uuid.to_s})")
 			end
 		end
 
@@ -168,9 +194,9 @@ module FileHosting
 
 		# returns the history of a user
 		def history_user(user= @user)
-			if check_rules("history", {"user" => user}) or
+			if check_rules("history") or
 			   check_rules("history_user", {"ruleset" => user})
-				raise OperationNotPermitedError.new("history_user(#{ruleset.inspect})")
+				raise OperationNotPermitedError.new("history_user(#{user.username})")
 			end
 		end
 
@@ -209,7 +235,7 @@ module FileHosting
 		end
 
 		# check if something is allowed
-		def check_rule(ruleset, data)
+		def check_rule(ruleset, data= Hash.new)
 			data["user"]= @user
 			return nil if data["user"].username == "root"
 			read_rules(ruleset).each do |rule|

@@ -85,11 +85,13 @@ module FileHosting
 
 		# returns all available tags
 		def tags
+			super()
 			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
 		end
 
 
 		def fileinfo(uuid)
+			super(uuid)
 			data= @storage.read(fileinfo_name(uuid))
 			raise NoSuchFileError.new(uuid) unless data
 			begin
@@ -103,6 +105,7 @@ module FileHosting
 		end
 
 		def filedata(uuid, type= File)
+			super(uuid, type)
 			data= @storage.read(filedata_name( uuid), type)
 			raise NoSuchFileError.new(uuid) unless data
 			data
@@ -117,7 +120,7 @@ module FileHosting
 		end
 
 		def add_file(fileinfo, file)
-			super
+			super(fileinfo, file)
 			name= fileinfo_name(fileinfo)
 			raise FileExistsError if @storage.exists?(name)
 			index= fileinfo.tags.collect { |t| tag_name(t) }
@@ -136,14 +139,14 @@ module FileHosting
 		end
 
 		def update_filedata(uuid, file)
-			super
+			super(uuid, file)
 			new= store_file(fileinfo(uuid), file)
 			store_history(:file_replace, old.uuid.to_s, new-old)
 			new
 		end
 
 		def update_fileinfo(fileinfo)
-			super
+			super(fileinfo)
 			name= fileinfo_name(fileinfo)
 			old= fileinfo(fileinfo.uuid)
 			STDERR.puts "==="
@@ -177,7 +180,7 @@ module FileHosting
 		end
 
 		def remove_file(uuid)
-			super
+			super(uuid)
 			old= fileinfo(uuid)
 			name= fileinfo_name(old)
 			index= @storage.reverse(name)
