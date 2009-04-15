@@ -66,12 +66,16 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
-			raise NotImplementedError
+			if check_rules("search", {"user" => user, "tags" => tags})
+				raise OperationNotPermitedError.new("search(#{ruleset.inspect})")
+			end
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
-			raise NotImplementedError
+			if check_rules("search_partial", {"user" => user, "tags" => tags})
+				raise OperationNotPermitedError.new("search_partial(#{ruleset.inspect})")
+			end
 		end
 
 		# returns all available tags
@@ -136,7 +140,10 @@ module FileHosting
 
 		# returns the history of a file
 		def history_file(uuid)
-			raise NotImplementedError
+			if check_rules("history", {"user" => user}) or
+			   check_rules("history_file", {"ruleset" => user})
+				raise OperationNotPermitedError.new("history_user(#{ruleset.inspect})")
+			end
 		end
 
 		# returns information about a user
@@ -161,35 +168,57 @@ module FileHosting
 
 		# returns the history of a user
 		def history_user(user= @user)
-			raise NotImplementedError
+			if check_rules("history", {"user" => user}) or
+			   check_rules("history_user", {"ruleset" => user})
+				raise OperationNotPermitedError.new("history_user(#{ruleset.inspect})")
+			end
 		end
 
 		# reads a rule set
 		def rules(ruleset)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+			if check_rules("rules", {"ruleset" => ruleset}) or
+			   check_rules("rules_read", {"ruleset" => ruleset})
+				raise OperationNotPermitedError.new("rules(#{ruleset.inspect})")
+			end
+			read_rules(ruleset)
 		end
+
+		# reads a rule set
+		def read_rules(ruleset)
+			raise NotImplementedError
+		end
+		private :read_rules
 
 		# adds a rule to a rule set
 		def add_rule(ruleset, rule, position)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+			if check_rules("rules", {"ruleset" => ruleset}) or
+			   check_rules("rules_add", {"ruleset" => ruleset})
+				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
+			end
 		end
 
 		# removes a rule from a rule set
 		def remove_rule(ruleset, rule)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+			if check_rules("rules", {"ruleset" => ruleset}) or
+			   check_rules("rules_remove", {"ruleset" => ruleset})
+				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
+			end
 		end
 
 		# check if something is allowed
 		def check_rule(ruleset, data)
 			data["user"]= @user
 			return nil if data["user"].username == "root"
-			rules(ruleset).each do |rule|
+			read_rules(ruleset).each do |rule|
 				res= rule.test(data)
 				return res unless res.nil?
 			end
 			nil
 		end
-		private :check_rule
+		private :check_rules
 
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.
@@ -232,7 +261,7 @@ module FileHosting
 
 		# check if ruleset is a valid ruleset
 		def ruleset_valid?(ruleset)
-			["search"].include?(ruleset)
+			["search_filter", "rules", "rules_read", "rules_add", "rules_remove"].include?(ruleset)
 		end
 
 	end

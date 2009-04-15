@@ -105,6 +105,8 @@ module FileHosting
 					data != operand
 				when "=~"
 					data =~ operand
+				when "!~"
+					!(data =~ operand)
 				when ">"
 					data > operand
 				when "<"
@@ -114,7 +116,9 @@ module FileHosting
 				when ">="
 					data >= operand
 				when "includes"
-					data.include? operand
+					data.include?(operand)
+				when "!includes"
+					!data.include?(operand)
 				else
 					raise "can not execute '#{test}'"
 				end

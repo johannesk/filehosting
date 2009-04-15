@@ -53,18 +53,20 @@ module FileHosting
 		end
 
 		def search_tags(tags, rule= nil)
+			super(tags, rule)
 			tags= tags.clone
 			res= uuids_by_tag(tags.pop)
 			tags.each do |tag|
 				res&= uuids_by_tag(tag)
 			end
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rule("search", {"fileinfo" => info}) }
+			res= res.find_all { |info| !check_rules("search_filter", {"fileinfo" => info}) }
 			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res
 		end
 
 		def search_tags_partial(tags, rule= nil)
+			super(tags, rule)
 			count= Hash.new(0)
 			tags.each do |tag|
 				uuids_by_tag(tag).each do |uuid|
@@ -75,7 +77,7 @@ module FileHosting
 			res.delete_if { |x| count[x] == tags.size }
 			res.sort! { |a,b| count[b] <=> count[a] }
 			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rule("search", {"fileinfo" => info}) }
+			res= res.find_all { |info| !check_rules("search_filter", {"fileinfo" => info}) }
 			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
 			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
 			res
@@ -108,6 +110,7 @@ module FileHosting
 
 		# returns the history of a file
 		def history_file(uuid)
+			super(uuid)
 			data= @storage.read(filehistory_name(uuid))
 			raise NoSuchFileError.new(user) unless data
 			YAMLTools.parse_array(data, HistoryEvent)
@@ -223,13 +226,14 @@ module FileHosting
 
 		# returns the history of a user
 		def history_user(user= config.user)
+			super(user)
 			data= @storage.read(userhistory_name(user))
 			raise NoSuchUserError.new(user) unless data
 			YAMLTools.parse_array(data, HistoryEvent)
 		end
 
 		# reads a rule set
-		def rules(ruleset)
+		def read_rules(ruleset)
 			super(ruleset)
 			name= ruleset_name(ruleset)
 			YAMLTools.parse_array(@storage.read(name), Rule)
