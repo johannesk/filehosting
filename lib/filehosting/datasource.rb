@@ -88,7 +88,7 @@ module FileHosting
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
 			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_fileinfo", {"uuid" => uuid.to_s})
+			   check_rules("file_info", {"uuid" => uuid.to_s})
 				raise OperationNotPermitedError.new("file_info(#{uuid.to_s})")
 			end
 		end
@@ -96,7 +96,7 @@ module FileHosting
 		# returns the filedata
 		def filedata(uuid, type= File)
 			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_filedata", {"uuid" => uuid.to_s})
+			   check_rules("file_data", {"uuid" => uuid.to_s})
 				raise OperationNotPermitedError.new("file_data(#{uuid.to_s})")
 			end
 		end
@@ -144,8 +144,8 @@ module FileHosting
 		# Returns the fileinfo
 		def update_filedata(uuid, file)
 			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_updatedata", {"uuid" => uuid.to_s})
-				raise OperationNotPermitedError.new("file_updatedata(#{uuid.to_s})")
+			   check_rules("file_replace", {"uuid" => uuid.to_s})
+				raise OperationNotPermitedError.new("file_replace(#{uuid.to_s})")
 			end
 			notify_observers("files/#{uuid}")
 		end
@@ -173,28 +173,33 @@ module FileHosting
 		end
 
 		# returns information about a user
-		def user(username= nil)
-			raise NotImplementedError
+		def user(username= @user.username)
+			if check_rules("user", {"username" => user.username}) or
+			   check_rules("user_read", {"username" => user.username})
+				raise OperationNotPermitedError.new("user_read(#{username})")
+			end
 		end
 
 		# creates a new user
 		def add_user(user)
-			raise NotImplementedError
+			if check_rules("user", {"username" => user.username}) or
+			   check_rules("user_add", {"username" => user.username, "arguser" => user})
+				raise OperationNotPermitedError.new("user_add(#{user.username})")
+			end
 		end
 
 		# updates a user
 		def update_user(user)
-			raise NotImplementedError
-		end
-
-		# removes a user
-		def remove_user(username)
-			raise NotImplementedError
+			if check_rules("user", {"username" => user.username}) or
+			   check_rules("user_update", {"username" => user.username, "arguser" => user})
+				raise OperationNotPermitedError.new("user_update(#{user.username})")
+			end
 		end
 
 		# returns the history of a user
 		def history_user(user= @user)
-			if check_rules("history") or
+			if check_rules("user", {"username" => user.username}) or
+			   check_rules("history") or
 			   check_rules("history_user", {"ruleset" => user})
 				raise OperationNotPermitedError.new("history_user(#{user.username})")
 			end
@@ -220,7 +225,7 @@ module FileHosting
 		def add_rule(ruleset, rule, position)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
 			if check_rules("rules", {"ruleset" => ruleset}) or
-			   check_rules("rules_add", {"ruleset" => ruleset})
+			   check_rules("rules_add", {"ruleset" => ruleset, "rule" => rule, "position" => position})
 				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
 			end
 		end
@@ -229,7 +234,7 @@ module FileHosting
 		def remove_rule(ruleset, rule)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
 			if check_rules("rules", {"ruleset" => ruleset}) or
-			   check_rules("rules_remove", {"ruleset" => ruleset})
+			   check_rules("rules_remove", {"ruleset" => ruleset, "rule" => rule})
 				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
 			end
 		end
@@ -287,7 +292,27 @@ module FileHosting
 
 		# check if ruleset is a valid ruleset
 		def ruleset_valid?(ruleset)
-			["search_filter", "rules", "rules_read", "rules_add", "rules_remove"].include?(ruleset)
+			[
+				"search",
+				"search_filter",
+				"rules",
+				"rules_read",
+				"rules_add",
+				"rules_remove",
+				"history",
+				"history_file",
+				"history_user",
+				"user",
+				"user_read",
+				"user_add",
+				"user_update",
+				"file",
+				"file_info",
+				"file_data",
+				"file_add",
+				"file_update",
+				"file_replace",
+			].include?(ruleset)
 		end
 
 	end

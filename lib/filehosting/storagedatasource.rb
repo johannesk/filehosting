@@ -195,6 +195,7 @@ module FileHosting
 
 		# returns information about a user
 		def user(username= @user.username)
+			super(username)
 			name= user_name(username)
 			raise NoSuchUserError.new(username) unless @storage.exists?(name)
 			res= @storage.read(user_name(username))
@@ -205,6 +206,7 @@ module FileHosting
 
 		# creates a new user
 		def add_user(user)
+			super(user)
 			name= user_name(user)
 			raise UserExistsError.new(user.username) if @storage.exists?(name)
 			@storage.store_data(name, user.to_yaml)
@@ -213,6 +215,7 @@ module FileHosting
 
 		# updates a user
 		def update_user(user)
+			super(user)
 			name= user_name(user)
 			old= user(user.username)
 			@storage.store_data(name, user.to_yaml)
@@ -221,6 +224,7 @@ module FileHosting
 
 		# removes a user
 		def remove_user(username)
+			super(username)
 			name= user_name(user)
 			raise NoSuchUserError unless @storage.exists?(name)
 			@storage.remove(name)
