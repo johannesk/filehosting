@@ -92,7 +92,7 @@ module FileHosting
 		alias :to_text :to_s
 
 		def ==(other)
-			@result == other.result
+			@result == other.result and
 			@conditions.sort == other.conditions.sort
 		end
 

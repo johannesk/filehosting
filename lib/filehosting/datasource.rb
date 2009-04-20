@@ -48,14 +48,14 @@ module FileHosting
 			username= @config[:username]
 			if ["anonymous", "root"].include?(username)
 				begin
-					user= user(username)
+					user= read_user(username)
 				rescue NoSuchUserError
 					@user= User.new(username, "")
 					add_user(@user)
 					user= @user
 				end
 			else
-				user= user(username)
+				user= user_add(username)
 			end
 			raise UserAuthenticationError.new(username) unless user.check_password(@config[:password])
 			@user= user
@@ -66,37 +66,46 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
-			if check_rules("search", {"tags" => tags})
+			if check_rule("search", {"tags" => tags})
 				raise OperationNotPermitedError.new("search(#{tags.inspect})")
 			end
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
-			if check_rules("search", {"tags" => tags})
+			if check_rule("search", {"tags" => tags})
 				raise OperationNotPermitedError.new("search_partial(#{tags.inspect})")
 			end
 		end
 
 		# returns all available tags
 		def tags
-			if check_rules("tags")
+			if check_rule("tags")
 				raise OperationNotPermitedError.new("tags()")
 			end
 		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
-			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_info", {"uuid" => uuid.to_s})
+			res= read_fileinfo(uuid)
+			if check_rule("file", {"file" => res}) or
+			   check_rule("file_info", {"file" => res})
 				raise OperationNotPermitedError.new("file_info(#{uuid.to_s})")
 			end
+			res
 		end
+
+		# returns the fileinfo for the file with this uuid
+		def read_fileinfo(uuid)
+			raise NotImplementedError
+		end
+		protected :read_fileinfo
 
 		# returns the filedata
 		def filedata(uuid, type= File)
-			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_data", {"uuid" => uuid.to_s})
+			fileinfo= read_fileinfo(uuid)
+			if check_rule("file", {"file" => fileinfo}) or
+			   check_rule("file_data", {"file" => fileinfo})
 				raise OperationNotPermitedError.new("file_data(#{uuid.to_s})")
 			end
 		end
@@ -109,8 +118,8 @@ module FileHosting
 		# must contain the filename, from where to copy the
 		# file.
 		def add_file(fileinfo, file)
-			if check_rules("file", {"uuid" => fileinfo.uuid.to_s}) or
-			   check_rules("file_add", {"file" => fileinfo})
+			if check_rule("file", {"file" => fileinfo}) or
+			   check_rule("file_add", {"file" => fileinfo})
 				raise OperationNotPermitedError.new("file_add(#{fileinfo.uuid.to_s})")
 			end
 			notify_observers("files/#{fileinfo.uuid}")
@@ -123,8 +132,8 @@ module FileHosting
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo)
 			oldinfo= self.fileinfo(fileinfo.uuid)
-			if check_rules("file", {"uuid" => fileinfo.uuid.to_s}) or
-			   check_rules("file_update", {"file" => fileinfo, "old" => oldinfo})
+			if check_rule("file", {"file" => oldinfo}) or
+			   check_rule("file_update", {"newfile" => fileinfo, "file" => oldinfo})
 				raise OperationNotPermitedError.new("file_update(#{fileinfo.uuid.to_s})")
 			end
 			notify_observers("files/#{fileinfo.uuid}")
@@ -143,8 +152,9 @@ module FileHosting
 		# Replaces a file, but not it's metadata.
 		# Returns the fileinfo
 		def update_filedata(uuid, file)
-			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_replace", {"uuid" => uuid.to_s})
+			fileinfo= read_fileinfo(uuid)
+			if check_rule("file", {"file" => fileinfo}) or
+			   check_rule("file_replace", {"file" => fileinfo})
 				raise OperationNotPermitedError.new("file_replace(#{uuid.to_s})")
 			end
 			notify_observers("files/#{uuid}")
@@ -152,12 +162,13 @@ module FileHosting
 
 		# removes a file
 		def remove_file(uuid)
-			if check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("file_remove", {"uuid" => uuid.to_s})
+			fileinfo= read_fileinfo(uuid)
+			if check_rule("file", {"file" => fileinfo}) or
+			   check_rule("file_remove", {"file" => fileinfo})
 				raise OperationNotPermitedError.new("file_remove(#{uuid.to_s})")
 			end
 			notify_observers("files/#{uuid}")
-			tags= fileinfo(uuid).tags
+			tags= read_fileinfo(uuid).tags
 			if tags.find { |tag| search_tags([tag]).size == 1 }
 				notify_observers("tags")
 			end
@@ -165,42 +176,53 @@ module FileHosting
 
 		# returns the history of a file
 		def history_file(uuid)
-			if check_rules("history") or
-			   check_rules("file", {"uuid" => uuid.to_s}) or
-			   check_rules("history_file", {"uuid" => uuid.to_s})
+			fileinfo= read_fileinfo(uuid)
+			if check_rule("history") or
+			   check_rule("file", {"file" => fileinfo}) or
+			   check_rule("history_file", {"file" => fileinfo})
 				raise OperationNotPermitedError.new("history_user(#{uuid.to_s})")
 			end
 		end
 
 		# returns information about a user
 		def user(username= @user.username)
-			if check_rules("user", {"username" => user.username}) or
-			   check_rules("user_read", {"username" => user.username})
+			result= read_user(username)
+			if check_rule("user", {"user2" => result}) or
+			   check_rule("user_read", {"user2" => result})
 				raise OperationNotPermitedError.new("user_read(#{username})")
 			end
+			return result
 		end
+
+		# returns information about a user
+		def read_user(username)
+			raise NotImplementedError
+		end
+		protected :read_user
 
 		# creates a new user
 		def add_user(user)
-			if check_rules("user", {"username" => user.username}) or
-			   check_rules("user_add", {"username" => user.username, "arguser" => user})
+			if check_rule("user", {"user2" => user}) or
+			   check_rule("user_add", {"user2" => user})
 				raise OperationNotPermitedError.new("user_add(#{user.username})")
 			end
 		end
 
 		# updates a user
 		def update_user(user)
-			if check_rules("user", {"username" => user.username}) or
-			   check_rules("user_update", {"username" => user.username, "arguser" => user})
+			old= read_user(user.username)
+			if check_rule("user", {"user2" => old}) or
+			   check_rule("user_update", {"newuser" => user, "user2" => old})
 				raise OperationNotPermitedError.new("user_update(#{user.username})")
 			end
 		end
 
 		# returns the history of a user
-		def history_user(user= @user)
-			if check_rules("user", {"username" => user.username}) or
-			   check_rules("history") or
-			   check_rules("history_user", {"ruleset" => user})
+		def history_user(username= @user.username)
+			user= read_user(username)
+			if check_rule("user", {"username" => user.username}) or
+			   check_rule("history") or
+			   check_rule("history_user", {"user2" => user})
 				raise OperationNotPermitedError.new("history_user(#{user.username})")
 			end
 		end
@@ -208,8 +230,8 @@ module FileHosting
 		# reads a rule set
 		def rules(ruleset)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			if check_rules("rules", {"ruleset" => ruleset}) or
-			   check_rules("rules_read", {"ruleset" => ruleset})
+			if check_rule("rules", {"ruleset" => ruleset}) or
+			   check_rule("rules_read", {"ruleset" => ruleset})
 				raise OperationNotPermitedError.new("rules(#{ruleset.inspect})")
 			end
 			read_rules(ruleset)
@@ -219,13 +241,13 @@ module FileHosting
 		def read_rules(ruleset)
 			raise NotImplementedError
 		end
-		private :read_rules
+		protected :read_rules
 
 		# adds a rule to a rule set
 		def add_rule(ruleset, rule, position)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			if check_rules("rules", {"ruleset" => ruleset}) or
-			   check_rules("rules_add", {"ruleset" => ruleset, "rule" => rule, "position" => position})
+			if check_rule("rules", {"ruleset" => ruleset}) or
+			   check_rule("rules_add", {"ruleset" => ruleset, "rule" => rule, "position" => position})
 				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
 			end
 		end
@@ -233,8 +255,8 @@ module FileHosting
 		# removes a rule from a rule set
 		def remove_rule(ruleset, rule)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			if check_rules("rules", {"ruleset" => ruleset}) or
-			   check_rules("rules_remove", {"ruleset" => ruleset, "rule" => rule})
+			if check_rule("rules", {"ruleset" => ruleset}) or
+			   check_rule("rules_remove", {"ruleset" => ruleset, "rule" => rule})
 				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
 			end
 		end
@@ -249,7 +271,7 @@ module FileHosting
 			end
 			nil
 		end
-		private :check_rules
+		protected :check_rule
 
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.

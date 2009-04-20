@@ -42,5 +42,45 @@ User
 Rules
 -----
 	The following rule sets are available
-	- search
+	- search_filter
 		Filter search results. true results in filtering.
+	- search
+		deny access to searches
+	- tags
+		deny access to tags
+	- file
+		deny access to all file methods
+	- file_info
+		deny access to fileinfo
+	- file_data
+		deny access to filedata
+	- file_add
+		deny access to add_file
+	- file_update
+		deny access to update_file
+	- file_replace
+		deny access to update_filedata
+	- file_remove
+		deny access to remove_file
+	- user
+		deny access to all user methods
+	- user_read
+		deny access to user
+	- user_add
+		deny access to add_user
+	- user_update
+		deny access to update_user
+	- history
+		deny access to all history methods
+	- history_file
+		deny access to history_file
+	- history_user
+		deny access to history_user
+	- rules
+		deny access to all rule methods
+	- rules_read
+		deny access to rules
+	- rules_add
+		deny access to add_rule
+	- rules_remove
+		deny access to remove_rule

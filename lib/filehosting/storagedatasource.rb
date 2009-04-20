@@ -59,10 +59,7 @@ module FileHosting
 			tags.each do |tag|
 				res&= uuids_by_tag(tag)
 			end
-			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rules("search_filter", {"fileinfo" => info}) }
-			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
-			res
+			search_finalize(res, rule)
 		end
 
 		def search_tags_partial(tags, rule= nil)
@@ -76,12 +73,22 @@ module FileHosting
 			res= count.keys
 			res.delete_if { |x| count[x] == tags.size }
 			res.sort! { |a,b| count[b] <=> count[a] }
-			res= res.collect { |uuid| fileinfo(uuid) }
-			res= res.find_all { |info| !check_rules("search_filter", {"fileinfo" => info}) }
+			search_finalize(res, rule)
+		end
+
+		def search_finalize(uuids, rule)
+			res= uuids.collect do |uuid|
+				begin
+					fileinfo(uuid)
+				rescue OperationNotPermitedError
+					nil
+				end
+			end.compact
+			res= res.find_all { |info| !check_rule("search_filter", {"fileinfo" => info}) }
 			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
-			res= res.find_all { |info| rule.test({:fileinfo => info}) } if rule
 			res
 		end
+		private :search_finalize
 
 		# returns all available tags
 		def tags
@@ -90,8 +97,7 @@ module FileHosting
 		end
 
 
-		def fileinfo(uuid)
-			super(uuid)
+		def read_fileinfo(uuid)
 			data= @storage.read(fileinfo_name(uuid))
 			raise NoSuchFileError.new(uuid) unless data
 			begin
@@ -140,7 +146,7 @@ module FileHosting
 
 		def update_filedata(uuid, file)
 			super(uuid, file)
-			new= store_file(fileinfo(uuid), file)
+			new= store_file(read_fileinfo(uuid), file)
 			store_history(:file_replace, old.uuid.to_s, new-old)
 			new
 		end
@@ -148,7 +154,7 @@ module FileHosting
 		def update_fileinfo(fileinfo)
 			super(fileinfo)
 			name= fileinfo_name(fileinfo)
-			old= fileinfo(fileinfo.uuid)
+			old= read_fileinfo(fileinfo.uuid)
 			STDERR.puts "==="
 			plus= (fileinfo.tags-old.tags).collect { |t| tag_name(t) }
 			STDERR.puts plus
@@ -181,7 +187,7 @@ module FileHosting
 
 		def remove_file(uuid)
 			super(uuid)
-			old= fileinfo(uuid)
+			old= read_fileinfo(uuid)
 			name= fileinfo_name(old)
 			index= @storage.reverse(name)
 			begin
@@ -194,8 +200,7 @@ module FileHosting
 		end
 
 		# returns information about a user
-		def user(username= @user.username)
-			super(username)
+		def read_user(username)
 			name= user_name(username)
 			raise NoSuchUserError.new(username) unless @storage.exists?(name)
 			res= @storage.read(user_name(username))
@@ -217,7 +222,7 @@ module FileHosting
 		def update_user(user)
 			super(user)
 			name= user_name(user)
-			old= user(user.username)
+			old= read_user(user.username)
 			@storage.store_data(name, user.to_yaml)
 			store_history(:user_update, user.username, user-old)
 		end
@@ -241,7 +246,6 @@ module FileHosting
 
 		# reads a rule set
 		def read_rules(ruleset)
-			super(ruleset)
 			name= ruleset_name(ruleset)
 			YAMLTools.parse_array(@storage.read(name), Rule)
 		end
