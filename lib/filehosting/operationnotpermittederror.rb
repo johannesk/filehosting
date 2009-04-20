@@ -21,22 +21,20 @@
 #++
 #
 
-require "filehosting/usererror"
+require "filehosting/securityerror"
 
 module FileHosting
 
-	# This error indicates the creation of an existing user was
-	# requested.
-	class UserExistsError < UserError
+	class OperationNotPermittedError < SecurityError
 		
-		attr_reader :username
+		attr_reader :operation
 
-		def initialize(username)
-			@username= username
+		def initialize(operation)
+			@operation= operation
 		end
 
 		def to_s
-			"the user '#{@username}' exists"
+			"the operation '#{@operation}' is not permitted"
 		end
 
 	end

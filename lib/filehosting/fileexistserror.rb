@@ -21,13 +21,13 @@
 #++
 #
 
-require "filehosting/error"
+require "filehosting/fileerror"
 
 module FileHosting
 
 	# This error indicates the creation of an existing file was
 	# requested.
-	class FileExistsErrorError < Error
+	class FileExistsErrorError < FileError
 		
 		attr_reader :uuid
 

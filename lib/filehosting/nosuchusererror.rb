@@ -21,13 +21,13 @@
 #++
 #
 
-require "filehosting/error"
+require "filehosting/usererror"
 
 module FileHosting
 
 	# This error indicates an operation on a not existing User was
 	# requested.
-	class NoSuchUserError < Error
+	class NoSuchUserError < UserError
 		
 		attr_reader :user
 

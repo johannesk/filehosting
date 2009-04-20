@@ -21,13 +21,13 @@
 #++
 #
 
-require "filehosting/error"
+require "filehosting/fileerror"
 
 module FileHosting
 
 	# This error indicates an operation on a not existing File
 	# was requested.
-	class NoSuchFileError < Error
+	class NoSuchFileError < FileError
 		
 		attr_reader :uuid
 

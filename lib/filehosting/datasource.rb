@@ -29,8 +29,9 @@ require "text"
 module FileHosting
 
 	autoload :NoSuchUserError, "filehosting/nosuchusererror"
-	autoload :UserAuthenticationError, "filehosting/userauthenticationerror"
 	autoload :InvalidRuleSetError , "filehosting/invalidruleseterror"
+	autoload :UserAuthenticationError, "filehosting/userauthenticationerror"
+	autoload :OperationNotPermittedError, "filehosting/operationnotpermittederror"
 
 	# The DataSource knows everything
 	class DataSource

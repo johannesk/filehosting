@@ -21,11 +21,11 @@
 #++
 #
 
-require "filehosting/error"
+require "filehosting/securityerror"
 
 module FileHosting
 
-	class UserAuthenticationError < Error
+	class UserAuthenticationError < SecurityError
 		
 		attr_reader :user
 

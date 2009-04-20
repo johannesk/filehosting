@@ -21,24 +21,11 @@
 #++
 #
 
-require "filehosting/usererror"
+require "filehosting/error"
 
 module FileHosting
 
-	# This error indicates the creation of an existing user was
-	# requested.
-	class UserExistsError < UserError
-		
-		attr_reader :username
-
-		def initialize(username)
-			@username= username
-		end
-
-		def to_s
-			"the user '#{@username}' exists"
-		end
-
+	class FileError < Error
 	end
 
 end
