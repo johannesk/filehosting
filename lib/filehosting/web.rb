@@ -62,7 +62,7 @@ module FileHosting
 
 		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil)
-			cache_name= "web#{input ? "post" : ""}/"+path.dir_encode+"?"+args.dir_encode
+			cache_name= "web#{input ? "post" : ""}/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}"
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			direction= path.split("/")
