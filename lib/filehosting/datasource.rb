@@ -186,7 +186,8 @@ module FileHosting
 		end
 
 		# returns information about a user
-		def user(username= @user.username)
+		def user(username= nil)
+			return @user unless username
 			result= read_user(username)
 			if check_rule("user", {"user2" => result}) or
 			   check_rule("user_read", {"user2" => result})
@@ -207,7 +208,7 @@ module FileHosting
 			   check_rule("user_add", {"user2" => user})
 				raise OperationNotPermitedError.new("user_add(#{user.username})")
 			end
-			notify_observer("user/#{user.username}")
+			notify_observers("user/#{user.username}")
 		end
 
 		# updates a user
@@ -217,7 +218,7 @@ module FileHosting
 			   check_rule("user_update", {"newuser" => user, "user2" => old})
 				raise OperationNotPermitedError.new("user_update(#{user.username})")
 			end
-			notify_observer("user/#{user.username}")
+			notify_observers("user/#{user.username}")
 		end
 
 		# returns the history of a user
@@ -253,7 +254,7 @@ module FileHosting
 			   check_rule("rules_add", {"ruleset" => ruleset, "rule" => rule, "position" => position})
 				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
 			end
-			notify_observer("rules/#{ruleset}")
+			notify_observers("rules/#{ruleset}")
 		end
 
 		# removes a rule from a rule set
@@ -263,7 +264,7 @@ module FileHosting
 			   check_rule("rules_remove", {"ruleset" => ruleset, "rule" => rule})
 				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
 			end
-			notify_observer("rules/#{ruleset}")
+			notify_observers("rules/#{ruleset}")
 		end
 
 		# check if something is allowed

@@ -25,6 +25,11 @@
 				<li><a href="<%= webroot %>/add">add File</a></li>
 				<li><a href="<%= webroot %>/feed">Feed</a></li>
 				<li><a href="<%= webroot %>/history">History</a></li>
+% if user.username == "anonymous"
+				<li><a href="<%= webroot %>/login">Login</a></li>
+% else
+				<li><a href="<%= webroot %>/user/<%= user.username.to_html %>"><%= user.username.to_html %></a></li>
+% end
 			</ul>
 		</div>
 		<%= body %>

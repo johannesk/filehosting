@@ -21,49 +21,35 @@
 #++
 #
 
+require "filehosting/webpage"
+
 module FileHosting
 
-	# The parent of all WebPages
-	class WebPage
+	# a page to make the browser submit username and password
+	class Web401Page < WebPage
 
-		attr_reader :header
-		attr_reader :status
-		attr_reader :body
-		attr_reader :size
-		attr_reader :config
-		attr_reader :tags
-		attr_reader :cachable
+		attr_reader :auth_reason
 
-		def initialize(config)
-			@config= config
-			@status= 200
-			@tags= []
-			@header= Hash.new
-			@size= nil
+		def initialize(config, reason)
+			super(config)
+			@auth_reason= reason
+			@header["WWW-Authenticate"]= "Basic realm=\"#{reason}\""
 		end
 
-		def to_output
-			[
-				header.collect do |key, value|
-					"#{key}: #{value}\n"
-				end.join +
-				(size ? "Content-Length: #{size}\n" : "") +
-				"Status: #{status}\n" +
-				"\n",
-				body
-			]
+		def status
+			401
 		end
 
-		def webroot
-			config[:webroot]
+		def body
+			""
 		end
 
-		def datasource
-			config[:datasource]
+		def size
+			0
 		end
 
-		def user
-			datasource.user
+		def cachable
+			true
 		end
 
 	end

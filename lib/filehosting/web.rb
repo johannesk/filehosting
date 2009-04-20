@@ -43,7 +43,9 @@ module FileHosting
 	autoload :WebClassicPage, "filehosting/webclassicpage"
 	autoload :WebSourceCode, "filehosting/websourcecode"
 	autoload :WebFile, "filehosting/webfile"
+	autoload :WebLogin, "filehosting/weblogin"
 	autoload :Web404Page, "filehosting/web404page"
+	autoload :Web401Page, "filehosting/web401page"
 
 	class Web
 
@@ -72,15 +74,17 @@ module FileHosting
 				page_input_switch(direction, args, input, type)
 			end
 			case
+			when page.status == 401
+				create_error_page(401, page.auth_reason)
 			when page.status == 404
-				@config.cache.store_link(cache_name, "weberror/404", page.tags)
-				create_404_page
+				@config.cache.store_link(cache_name, "weberror/404", page.tags) if page.cachable
+				create_error_page(404)
 			when WebRedirect === page
 				location= page.location.sub(/^\//, "")
 				location=~ /\?/
 				path= $` || location
 				args= self.class.parse_get($' || "")
-				@config.cache.store_link(cache_name, "web/"+path.dir_encode+"?"+args.dir_encode, page.tags)
+				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", page.tags)
 				create_page(path, args)
 			when (not page.cachable)
 				page.to_output
@@ -91,13 +95,21 @@ module FileHosting
 			end
 		end
 
-		def create_404_page
-			cache_name= "weberror/404"
+		def create_error_page(error, args= nil)
+			cache_name= "weberror/#{error}"
+			cache_name+= "/#{args.dir_encode}" if args
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
-			page= Web404Page.new(config)
+			page= case error
+			when 404
+				Web404Page.new(config)
+			when 401
+				Web401Page.new(config, args)
+			else
+				NotImplemntedError
+			end
 			res= page.to_output
-			@config.cache.store(cache_name, res, page.tags)
+			@config.cache.store(cache_name, res, page.tags) if page.cachable
 			res
 		end
 
@@ -109,6 +121,8 @@ module FileHosting
 				WebAddPage.new(config)
 			when direction == ["sourcecode"]
 				WebSourceCode.new(config)
+			when direction == ["login"]
+				WebLogin.new(config)
 			when (direction == ["search"] and (args.keys - ["tags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
 				better= @config.datasource.optimize_search(tags)

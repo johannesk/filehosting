@@ -21,52 +21,34 @@
 #++
 #
 
+require "filehosting/webdefaultpage"
+require "filehosting/html"
+
+
 module FileHosting
 
-	# The parent of all WebPages
-	class WebPage
+	# The login Page has a status of 401 if the user is
+	# 'anonymous'.
+	class WebLogin < WebDefaultPage
 
-		attr_reader :header
-		attr_reader :status
-		attr_reader :body
-		attr_reader :size
-		attr_reader :config
-		attr_reader :tags
-		attr_reader :cachable
+		attr_reader :auth_reason
 
 		def initialize(config)
 			@config= config
-			@status= 200
-			@tags= []
-			@header= Hash.new
-			@size= nil
+			if @config.datasource.user.username == "anonymous"
+				@status= 401
+				@auth_reason= "login"
+				@body= ""
+			else
+				user= @config.datasource.user
+				super(config, "logged in", HTML.use_template("loggedin.eruby", binding))
+			end
 		end
 
-		def to_output
-			[
-				header.collect do |key, value|
-					"#{key}: #{value}\n"
-				end.join +
-				(size ? "Content-Length: #{size}\n" : "") +
-				"Status: #{status}\n" +
-				"\n",
-				body
-			]
-		end
-
-		def webroot
-			config[:webroot]
-		end
-
-		def datasource
-			config[:datasource]
-		end
-
-		def user
-			datasource.user
+		def cachable
+			true
 		end
 
 	end
 
 end
-
