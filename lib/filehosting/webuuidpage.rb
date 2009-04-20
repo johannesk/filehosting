@@ -40,7 +40,6 @@ module FileHosting
 			rescue ArgumentError
 				@status= 404
 			end
-			@tags= ["files/#{uuid.to_s}"]
 			title, body= yield @uuid
 			super(config, title, body, *includes)
 		end

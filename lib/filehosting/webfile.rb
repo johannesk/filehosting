@@ -41,6 +41,7 @@ module FileHosting
 				return
 			end
 			@tags<< "files/#{uuid.to_s}"
+			@tags+= ["rules/file", "rules/file_data"]
 			begin
 				fileinfo= @config.datasource.fileinfo(@uuid)
 			rescue NoSuchFileError

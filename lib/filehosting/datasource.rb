@@ -206,6 +206,7 @@ module FileHosting
 			   check_rule("user_add", {"user2" => user})
 				raise OperationNotPermitedError.new("user_add(#{user.username})")
 			end
+			notify_observer("user/#{user.username}")
 		end
 
 		# updates a user
@@ -215,6 +216,7 @@ module FileHosting
 			   check_rule("user_update", {"newuser" => user, "user2" => old})
 				raise OperationNotPermitedError.new("user_update(#{user.username})")
 			end
+			notify_observer("user/#{user.username}")
 		end
 
 		# returns the history of a user
@@ -250,6 +252,7 @@ module FileHosting
 			   check_rule("rules_add", {"ruleset" => ruleset, "rule" => rule, "position" => position})
 				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
 			end
+			notify_observer("rules/#{ruleset}")
 		end
 
 		# removes a rule from a rule set
@@ -259,6 +262,7 @@ module FileHosting
 			   check_rule("rules_remove", {"ruleset" => ruleset, "rule" => rule})
 				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
 			end
+			notify_observer("rules/#{ruleset}")
 		end
 
 		# check if something is allowed
