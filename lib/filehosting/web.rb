@@ -25,7 +25,7 @@ require "filehosting/web-tiny"
 require "filehosting/web_c"
 require "filehosting/html"
 require "filehosting/error"
-require "filehosting/nosuchfileerror"
+require "filehosting/securityerror"
 require "filehosting/yamltools"
 require "filehosting/webredirect"
 require "filehosting/file"
@@ -68,10 +68,14 @@ module FileHosting
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			direction= path.split("/")
-			page= unless input
-				page_switch(direction,args)
-			else
-				page_input_switch(direction, args, input, type)
+			begin
+				page= unless input
+					page_switch(direction,args)
+				else
+					page_input_switch(direction, args, input, type)
+				end
+			rescue OperationNotPermittedError
+				create_error_page(401, "operation not permitted")
 			end
 			case
 			when page.status == 401
