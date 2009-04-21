@@ -51,6 +51,11 @@ module FileHosting
 			@storage.read(@prefix, name, type)
 		end
 
+		# Reads the date of a record
+		def date(name)
+			@storage.date(@prefix, name)
+		end
+
 		# Checks whether a record exists.
 		def exists?(name)
 			@storage.exists?(@prefix, name)
@@ -84,6 +89,16 @@ module FileHosting
 		# Links one's data to target data.
 		def store_link(name, target)
 			@storage.store_link(@prefix, name, target)
+		end
+
+		# Set's the date of a record
+		def set_date(name, date)
+			@storage.set_date(name, date)
+		end
+
+		# Removes the date of a record
+		def remove_date(name)
+			@storage.remove_date(prefix, name)
 		end
 
 		# Removes a record.

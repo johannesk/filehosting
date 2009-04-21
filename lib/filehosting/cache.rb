@@ -33,12 +33,12 @@ module FileHosting
 		end
 
 		# Stores a file in the cache.
-		def store(name, data, deps)
+		def store(name, data, deps, date= nil)
 			@storage.store(name, data, deps)
 		end
 
 		# stores a file as link to another file
-		def store_link(name, target, deps)
+		def store_link(name, target, deps, date= nil)
 			@storage.link(name, target, deps)
 		end
 
@@ -57,6 +57,11 @@ module FileHosting
 				@storage.store(name, data, deps)
 			end
 			data
+		end
+
+		# Reads the date of a file in the cache.
+		def date(name)
+			@storage.date(name)
 		end
 
 		# Deletes all files with this dependencies.

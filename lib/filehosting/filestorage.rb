@@ -33,6 +33,8 @@ require "io2io"
 
 module FileHosting
 
+	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
+
 	# FileStorage implements a Storage, where all data is saved 
 	# just in the filesystem.
 	class FileStorage < Storage
@@ -58,6 +60,18 @@ module FileHosting
 			else
 				raise NotImplementedError
 			end
+		end
+
+		# Reads the date of a record
+		def date(prefix, name)
+			file= prefix_date_file(prefix, name)
+			return nil unless file.file?
+			begin
+				res= YAML.load(file.read)
+			rescue
+				InternalDataCorruptionError
+			end
+			raise InternalDataCorruptionError unless Time === res
 		end
 
 		# Checks whether a record exists.
@@ -137,6 +151,19 @@ module FileHosting
 			end
 		end
 
+		# Set's the date of a record
+		def set_date(prefix, name, date)
+			file= prefix_date_file(prefix, name)
+			File.new(file, "w") do |f|
+				f.write(date.to_yaml)
+			end
+		end
+
+		# Removes the date of a record
+		def remove_date(prefix, name)
+			prefix_date_file(prefix, name).delete?
+		end
+
 		# Removes a record.
 		def remove(prefix, name)
 			index= YAMLTools.read_array(prefix_reverse_file(prefix, name), String)
@@ -188,6 +215,10 @@ module FileHosting
 			prefix_data_dir(prefix) + name.dir_encode
 		end
 
+		def prefix_date_file(prefix, name)
+			prefix_date_dir(prefix) + name.dir_encode
+		end
+
 		def prefix_index_file(prefix, index)
 			prefix_index_dir(prefix) + index.dir_encode
 		end
@@ -198,6 +229,12 @@ module FileHosting
 
 		def prefix_data_dir(prefix)
 			dir= prefix_dir(prefix)+"data"
+			dir.mkdir unless dir.directory?
+			dir
+		end
+
+		def prefix_date_dir(prefix)
+			dir= prefix_dir(prefix)+"date"
 			dir.mkdir unless dir.directory?
 			dir
 		end

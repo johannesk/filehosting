@@ -31,16 +31,16 @@ module FileHosting
 	class Storage
 
 		# Stores data and index's to it.
-		def store(prefix, name, data, index)
-			store_safe(prefix, name, index) do
+		def store(prefix, name, data, index, date= nil)
+			store_safe(prefix, name, index, date || Time.now) do
 				store_data(prefix, name, data)
 			end
 		end
 
 		# The same as store but data is the data of the target
 		# record.
-		def link(prefix, name, target ,index)
-			store_safe(prefix, name, index) do
+		def link(prefix, name, target ,index, date= nil)
+			store_safe(prefix, name, index, date || Time.now) do
 				store_link(prefix, name, target)
 			end
 		end
@@ -55,6 +55,11 @@ module FileHosting
 
 		# Reads a record.
 		def read(prefix, name, type)
+			raise NotImplementedError
+		end
+
+		# Reads the date of a record
+		def date(prefix, name)
 			raise NotImplementedError
 		end
 
@@ -93,6 +98,16 @@ module FileHosting
 			raise NotImplementedError
 		end
 
+		# Set's the date of a record
+		def set_date(prefix, name, date)
+			raise NotImplementedError
+		end
+
+		# Removes the date of a record
+		def remove_date(prefix, name)
+			raise NotImplementedError
+		end
+
 		# Removes a record.
 		def remove(prefix, name)
 			raise NotImplementedError
@@ -105,7 +120,7 @@ module FileHosting
 
 		private
 
-		def store_safe(prefix, name, index, &block)
+		def store_safe(prefix, name, index, date, &block)
 			index= [index].flatten
 			rev= reverse(prefix, name)
 			plus= index - rev
@@ -117,6 +132,7 @@ module FileHosting
 				minus.each do |ind|
 					remove_index(prefix, ind, name)
 				end
+				set_date(prefix, name, date)
 				block.call
 			rescue Exception => e
 				plus.each do |ind|
@@ -125,6 +141,7 @@ module FileHosting
 				minus.each do |ind|
 					store_index(prefix, ind, name)
 				end
+				remove_date(prefix, name)
 				raise e
 			end
 		end

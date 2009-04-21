@@ -255,6 +255,7 @@ module FileHosting
 				raise OperationNotPermitedError.new("add_rule(#{ruleset.inspect})")
 			end
 			notify_observers("rules/#{ruleset}")
+			notify_observers("rules")
 		end
 
 		# removes a rule from a rule set
@@ -265,6 +266,7 @@ module FileHosting
 				raise OperationNotPermitedError.new("remove_rule(#{ruleset.inspect})")
 			end
 			notify_observers("rules/#{ruleset}")
+			notify_observers("rules")
 		end
 
 		# check if something is allowed
