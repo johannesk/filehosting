@@ -33,6 +33,7 @@ module FileHosting
 		attr_reader :config
 		attr_reader :tags
 		attr_reader :cachable
+		attr_reader :date
 
 		def initialize(config)
 			@config= config
@@ -40,6 +41,7 @@ module FileHosting
 			@tags= []
 			@header= Hash.new
 			@size= nil
+			@date= Time.now
 		end
 
 		def to_output
@@ -49,6 +51,7 @@ module FileHosting
 				end.join +
 				(size ? "Content-Length: #{size}\n" : "") +
 				"Status: #{status}\n" +
+				"Last-Modified: #{date.httpdate}\n" +
 				"\n",
 				body
 			]

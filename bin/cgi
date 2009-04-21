@@ -25,9 +25,21 @@
 require "filehosting/web-tiny"
 
 require "pathname"
+require "time"
 
 input = if (ENV["CONTENT_LENGTH"] || "0").to_i > 0
 	STDIN
+else
+	nil
+end
+
+date= if ENV["HTTP_IF_NOT_MODIFIED_SINCE"]
+	begin
+		date= Time.httpdate(ENV["HTTP_IF_NOT_MODIFIED_SINCE"])
+	rescue ArgumentError
+		puts "Status: 400\n\n"
+		exit
+	end
 else
 	nil
 end
@@ -37,7 +49,10 @@ if ENV["HTTP_AUTHORIZATION"]
 	require "filehosting/configfilereader"
 	require "base64"
 	auth= Hash.new
-	return unless ENV["HTTP_AUTHORIZATION"]=~ /^Basic\s+/
+	unless ENV["HTTP_AUTHORIZATION"]=~ /^Basic\s+/
+		puts "Status: 400\n\n"
+		exit
+	end
 	Base64.decode64($')=~ /^([^:]*):(.*?)$/
 	auth[:username]= $1
 	auth[:password]= $2

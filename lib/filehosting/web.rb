@@ -31,6 +31,7 @@ require "filehosting/webredirect"
 require "filehosting/file"
 
 require "fileutils"
+require "time"
 
 module FileHosting
 
@@ -53,18 +54,22 @@ module FileHosting
 		# IO's. The String holds the data, from an IO can the
 		# data be read. And in case of an Array all String's
 		# and IO's have to be parsed to get the full data.
-		def get_page(path, args, input= nil, type= nil)
-			file= StaticDir+path
+		def get_page(path, args, input= nil, type= nil, date= nil)
+			file= StaticDataDir+path
 			return nil unless file.cleanpath == file
 			if file.file?
-				return File.new(file)
+				datefile= StaticDateDir+path
+				return "Status: 304\n\n" if date and date.httpdate == datefile.read
+				headerfile= StaticHeaderDir+path
+				return [File.new(headerfile), File.new(file)]
 			end
-			create_page(path, args, input, type)
+			create_page(path, args, input, type, date)
 		end
 
 		# Creates a page and stores it into the cache.
-		def create_page(path, args, input= nil, type= nil)
+		def create_page(path, args, input= nil, type= nil, date= nil)
 			cache_name= "web#{input ? "post" : ""}/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}"
+			return "Status: 304\n\n" if date and @config.cache.date(cache_name) == date
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			direction= path.split("/")
@@ -88,7 +93,7 @@ module FileHosting
 				location=~ /\?/
 				path= $` || location
 				args= self.class.parse_get($' || "")
-				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", page.tags)
+				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", page.tags, page.date)
 				create_page(path, args)
 			when (not page.cachable)
 				page.to_output

@@ -28,6 +28,7 @@ require "filehosting/pathname"
 
 require "fileutils"
 require "pathname"
+require "time"
 
 require "io2io"
 
@@ -154,7 +155,7 @@ module FileHosting
 		# Set's the date of a record
 		def set_date(prefix, name, date)
 			file= prefix_date_file(prefix, name)
-			File.new(file, "w") do |f|
+			File.open(file, "w") do |f|
 				f.write(date.to_yaml)
 			end
 		end

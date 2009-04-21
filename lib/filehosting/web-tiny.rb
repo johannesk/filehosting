@@ -33,7 +33,9 @@ module FileHosting
 
 		attr_accessor :config
 
-		StaticDir= Pathname.new("web")
+		StaticDataDir= Pathname.new("web/data")
+		StaticDateDir= Pathname.new("web/date")
+		StaticHeaderDir= Pathname.new("web/header")
 
 		def initialize(config)
 			@config= config
@@ -43,12 +45,28 @@ module FileHosting
 		# IO's. The String holds the data, from an IO can the
 		# data be read. And in case of an Array all String's
 		# and IO's have to be parsed to get the full data.
-		def get_page(path, args, input= nil, type= nil)
+		def get_page(path, args, input= nil, type= nil, date= nil)
 			unless (unless input
-				file= StaticDir+path
+				file= StaticDataDir+path
 				return nil unless file.cleanpath == file
 				if file.file?
-					return File.new(file)
+					datefile= StaticDateDir+path
+					return "Status: 304\n\n" if date and date.httpdate == datefile.read
+					headerfile= StaticHeaderDir+path
+					return [File.new(headerfile), File.new(file)]
+				end
+				if date
+					datefile= Pathname.new(@config[:storage_args]) + "cache" + "date" + ("web/anonymous/" + path.dir_encode + "?" + args.dir_encode).dir_encode
+					if datefile.file?
+						begin
+							filedate= YAML.load(datefile.read)
+						rescue
+							return nil
+						end
+						if filedata == date
+							return "Status: 304\n\n"
+						end
+					end
 				end
 				file= Pathname.new(@config[:storage_args]) + "cache" + "data" + ("web/anonymous/" + path.dir_encode + "?" + args.dir_encode).dir_encode
 				if file.file?
@@ -58,7 +76,7 @@ module FileHosting
 			end)
 				yield if block_given?
 				require "filehosting/web"
-				get_page(path, args, input, type)
+				get_page(path, args, input, type, date)
 			end
 		end
 
