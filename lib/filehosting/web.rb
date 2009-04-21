@@ -75,9 +75,9 @@ module FileHosting
 			direction= path.split("/")
 			begin
 				page= unless input
-					page_switch(direction,args)
+					page_switch(direction,args, date)
 				else
-					page_input_switch(direction, args, input, type)
+					page_input_switch(direction, args, input, type, date)
 				end
 			rescue OperationNotPermittedError
 				create_error_page(401, "operation not permitted")
@@ -88,6 +88,8 @@ module FileHosting
 			when page.status == 404
 				@config.cache.store_link(cache_name, "weberror/404", page.tags) if page.cachable
 				create_error_page(404)
+			when page.status == 304
+				return "Status: 304\n\n"
 			when WebRedirect === page
 				location= page.location.sub(/^\//, "")
 				location=~ /\?/
@@ -122,7 +124,7 @@ module FileHosting
 			res
 		end
 
-		def page_switch(direction, args)
+		def page_switch(direction, args, date= nil)
 			case
 			when direction == []
 				WebRedirect.new(config, "/search")
@@ -148,7 +150,7 @@ module FileHosting
 					WebSearchPage.new(config, tags, rules)
 				end
 			when (direction.size == 2 and direction[0] == "files")
-				WebFile.new(config, direction[1])
+				WebFile.new(config, direction[1], date)
 			when (direction.size == 2 and direction[0] == "fileinfo")
 				WebFileInfoPage.new(config, direction[1])
 			when (direction.size == 2 and direction[0] == "update")
@@ -162,7 +164,7 @@ module FileHosting
 			end
 		end
 
-		def page_input_switch(direction, args, input, type)
+		def page_input_switch(direction, args, input, type, date)
 			args= case type
 			when "application/x-www-form-urlencoded"
 				self.class.parse_get(input.read)

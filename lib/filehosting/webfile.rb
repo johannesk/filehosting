@@ -31,7 +31,7 @@ module FileHosting
 
 		attr_reader :uuid
 
-		def initialize(config, uuid)
+		def initialize(config, uuid, date)
 			super(config)
 			begin
 				@uuid= UUID.parse(uuid)
@@ -48,6 +48,9 @@ module FileHosting
 				@status= 404
 				@cachable= true
 				return
+			end
+			if date and fileinfo.data_date == date
+				@status= 304
 			end
 			@header["Content-Type"]= fileinfo.mimetype
 			@header["Content-Disposition"]= "attachment;filename=#{fileinfo.filename}"

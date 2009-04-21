@@ -61,6 +61,15 @@ module FileHosting
 		# the tags of the file
 		attr_accessor :tags
 
+		# the date of the filedata
+		attr_accessor :data_date
+
+		# the date of the metadata
+		attr_accessor :info_date
+
+		# the date which can be configured by the user
+		attr_accessor :user_date
+
 		def initialize
 			@uuid= UUID.random_create
 		end
@@ -88,12 +97,15 @@ module FileHosting
 				:size      => @size,
 				:hash_type => @hash_type,
 				:hash      => @hash,
-				:source    => @source
+				:source    => @source,
+				:data_date => @data_date,
+				:info_date => @info_date,
+				:user_date => @user_date,
 			}
 		end
 
 		def to_text
-			to_hash.to_text([:filename, :uuid, :tags, :mimetype, :size, :hash_type, :hash, :source])
+			to_hash.to_text([:filename, :uuid, :tags, :mimetype, :size, :user_date, :hash_type, :hash, :source])
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
@@ -106,7 +118,10 @@ module FileHosting
 				"size"      => lambda { @size },
 				"hash_type" => lambda { @hash_type },
 				"hash"      => lambda { @hash },
-				"tags"      => lambda { @tags }
+				"tags"      => lambda { @tags },
+				"data_date" => lambda { @data_date },
+				"info_date" => lambda { @info_date },
+				"user_date" => lambda { @user_date },
 			}
 		end
 		alias :rule_operand :to_yaml_properties
@@ -130,6 +145,12 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		res.hash_type= value["hash_type"].to_s
 		res.hash= value["hash"].to_s
 		res.tags= value["tags"].collect { |x| x.to_s }
+		raise FileHosting::InternalDataCorruptionError unless Time === value["data_date"]
+		res.data_date= value["data_date"]
+		raise FileHosting::InternalDataCorruptionError unless Time === value["info_date"]
+		res.data_date= value["info_date"]
+		raise FileHosting::InternalDataCorruptionError unless Time === value["user_date"]
+		res.data_date= value["user_date"]
 		res
 	rescue
 		raise FileHosting::InternalDataCorruptionError
