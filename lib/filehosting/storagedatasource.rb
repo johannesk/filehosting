@@ -27,6 +27,7 @@ require "filehosting/historyevent"
 require "filehosting/yamltools"
 require "filehosting/user"
 require "filehosting/rule"
+require "filehosting/operationnotpermittederror"
 
 require "pathname"
 require "yaml"
@@ -80,7 +81,7 @@ module FileHosting
 			res= uuids.collect do |uuid|
 				begin
 					fileinfo(uuid)
-				rescue OperationNotPermitedError
+				rescue OperationNotPermittedError
 					nil
 				end
 			end.compact
@@ -102,8 +103,8 @@ module FileHosting
 			raise NoSuchFileError.new(uuid) unless data
 			begin
 				res= YAML.load(data)
-			rescue
-				raise InternalDataCorruptionError
+			#rescue
+			#	raise InternalDataCorruptionError
 			end
 			raise InternalDataCorruptionError unless FileInfo === res
 			raise InternalDataCorruptionError unless res.uuid == uuid
@@ -157,7 +158,7 @@ module FileHosting
 			old= read_fileinfo(fileinfo.uuid)
 			plus= (fileinfo.tags-old.tags).collect { |t| tag_name(t) }
 			minus= (old.tags-fileinfo.tags).collect { |t| tag_name(t) }
-			fileninfo.info_date= Time.now
+			fileinfo.info_date= Time.now
 			begin
 				plus.each do |tag|
 					@storage.store_index(tag, name)

@@ -37,11 +37,13 @@ module FileHosting
 				wrong_tags= false
 				wrong_source= false
 				wrong_filedata= false
+				wrong_groups= false
 				if values
 					@cachable= false
 					old= fileinfo.clone
 					fileinfo.filename= values["filename"] if values["filename"]
 					fileinfo.tags= values["tags"].split(" ") if values["tags"]
+					fileinfo.groups= values["groups"].split(" ") if values["groups"]
 					fileinfo.source= values["source"] if values["source"]
 					if File === values["filedata"]
 						file= Pathname.new(values["filedata"].path)

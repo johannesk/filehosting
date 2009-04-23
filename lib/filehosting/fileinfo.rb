@@ -70,6 +70,9 @@ module FileHosting
 		# the date which can be configured by the user
 		attr_accessor :user_date
 
+		# the groups of this file
+		attr_accessor :groups
+
 		def initialize
 			@uuid= UUID.random_create
 		end
@@ -101,6 +104,7 @@ module FileHosting
 				:data_date => @data_date,
 				:info_date => @info_date,
 				:user_date => @user_date,
+				:groups    => @groups,
 			}
 		end
 
@@ -122,6 +126,7 @@ module FileHosting
 				"data_date" => lambda { @data_date },
 				"info_date" => lambda { @info_date },
 				"user_date" => lambda { @user_date },
+				"groups"    => lambda { @groups },
 			}
 		end
 		alias :rule_operand :to_yaml_properties
@@ -144,16 +149,25 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		res.size= value["size"].to_i
 		res.hash_type= value["hash_type"].to_s
 		res.hash= value["hash"].to_s
-		res.tags= value["tags"].collect { |x| x.to_s }
-		raise FileHosting::InternalDataCorruptionError unless Time === value["data_date"]
+		res.tags= if value["tags"].nil?
+			nil
+		else
+			value["tags"].collect { |x| x.to_s }
+		end
+		raise FileHosting::InternalDataCorruptionError unless value["data_date"].nil? or Time === value["data_date"]
 		res.data_date= value["data_date"]
-		raise FileHosting::InternalDataCorruptionError unless Time === value["info_date"]
+		raise FileHosting::InternalDataCorruptionError unless value["info_date"].nil? or Time === value["info_date"]
 		res.data_date= value["info_date"]
-		raise FileHosting::InternalDataCorruptionError unless Time === value["user_date"]
+		raise FileHosting::InternalDataCorruptionError unless value["user_date"].nil? or Time === value["user_date"]
 		res.data_date= value["user_date"]
+		res.groups= if value["groups"].nil?
+			nil
+		else
+			value["groups"].collect { |x| x.to_s }
+		end
 		res
-	rescue
-		raise FileHosting::InternalDataCorruptionError
+#	rescue
+#		raise FileHosting::InternalDataCorruptionError
 	end
 end
 

@@ -63,6 +63,15 @@ class UpdateArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_t :switch_tags
 
+	def help_groups
+		"update groups"
+	end
+
+	def switch_groups(groups)
+		@values[:set_groups]= groups.split(" ")
+	end
+	alias :switch_g :switch_groups
+
 end
 
 begin
@@ -97,6 +106,10 @@ begin
 
 	if config[:set_tags]
 		fileinfo.tags= config[:set_tags]
+	end
+
+	if config[:set_groups]
+		fileinfo.groups= config[:set_groups]
 	end
 
 	config.datasource.update_fileinfo(fileinfo)

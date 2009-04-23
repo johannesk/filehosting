@@ -15,6 +15,10 @@
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>
 			<tr>
+				<th<%  if wrong_groups %> class="wrong_data"<% end %>>groups</th>
+				<td><input type="text" name="groups" value="<%= fileinfo.groups.join(" ").to_html %>" size="50" /></td>
+			</tr>
+			<tr>
 				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
 				<td><input type="file" name="filedata" size="50" /></td>
 			</tr>

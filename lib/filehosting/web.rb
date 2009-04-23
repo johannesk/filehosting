@@ -176,9 +176,9 @@ module FileHosting
 			files= args.values.grep(File)
 			begin
 				res= case
-				when direction == ["add"]
+				when (direction == ["add"] and (args.keys - ["filename", "tags", "source", "filedata", "groups"]).empty?)
 					WebAddPage.new(config, args)
-				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source", "filedata"]).empty?)
+				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "source", "filedata", "groups"]).empty?)
 					WebUpdatePage.new(config, direction[1], args)
 				when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
 					WebRemovedPage.new(config, direction[1])
