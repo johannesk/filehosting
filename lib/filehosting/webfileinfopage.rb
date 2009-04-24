@@ -46,7 +46,7 @@ module FileHosting
 				if block_given?
 					yield @fileinfo
 				else
-					[uuid.to_s, HTML.use_template("fileinfo.eruby", binding)]
+					[@fileinfo.filename, use_part(WebFileInfoPart, @fileinfo)]
 				end
 			end
 		end

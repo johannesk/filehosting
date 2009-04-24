@@ -52,8 +52,7 @@ module FileHosting
 						end
 					end
 					search_result= config.datasource.search_tags(search, rule)
-					dep= search.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
-					dep+= ["rules/search", "rules/search_filter", "rules/file", "rules/file_info"]
+					dep= ["rules/search", "rules/search_filter"]
 					body= HTML.use_template("search.eruby", binding)
 				rescue RuleError => e
 					error= e.to_s

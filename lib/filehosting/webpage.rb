@@ -23,6 +23,8 @@
 
 module FileHosting
 
+	autoload :WebFileInfoPart, "filehosting/webfileinfopart"
+
 	# The parent of all WebPages
 	class WebPage
 
@@ -55,6 +57,13 @@ module FileHosting
 				"\n",
 				body
 			]
+		end
+
+		def use_part(partclass, *args)
+			part= partclass.new(config, *args)
+			@tags= [] unless @tags
+			@tags= (@tags+part.tags).uniq
+			part.body
 		end
 
 		def webroot

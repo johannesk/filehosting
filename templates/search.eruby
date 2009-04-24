@@ -7,46 +7,6 @@
 % end
 	<h2><%= search_result.size %> Files found</h2>
 % search_result.each do |fileinfo|
-	<div class="fileinfo">
-		<h1>
-% 	mimefile= Pathname.new("web/images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
-% 	if mimefile.file?
-			<img src="<%= webroot %>/<%= mimefile.relative_path_from(Pathname.new("web")).to_html %>" alt="<%= fileinfo.mimetype.to_html %>" />
-% 	else
-			<img src="<%= webroot %>/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
-% 	end
-			<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a>
-			<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
-		</h1>
-		<table>
-			<tr>
-				<th>uuid</th>
-				<td><a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
-			</tr>
-			<tr>
-				<th>tags</th>
-				<td><%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></td>
-			</tr>
-			<tr>
-				<th>size</th>
-				<td><%= fileinfo.size.to_text %></td>
-			</tr>
-			<tr>
-				<th>hash</th>
-				<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash.to_html %></td>
-			</tr>
-% 	if fileinfo.source
-			<tr>
-				<th>source</th>
-				<td><a href="<%= fileinfo.source.to_html %>" target="<%= fileinfo.source.to_html %>"><%= fileinfo.source.to_html %></a></td>
-			</tr>
-% 	end
-		</table>
-		<div class="actions">
-			<a href="<%= webroot %>/history/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
-			<a href="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/update.png" alt="update" /></a>
-			<a href="<%= webroot %>/remove/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/remove.png" alt="remove" /></a>
-		</div>
-	</div>
+	<%= use_part(WebFileInfoPart, fileinfo) %>
 % end
 </div>

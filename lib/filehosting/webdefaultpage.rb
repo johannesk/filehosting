@@ -22,7 +22,7 @@
 #
 
 require "filehosting/webpage"
-require "filehosting/html"
+require "filehosting/webdefaultpart"
 
 module FileHosting
 
@@ -36,12 +36,12 @@ module FileHosting
 			cachable= @cachable
 			super(config)
 			@header["Content-Type"]= "text/html; charset=utf-8"
-			@body= HTML.use_template("default.eruby", binding)
 			@cachable= true
 			@header.merge(header) unless header.nil?
 			@status= status unless status.nil?
 			@tags= tags+@tags unless tags.nil?
 			@cachable= cachable unless cachable.nil?
+			@body= use_part(WebDefaultPart, title, body, includes)
 		end
 
 		def size

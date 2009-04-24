@@ -21,42 +21,24 @@
 #++
 #
 
-class String
+require "filehosting/webpart"
+require "filehosting/html"
+require "filehosting/fileinfo"
 
-	alias :to_text :to_s
+require "erb"
 
-	def dir_encode
-		self.gsub("%", "%&").gsub("/", "%#").gsub(".", "%.")
-	end
+module FileHosting
 
-	def dir_decode
-		self.gsub("%.", ".").gsub("%#", "/").gsub("%&", "%")
-	end
+	# the default webpage part
+	class WebDefaultPart < WebPart
 
-	def uri_decode
-		res= ""
-		self.gsub("+", " ")=~ /^/
-		rem= $'
-		while $'=~ /%([A-Za-z0-9]{2})/
-			rem= $'
-			res+= $`
-			res<< $1.to_i(16)
+		def initialize(config, title, body, includes)
+			super(config, "default") do
+				[HTML.use_template("default.eruby", binding), []]
+			end
+			@body= ERB.new(@body, nil, "%").result(binding)
 		end
-		res+rem
-	end
 
-	def uri_encode
-		self.gsub("%", "%25").gsub("+", "%2B").gsub(" ", "+")
-	end
-
-	def user_decode
-		self.gsub("\\\\", "\\").gsub("\\n", "\n").gsub("\\r", "\r").gsub("\\\"", "\"").gsub(/\\(.)/, "\\1")
-	end
-
-	def self.random(size= 32)
-		res= ""
-		size.times { res<< rand(256) }
-		res
 	end
 
 end
