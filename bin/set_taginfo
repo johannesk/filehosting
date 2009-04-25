@@ -1,0 +1,60 @@
+#!/usr/bin/ruby
+#
+# Author:: Johannes Krude
+# Copyright:: (c) Johannes Krude 2009
+# License:: AGPL3
+#
+#--
+# This file is part of filehosting.
+#
+# filehosting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# filehosting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with filehosting.  If not, see <http://www.gnu.org/licenses/>.
+#++
+#
+
+require "filehosting/string"
+require "filehosting/config"
+require "filehosting/autoconfigreader"
+require "filehosting/configfilereader"
+require "filehosting/configargreader"
+require "filehosting/error"
+
+class SetTagInfoArgReader < FileHosting::ConfigArgReader
+	
+	def banner
+		super + " <tag> <info>"
+	end
+
+end
+
+begin
+	autoreader= FileHosting::AutoConfigReader.new
+	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+	argreader= SetTagInfoArgReader.new
+	args= argreader.parse(ARGV)
+
+	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+
+	if args.size != 2
+		STDERR.puts argreader.usage
+		exit 1
+	end
+	tag= args[0]
+	info= args[1]
+
+	config.datasource.set_taginfo(tag, info)
+rescue FileHosting::Error => e
+	STDERR.puts e
+	exit 2
+end

@@ -89,6 +89,17 @@ module FileHosting
 			check_raise(check_tags, "tags()")
 		end
 
+		# returns infos about a tag
+		def taginfo(tag)
+			check_raise(check_tags, "taginfo(#{tag.inspect})")
+		end
+
+		# stores infos about a tag
+		def set_taginfo(tag, info)
+			check_raise(check_tags, "set_taginfo(#{tag.inspect}, #{info.inspect})")
+			notify_observers("taginfo/#{tag}")
+		end
+
 		def check_fileinfo(uuid)
 			fileinfo= read_fileinfo(uuid)
 			check_rule("file", {}) or

@@ -97,6 +97,17 @@ module FileHosting
 			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
 		end
 
+		# returns infos about a tag
+		def taginfo(tag)
+			super(tag)
+			@storage.read(taginfo_name(tag)) || ""
+		end
+
+		# stores infos about a tag
+		def set_taginfo(tag, info)
+			super(tag, info)
+			@storage.store_data(taginfo_name(tag), info)
+		end
 
 		def read_fileinfo(uuid)
 			return uuid if FileInfo === uuid
@@ -114,7 +125,7 @@ module FileHosting
 
 		def filedata(uuid, type= File)
 			super(uuid, type)
-			data= @storage.read(filedata_name( uuid.uuid), type)
+			data= @storage.read(filedata_name(uuid.uuid), type)
 			raise NoSuchFileError.new(uuid.uuid) unless data
 			data
 		end
@@ -392,6 +403,10 @@ module FileHosting
 
 		def tag_name(tag)
 			"tag/" + tag.to_s
+		end
+
+		def taginfo_name(tag)
+			"taginfo/" + tag.to_s
 		end
 
 		def user_name(user)
