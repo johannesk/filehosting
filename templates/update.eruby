@@ -11,26 +11,47 @@
 	</h1>
 	<table>
 		<form method="post" enctype="multipart/form-data" action="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>">
+% if check_info
 			<tr>
 				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
 				<td><input type="text" name="filename" value="<%= fileinfo.filename.to_html %>" size="50" /></td>
 			</tr>
+% else
+			<tr>
+				<th>filename</th>
+				<td><%= fileinfo.filename.to_html %></td>
+			</tr>
+% end
 			<tr>
 				<th>uuid</th>
 				<td><a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
 			</tr>
+% if check_info
 			<tr>
 				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
 				<td><input type="text" name="tags" value="<%= fileinfo.tags.join(" ").to_html %>" size="50" /></td>
 			</tr>
+% else
+			<tr>
+				<th>tags</th>
+				<td><%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></td>
+			</tr>
+% end
 			<tr>
 				<th>size</th>
 				<td><%= fileinfo.size.to_html %></td>
 			</tr>
+% if check_info
 			<tr>
 				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>
+% else
+			<tr>
+				<th>source</th>
+				<td><a href="<%= fileinfo.source.to_html %>" target="<%= fileinfo.source.to_html %>"><%= fileinfo.source.to_html %></a></td>
+			</tr>
+% end
 			<tr>
 				<th>hash</th>
 				<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash.to_html %></td>
@@ -39,10 +60,13 @@
 				<th<%  if wrong_groups %> class="wrong_data"<% end %>>groups</th>
 				<td><input type="text" name="groups" value="<%= fileinfo.groups.join(" ").to_html %>" size="50" /></td>
 			</tr>
+% if check_info and check_data
 			<tr>
 				<th></th>
 				<td>Only update a file when you want to replace the filedata.</td>
 			</tr>
+% end
+% if check_data
 			<tr>
 				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
 				<td><input type="file" name="filedata" size="50" /></td>
@@ -51,6 +75,7 @@
 				<th></th>
 				<td>Uploading a file may take some time.</td>
 			</tr>
+% end
 			<tr>
 				<th><% if updated %>saved<% end %></th>
 				<td><input type="submit" value="save" /></td>
@@ -58,8 +83,8 @@
 		</form>
 	</table>
 	<div class="actions">
-		<a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/view.png" alt="view" /></a>
-		<a href="<%= webroot %>/history/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
-		<a href="<%= webroot %>/remove/<%= fileinfo.uuid %>"><img src="<%= $webroot %>/images/remove.png" alt="remove" /></a>
+		<%= use_part(WebFileInfoButtonPart, fileinfo) %>
+		<%= use_part(WebFileHistoryButtonPart, fileinfo) %>
+		<%= use_part(WebRemoveButtonPart, fileinfo) %>
 	</div>
 </div>

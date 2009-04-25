@@ -22,7 +22,9 @@
 				</div>
 			</form>
 			<ul>
+% if !datasource.check_add_file
 				<li><a href="<%= webroot %>/add">add File</a></li>
+% end
 				<li><a href="<%= webroot %>/feed">Feed</a></li>
 				<li><a href="<%= webroot %>/history">History</a></li>
 % if user.username == "anonymous"

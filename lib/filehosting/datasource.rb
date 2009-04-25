@@ -172,8 +172,8 @@ module FileHosting
 			end
 		end
 
-		def check_update_filedata(uuid, oldinfo= nil)
-			oldinfo= self.read_fileinfo(fileinfo.uuid) unless oldinfo
+		def check_update_filedata(uuid)
+			fileinfo= self.read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("file_replace", {"file" => fileinfo})
@@ -181,9 +181,9 @@ module FileHosting
 
 		# Replaces a file, but not it's metadata.
 		# Returns the fileinfo
-		def update_filedata(fileinfo, file)
-			check_raise(check_update_fileinfo(fileinfo), "file_replace(#{fileinfo.uuid})")
-			notify_observers("files/#{fileinfo.uuid}")
+		def update_filedata(uuid, file)
+			check_raise(check_update_fileinfo(uuid), "file_replace(#{uuid.uuid})")
+			notify_observers("files/#{uuid.uuid}")
 		end
 
 		def check_remove_file(uuid)
@@ -289,7 +289,7 @@ module FileHosting
 		# reads a rule set
 		def rules(ruleset)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			raise_check(check_rules(ruleset), "rulse(#{ruleset.ispect})")
+			check_raise(check_rules(ruleset), "rulse(#{ruleset.inspect})")
 			read_rules(ruleset)
 		end
 
@@ -413,10 +413,10 @@ module FileHosting
 				"file_update",
 				"file_update_post",
 				"file_replace",
+				"file_remove",
 			].include?(ruleset)
 		end
 
 	end
 
 end
-

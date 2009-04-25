@@ -80,7 +80,7 @@ module FileHosting
 					page_input_switch(direction, args, input, type, date)
 				end
 			rescue OperationNotPermittedError
-				create_error_page(401, "operation not permitted")
+				return create_error_page(401, "operation not permitted")
 			end
 			case
 			when page.status == 401

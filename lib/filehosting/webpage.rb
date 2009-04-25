@@ -24,6 +24,10 @@
 module FileHosting
 
 	autoload :WebFileInfoPart, "filehosting/webfileinfopart"
+	autoload :WebFileInfoButtonPart, "filehosting/webfileinfobuttonpart"
+	autoload :WebUpdateButtonPart, "filehosting/webupdatebuttonpart"
+	autoload :WebRemoveButtonPart, "filehosting/webremovebuttonpart"
+	autoload :WebFileHistoryButtonPart, "filehosting/webfilehistorybuttonpart"
 
 	# The parent of all WebPages
 	class WebPage

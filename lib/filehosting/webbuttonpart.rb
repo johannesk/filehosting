@@ -21,49 +21,22 @@
 #++
 #
 
+require "filehosting/webpart"
+require "filehosting/html"
+
 module FileHosting
 
-	# A part of a webpage
-	class WebPart
-
-		attr_reader :config
-		attr_reader :body
-		attr_reader :tags
+	class WebButtonPart < WebPart
 
 		def initialize(config, name, &block)
-			@config= config
-			name= "webpart/#{config.datasource.user.username}/#{name}"
-			@body= @config.cache.retrieve(name)
-			if @body
-				@tags= @config.cache.tags(name)
-			else
-				@body, tags= yield
-				@tags= ((@tags || []) + tags).uniq
-				@config.cache.store(name, @body, @tags)
+			super(config, "button/#{name}") do
+				visible, tags, target, image, text= block.call
+				unless visible
+					["", tags]
+				else
+					[HTML.use_template("button.eruby", binding), tags]
+				end
 			end
-		end
-
-		def use_part(partclass, *args)
-			begin
-				part= partclass.new(config, *args)
-			rescue ArgumentError
-				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
-			end
-			@tags= [] unless @tags
-			@tags= (@tags+part.tags).uniq
-			part.body
-		end
-
-		def webroot
-			config[:webroot]
-		end
-
-		def datasource
-			config[:datasource]
-		end
-
-		def user
-			datasource.user
 		end
 
 	end

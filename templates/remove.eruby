@@ -40,9 +40,9 @@
 % 	end
 		</table>
 		<div class="actions">
-			<a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/view.png" alt="view" /></a>
-			<a href="<%= webroot %>/history/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
-			<a href="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/update.png" alt="update" /></a>
+			<%= use_part(WebFileInfoButtonPart, fileinfo) %>
+			<%= use_part(WebFileHistoryButtonPart, fileinfo) %>
+			<%= use_part(WebUpdateButtonPart, fileinfo) %>
 		</div>
 	</div>
 </div>

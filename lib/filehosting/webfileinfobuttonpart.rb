@@ -21,26 +21,19 @@
 #++
 #
 
-require "filehosting/webfileinfopage"
-require "filehosting/html"
-
+require "filehosting/webbuttonpart"
 
 module FileHosting
 
-	autoload :OperationNotPermittedError, "filehosting/operationnotpermittederror"
-
-	# The remove page
-	class WebRemovePage < WebFileInfoPage
+	class WebFileInfoButtonPart < WebButtonPart
 
 		def initialize(config, uuid)
-			super(config, uuid, "remove.css") do |fileinfo|
-				if config.datasource.check_remove_file(fileinfo)
-					raise OperationNotPermittedError.new("remove(#{uuid})")
-				end
-				["remove: #{fileinfo.uuid.to_s}", HTML.use_template("remove.eruby", binding)]
+			super(config, "fileinfo/#{uuid.uuid}") do
+				[!datasource.check_update_fileinfo(uuid), ["rules/file", "rules/file_withdata", "rules/file_info"], "/fileinfo/#{uuid.uuid}", "view", "view"]
 			end
 		end
 
 	end
 
 end
+

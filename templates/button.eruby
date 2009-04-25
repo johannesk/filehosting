@@ -1,0 +1,1 @@
+<a href="<%= webroot %><%= target %>"><img src="<%= $webroot %>/images/<%= image %>.png" alt="<%= text %>" /></a>

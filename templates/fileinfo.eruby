@@ -34,8 +34,8 @@
 % end
 	</table>
 	<div class="actions">
-		<a href="<%= webroot %>/history/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/history.png" alt="view history" /></a>
-		<a href="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/update.png" alt="update" /></a>
-		<a href="<%= webroot %>/remove/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/remove.png" alt="remove" /></a>
+		<%= use_part(WebFileHistoryButtonPart, fileinfo) %>
+		<%= use_part(WebUpdateButtonPart, fileinfo) %>
+		<%= use_part(WebRemoveButtonPart, fileinfo) %>
 	</div>
 </div>
