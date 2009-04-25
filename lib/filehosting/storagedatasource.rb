@@ -99,12 +99,13 @@ module FileHosting
 
 
 		def read_fileinfo(uuid)
+			return uuid if FileInfo === uuid
 			data= @storage.read(fileinfo_name(uuid))
 			raise NoSuchFileError.new(uuid) unless data
 			begin
 				res= YAML.load(data)
-			#rescue
-			#	raise InternalDataCorruptionError
+			rescue
+				raise InternalDataCorruptionError
 			end
 			raise InternalDataCorruptionError unless FileInfo === res
 			raise InternalDataCorruptionError unless res.uuid == uuid
@@ -113,15 +114,15 @@ module FileHosting
 
 		def filedata(uuid, type= File)
 			super(uuid, type)
-			data= @storage.read(filedata_name( uuid), type)
-			raise NoSuchFileError.new(uuid) unless data
+			data= @storage.read(filedata_name( uuid.uuid), type)
+			raise NoSuchFileError.new(uuid.uuid) unless data
 			data
 		end
 
 		# returns the history of a file
 		def history_file(uuid)
 			super(uuid)
-			data= @storage.read(filehistory_name(uuid))
+			data= @storage.read(filehistory_name(uuid.uuid))
 			raise NoSuchFileError.new(user) unless data
 			YAMLTools.parse_array(data, HistoryEvent)
 		end
@@ -146,16 +147,18 @@ module FileHosting
 		end
 
 		def update_filedata(uuid, file)
-			super(uuid, file)
-			new= store_file(read_fileinfo(uuid), file)
+			old= read_fileinfo(uuid)
+			super(old, file)
+			new= old.clone
+			new= store_file(new, file)
 			store_history(:file_replace, old.uuid.to_s, new-old)
 			new
 		end
 
 		def update_fileinfo(fileinfo)
-			super(fileinfo)
 			name= fileinfo_name(fileinfo)
 			old= read_fileinfo(fileinfo.uuid)
+			super(fileinfo, old)
 			plus= (fileinfo.tags-old.tags).collect { |t| tag_name(t) }
 			minus= (old.tags-fileinfo.tags).collect { |t| tag_name(t) }
 			fileinfo.info_date= Time.now
@@ -184,21 +187,22 @@ module FileHosting
 		end
 
 		def remove_file(uuid)
-			super(uuid)
 			old= read_fileinfo(uuid)
+			super(old)
 			name= fileinfo_name(old)
 			index= @storage.reverse(name)
 			begin
 				@storage.remove(name)
-				@storage.remove(filedata_name(uuid))
+				@storage.remove(filedata_name(uuid.uuid))
 			rescue
 				@storage.store(name, old.to_yaml, index)
 			end
-			store_history(:file_remove, old.uuid.to_s, Hash.new)
+			store_history(:file_remove, uuid.uuid.to_s, Hash.new)
 		end
 
 		# returns information about a user
 		def read_user(username)
+			return username if User === username
 			name= user_name(username)
 			raise NoSuchUserError.new(username) unless @storage.exists?(name)
 			res= @storage.read(user_name(username))
@@ -218,9 +222,9 @@ module FileHosting
 
 		# updates a user
 		def update_user(user)
-			super(user)
 			name= user_name(user)
 			old= read_user(user.username)
+			super(user, old)
 			@storage.store_data(name, user.to_yaml)
 			store_history(:user_update, user.username, user-old)
 		end
@@ -228,17 +232,17 @@ module FileHosting
 		# removes a user
 		def remove_user(username)
 			super(username)
-			name= user_name(user)
+			name= user_name(username.username)
 			raise NoSuchUserError unless @storage.exists?(name)
 			@storage.remove(name)
-			store_history(:user_remove, user.username, Hash.new)
+			store_history(:user_remove, username.username, Hash.new)
 		end
 
 		# returns the history of a user
-		def history_user(user= config.user)
+		def history_user(username= @user)
 			super(user)
-			data= @storage.read(userhistory_name(user))
-			raise NoSuchUserError.new(user) unless data
+			data= @storage.read(userhistory_name(username.username))
+			raise NoSuchUserError.new(username.username) unless data
 			YAMLTools.parse_array(data, HistoryEvent)
 		end
 
@@ -302,9 +306,9 @@ module FileHosting
 						end
 						file= f
 					end
-					fileinfo.size= File.size(tmpfile.path)
-					fileinfo.hash= Digest::SHA256.file(tmpfile.path).to_s
-					fileinfo.mimetype= fm.file(tmpfile.path).sub(/; .*?$/, "")
+					fileinfo.size= File.size(file.path)
+					fileinfo.hash= Digest::SHA256.file(file.path).to_s
+					fileinfo.mimetype= fm.file(file.path).sub(/; .*?$/, "")
 				else
 					raise NotImplementedError
 				end
@@ -317,7 +321,7 @@ module FileHosting
 					raise e
 				end
 			ensure
-				FileUtils.rm(tmpfile.path) if tmp
+				FileUtils.rm(file.path) if tmp
 				fm.close
 			end
 			fileinfo

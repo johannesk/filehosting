@@ -146,7 +146,7 @@ end
 YAML.add_domain_type("filehosting.yaml.org,2002", "rule") do |tag, value|
 	begin
 		res= FileHosting::Rule.new
-		res.result= value["result"].to_s
+		res.result= value["result"]
 		res.conditions= value["conditions"].collect do |con|
 			raise FileHosting::InternalDataCorruptionError unless con.size == 3
 			con.collect do |s|

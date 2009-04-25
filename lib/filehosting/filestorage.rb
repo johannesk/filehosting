@@ -117,7 +117,9 @@ module FileHosting
 			data= [data].flatten
 			begin
 				if File === data[0]
-						FileUtils.cp(data.shift.path, tmp)
+					d= data.shift.path
+					puts d
+					FileUtils.cp(d, tmp)
 				end
 				File.open(tmp, "w") do |f|
 					data.each do |d|

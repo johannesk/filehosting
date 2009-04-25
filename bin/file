@@ -74,8 +74,16 @@ begin
 		IO2IO.do(io, STDOUT)
 	else
 		out= config[:output] || config.datasource.fileinfo(uuid).filename
-		file= config.datasource.filedata_string(uuid)
-		FileUtils.cp(file, out)
+		file= config.datasource.filedata(uuid, IO)
+		case file
+		when File
+			puts "yeha"
+			FileUtils.cp(file.path, out)
+		else
+			File.open(out, "w") do |f|
+				IO2IO.do(file, f)
+			end
+		end
 	end
 rescue FileHosting::Error => e
 	STDERR.puts e

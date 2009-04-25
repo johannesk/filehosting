@@ -62,10 +62,13 @@ begin
 	fileinfo.tags= args
 
 	begin
-		config.datasource.add_file(fileinfo, file)
+		f= File.open(file)
+		config.datasource.add_file(fileinfo, f)
 	rescue Errno::ENOENT => e
 		puts e
 		exit 2
+	ensure
+		f.close
 	end
 rescue FileHosting::Error => e
 	puts e

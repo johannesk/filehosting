@@ -21,16 +21,12 @@
 #++
 #
 
-require "pathname"
+require "uuidtools"
 
-class Pathname
+class UUID
 
-	def delete?
-		self.delete if self.linkfile?
-	end
-
-	def linkfile?
-		self.symlink? or self.file?
+	def uuid
+		self
 	end
 
 end

@@ -59,5 +59,9 @@ class String
 		res
 	end
 
+	def username
+		self
+	end
+
 end
 
