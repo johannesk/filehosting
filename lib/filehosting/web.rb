@@ -43,6 +43,7 @@ module FileHosting
 	autoload :WebSearchPage, "filehosting/websearchpage"
 	autoload :WebClassicPage, "filehosting/webclassicpage"
 	autoload :WebSourceCode, "filehosting/websourcecode"
+	autoload :WebTagsPage, "filehosting/webtagspage"
 	autoload :WebFile, "filehosting/webfile"
 	autoload :WebLogin, "filehosting/weblogin"
 	autoload :Web404Page, "filehosting/web404page"
@@ -134,6 +135,8 @@ module FileHosting
 				WebSourceCode.new(config)
 			when direction == ["login"]
 				WebLogin.new(config)
+			when direction == ["tags"]
+				WebTagsPage.new(config)
 			when (direction == ["search"] and (args.keys - ["tags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
 				better= @config.datasource.optimize_search(tags)

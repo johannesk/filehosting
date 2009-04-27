@@ -1,0 +1,26 @@
+div.tags {
+	text-align: center;
+}
+
+div.tags table {
+	border-collapse: collapse;
+	display: inline-block;
+}
+
+div.tags table .tag {
+	border-width: 0px 1px 0px 0px;
+	border-style: solid;
+	border-color: orange;
+	text-align: right;
+	padding-right: 5px;
+}
+
+div.tags table td.alias {
+	font-style: italic;
+	text-align: left;
+	padding-left: 5px;
+}
+
+div.tags table .description {
+	padding-left: 20px;
+}

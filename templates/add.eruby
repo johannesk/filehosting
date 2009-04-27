@@ -8,7 +8,7 @@
 			</tr>
 			<tr>
 				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
-				<td><input type="text" name="tags" value="<%= fileinfo.tags.join(" ").to_html %>" size="50" /></td>
+				<td><input type="text" name="tags" value="<%= (fileinfo.tags || []).join(" ").to_html %>" size="50" /></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
@@ -16,7 +16,7 @@
 			</tr>
 			<tr>
 				<th<%  if wrong_groups %> class="wrong_data"<% end %>>groups</th>
-				<td><input type="text" name="groups" value="<%= fileinfo.groups.join(" ").to_html %>" size="50" /></td>
+				<td><input type="text" name="groups" value="<%= (fileinfo.groups || []).join(" ").to_html %>" size="50" /></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_filedata %> class="wrong_data"<% end %>>filedata</th>
