@@ -52,7 +52,12 @@ begin
 	end
 	tag= args[0]
 
-	info= config.datasource.taginfo(tag)
+	res= tag
+	while tag= config.datasource.tag_alias(tag)
+		puts "#{res} => #{tag}"
+		res= tag
+	end
+	info= config.datasource.taginfo(res)
 	puts info
 rescue FileHosting::Error => e
 	STDERR.puts e

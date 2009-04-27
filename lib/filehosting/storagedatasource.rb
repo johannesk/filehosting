@@ -107,8 +107,6 @@ module FileHosting
 		def set_tag_alias(tag, target)
 			super(tag, target)
 			raise TagExistsError.new(tag) if @storage.index_exists?(tag_name(tag))
-			name= tag_alias_name(tag)
-			raise TagExistsError.new(tag) if @storage.exists?(name)
 			@storage.store_data(tag_alias_name(tag), target)
 		end
 
