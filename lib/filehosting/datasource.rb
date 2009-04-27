@@ -89,6 +89,35 @@ module FileHosting
 			check_raise(check_tags, "tags()")
 		end
 
+		def check_tag_alias
+			check_rule("tags_alias")
+		end
+
+		# sets a tag as an alias to another tag
+		def set_tag_alias(tag, target)
+			check_raise(check_tag_alias, "set_tag_alias(#{tag.inspect}, #{target.inspect})")
+		end
+
+		# removes a tag alias
+		def remove_tag_alias(tag)
+			check_raise(check_tag_alias, "remove_tag_alias(#{tag.inspect}")
+		end
+
+		# reads the target of a tag alias
+		def tag_alias(tag)
+			raise NotImplementedError
+		end
+
+		# resolves tag aliases until a real tag is reached
+		def real_tag(tag)
+			check_raise(check_tags, "real_tag(#{tag.inspect})")
+			res= tag
+			while tag= tag_alias(tag)
+				res= tag
+			end
+			res
+		end
+
 		# returns infos about a tag
 		def taginfo(tag)
 			check_raise(check_tags, "taginfo(#{tag.inspect})")
@@ -145,6 +174,7 @@ module FileHosting
 		# must contain the filename, from where to copy the
 		# file.
 		def add_file(fileinfo, file)
+			file.tags.collect! { |t| real_tag(t) }
 			if check_add_file or
 			   check_rule("file_add_post", {"file" => fileinfo})
 				raise OperationNotPermittedError.new("file_add(#{fileinfo.uuid.to_s})")
@@ -165,6 +195,7 @@ module FileHosting
 
 		# Changes the metadata of a file
 		def update_fileinfo(fileinfo, oldinfo= nil)
+			file.tags.collect! { |t| real_tag(t) }
 			oldinfo= self.read_fileinfo(fileinfo.uuid) unless oldinfo
 			if check_update_fileinfo(oldinfo) or
 			   check_rule("file_update_post", {"newfile" => fileinfo, "file" => oldinfo})
@@ -392,7 +423,7 @@ module FileHosting
 				end
 				search[search.index(wrong)]= better unless better.empty?
 			end
-			search
+			search.collect { |t| real_tag(t) }
 		end
 
 		# check if ruleset is a valid ruleset

@@ -85,6 +85,11 @@ module FileHosting
 			YAMLTools.read_array(prefix_index_file(prefix, index), String)
 		end
 
+		# Check whether records with this index exists.
+		def index_exists?(prefix, index)
+			prefix_index_file(prefix, index).file?
+		end
+
 		# Searches all index's for a record
 		def reverse(prefix, name= nil)
 			if name

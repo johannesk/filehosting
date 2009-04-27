@@ -73,6 +73,11 @@ module FileHosting
 			raise NotImplementedError
 		end
 
+		# Check whether records with this index exist.
+		def index_exists?(prefix, index)
+			raise NotImplementedError
+		end
+
 		# Searches all index's for a record or all records.
 		def reverse(prefix, name= nil)
 			raise NotImplementedError

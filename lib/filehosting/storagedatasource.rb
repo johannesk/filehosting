@@ -42,6 +42,8 @@ module FileHosting
 	autoload :FileExistsError, "filehosting/fileexistserror"
 	autoload :NoSuchUserError, "filehosting/nosuchusererror"
 	autoload :UserExistsError, "filehosting/userexistserror"
+	autoload :NoSuchTagError, "filehosting/nosuchtagerror"
+	autoload :TagExistsError, "filehosting/tagexistserror"
 	autoload :NoSuchRuleError, "filehosting/nosuchruleerror"
 	autoload :InternalDataCorruptionError , "filehosting/internaldatacorruptionerror"
 
@@ -54,8 +56,9 @@ module FileHosting
 		end
 
 		def search_tags(tags, rule= nil)
-			super(tags, rule)
 			tags= tags.clone
+			tags.collect! { |t| real_tag(t) }
+			super(tags, rule)
 			res= uuids_by_tag(tags.pop)
 			tags.each do |tag|
 				res&= uuids_by_tag(tag)
@@ -64,6 +67,8 @@ module FileHosting
 		end
 
 		def search_tags_partial(tags, rule= nil)
+			tags= tags.clone
+			tags.collect! { |t| real_tag(t) }
 			super(tags, rule)
 			count= Hash.new(0)
 			tags.each do |tag|
@@ -94,17 +99,42 @@ module FileHosting
 		# returns all available tags
 		def tags
 			super()
-			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
+			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) } +
+			@storage.records.grep(/^tagalias\//).collect { |r| tag_from_name(r) }
+		end
+
+		# sets a tag as an alias to another tag
+		def set_tag_alias(tag, target)
+			super(tag, target)
+			raise TagExistsError.new(tag) if @storage.index_exists?(tag_name(tag))
+			name= tag_alias_name(tag)
+			raise TagExistsError.new(tag) if @storage.exists?(name)
+			@storage.store_data(tag_alias_name(tag), target)
+		end
+
+		# removes a tag alias
+		def remove_tag_alias(tag)
+			super(tag)
+			name= tag_alias_name(tag)
+			raise NoSuchTagError.new(tag) unless @storage.exists?(name)
+			@storage.remove(name)
+		end
+
+		# reads the target of a tag alias
+		def tag_alias(tag)
+			@storage.read(tag_alias_name(tag))
 		end
 
 		# returns infos about a tag
 		def taginfo(tag)
+			tag= real_tag(tag)
 			super(tag)
 			@storage.read(taginfo_name(tag)) || ""
 		end
 
 		# stores infos about a tag
 		def set_taginfo(tag, info)
+			tag= real_tag(tag)
 			super(tag, info)
 			@storage.store_data(taginfo_name(tag), info)
 		end
@@ -407,6 +437,10 @@ module FileHosting
 
 		def taginfo_name(tag)
 			"taginfo/" + tag.to_s
+		end
+
+		def tag_alias_name(tag)
+			"tagalias/" + tag.to_s
 		end
 
 		def user_name(user)

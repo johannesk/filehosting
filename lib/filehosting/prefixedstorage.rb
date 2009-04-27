@@ -66,6 +66,11 @@ module FileHosting
 			@storage.index(@prefix, index)
 		end
 
+		# Check whether records with this index exists.
+		def index_exists?(index)
+			@storage.index_exists?(@prefix, index)
+		end
+
 		# Searches all index's for a record or all records.
 		def reverse(name= nil)
 			@storage.reverse(@prefix, name)
