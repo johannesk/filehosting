@@ -19,6 +19,10 @@
 			<td><%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></td>
 		</tr>
 		<tr>
+			<th>date</th>
+			<td><%= fileinfo.user_date.to_html %></td>
+		</tr>
+		<tr>
 			<th>size</th>
 			<td><%= fileinfo.size.to_text %></td>
 		</tr>
@@ -32,6 +36,10 @@
 			<td><a href="<%= fileinfo.source.to_html %>" target="<%= fileinfo.source.to_html %>"><%= fileinfo.source.to_html %></a></td>
 		</tr>
 % end
+		<tr>
+			<th>last change</th>
+			<td><%= fileinfo.info_date.to_html %></td>
+		</tr>
 	</table>
 	<div class="actions">
 		<%= use_part(WebFileHistoryButtonPart, fileinfo) %>

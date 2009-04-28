@@ -27,6 +27,7 @@ require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
+require "filehosting/time"
 
 require "uuidtools"
 
@@ -62,6 +63,20 @@ class UpdateArgReader < FileHosting::ConfigArgReader
 		@values[:set_tags]= tags.split(" ")
 	end
 	alias :switch_t :switch_tags
+
+	def help_date
+		"update date(DD.MM.YYYY HH:MM:SS)"
+	end
+
+	def switch_date(str)
+		begin
+			@values[:set_date]= Time.from_form(str)
+		rescue ArgumentError
+			STDERR.puts "time must be in form 'DD.MM.YYYY HH:MM:SS'"
+			exit 1
+		end
+	end
+	alias :switch_d :switch_date
 
 	def help_groups
 		"update groups"
@@ -106,6 +121,10 @@ begin
 
 	if config[:set_tags]
 		fileinfo.tags= config[:set_tags]
+	end
+
+	if config[:set_date]
+		fileinfo.user_date= config[:set_date]
 	end
 
 	if config[:set_groups]

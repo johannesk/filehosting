@@ -24,7 +24,7 @@
 require "filehosting/webdefaultpage"
 require "filehosting/html"
 require "filehosting/fileinfo"
-
+require "filehosting/time"
 
 module FileHosting
 
@@ -36,6 +36,7 @@ module FileHosting
 			fileinfo= FileInfo.new
 			wrong_filename= false
 			wrong_tags= false
+			wrong_date= false
 			wrong_source= false
 			wrong_filedata= false
 			wrong_groups= false
@@ -43,6 +44,11 @@ module FileHosting
 				@cachable= false
 				fileinfo.filename= values["filename"]
 				fileinfo.tags= values["tags"].split(" ") if values["tags"]
+				begin
+					fileinfo.user_date= Time.from_form(values["date"]) if values["date"]
+				rescue ArgumentError
+					wrong_date= true
+				end
 				fileinfo.source= values["source"]
 				fileinfo.groups= values["groups"].split(" ") if values["groups"]
 				if fileinfo.filename.nil? or fileinfo.filename.empty?

@@ -37,6 +37,17 @@
 				<td><%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></td>
 			</tr>
 % end
+% if check_info
+			<tr>
+				<th<%  if wrong_date %> class="wrong_data"<% end %>>date</th>
+				<td><input type="text" name="date" value="<%= fileinfo.user_date.form.to_html %>" size="50" /></td>
+			</tr>
+% else
+			<tr>
+				<th>date</th>
+				<td><%= fileinfo.user_date.to_html %></td>
+			</tr>
+% end
 			<tr>
 				<th>size</th>
 				<td><%= fileinfo.size.to_html %></td>
@@ -76,6 +87,14 @@
 				<td>Uploading a file may take some time.</td>
 			</tr>
 % end
+			<tr>
+				<th>metadata last changed</th>
+				<td><%= fileinfo.info_date.to_html %></td>
+			</tr>
+			<tr>
+				<th>filedata last changed</th>
+				<td><%= fileinfo.data_date.to_html %></td>
+			</tr>
 			<tr>
 				<th><% if updated %>saved<% end %></th>
 				<td><input type="submit" value="save" /></td>

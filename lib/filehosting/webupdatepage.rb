@@ -23,7 +23,7 @@
 
 require "filehosting/webfileinfopage"
 require "filehosting/html"
-
+require "filehosting/time"
 
 module FileHosting
 
@@ -40,6 +40,7 @@ module FileHosting
 				updated= false
 				wrong_filename= false
 				wrong_tags= false
+				wrong_date= false
 				wrong_source= false
 				wrong_filedata= false
 				wrong_groups= false
@@ -48,6 +49,11 @@ module FileHosting
 					old= fileinfo.clone
 					fileinfo.filename= values["filename"] if values["filename"]
 					fileinfo.tags= values["tags"].split(" ") if values["tags"]
+					begin
+						fileinfo.user_date= Time.from_form(values["date"]) if values["date"]
+					rescue ArgumentError
+						wrong_date= true
+					end
 					fileinfo.groups= values["groups"].split(" ") if values["groups"]
 					fileinfo.source= values["source"] if values["source"]
 					if File === values["filedata"]

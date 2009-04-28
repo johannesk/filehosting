@@ -11,6 +11,10 @@
 				<td><input type="text" name="tags" value="<%= (fileinfo.tags || []).join(" ").to_html %>" size="50" /></td>
 			</tr>
 			<tr>
+				<th<%  if wrong_date %> class="wrong_data"<% end %>>date</th>
+				<td><input type="text" name="date" value="<%= (fileinfo.user_date || Time.now).form.to_html %>" size="50" /></td>
+			</tr>
+			<tr>
 				<th<%  if wrong_source %> class="wrong_data"<% end %>>source</th>
 				<td><input type="text" name="source" value="<%= fileinfo.source.to_html %>" size="50" /></td>
 			</tr>

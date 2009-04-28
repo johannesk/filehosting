@@ -109,7 +109,7 @@ module FileHosting
 		end
 
 		def to_text
-			to_hash.to_text([:filename, :uuid, :tags, :mimetype, :size, :user_date, :hash_type, :hash, :source])
+			to_hash.to_text([:filename, :uuid, :tags, :user_date, :mimetype, :size, :hash_type, :hash, :source, :info_date, :data_date])
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
@@ -157,9 +157,9 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		raise FileHosting::InternalDataCorruptionError unless value["data_date"].nil? or Time === value["data_date"]
 		res.data_date= value["data_date"]
 		raise FileHosting::InternalDataCorruptionError unless value["info_date"].nil? or Time === value["info_date"]
-		res.data_date= value["info_date"]
+		res.info_date= value["info_date"]
 		raise FileHosting::InternalDataCorruptionError unless value["user_date"].nil? or Time === value["user_date"]
-		res.data_date= value["user_date"]
+		res.user_date= value["user_date"]
 		res.groups= if value["groups"].nil?
 			nil
 		else
