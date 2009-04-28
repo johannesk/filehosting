@@ -1,0 +1,31 @@
+% now= Time.now
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="<%= webroot %>/style/feed.css"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>changes to <%= tags==[] ? "all files" : "["+tags.join(", ").to_html+"]" %></title>
+	<link res="self" type="application/atom+xml" href="<%= webroot %>/feed?tags=<%= tags.join(" ").uri_encode %>&action=<%= action.join(" ").uri_encode %>&age=<%= age %>" />
+	<id><%= webroot %>/namespace/feed/<%= tags.join(" ").uri_encode %>/<%= action.join(" ").uri_encode %>/<%= age %>/<%= now.to_f %></id>
+	<updated><%= now.xmlschema %></updated>
+% history.each do |event|
+	<entry>
+% 	event_name= event.action.to_s.sub(/^\w+_/, "")
+		<title><%= event_name %>: <%= event.entity.filename.to_html %></title>
+		<link href="<%= webroot %>/fileinfo/<%= event.entity.uuid.to_html %>" />
+		<id><%= webroot %>/namespace/feedentry/<%= event.entity.uuid.to_s.uri_encode %>/<%= event.time.to_f %></id>
+		<updated><%= event.time.xmlschema %></updated>
+		<content type="xhtml">
+			<div xmlns="http://www.w3.org/1999/xhtml">
+				<h1><%= event_name %></h1>
+				<table>
+% 	event.data.each do |key, value|
+					<tr>
+						<th><%= key.to_html %></th>
+						<td><%= value.to_html %></th>
+					</tr>
+% 	end
+				</table>
+			</div>
+		</content>
+	</entry>
+% end
+</feed>

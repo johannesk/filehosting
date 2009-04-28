@@ -80,6 +80,11 @@ module FileHosting
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
 		end
 
+		# returns fileinfo's for all files
+		def files
+			check_raise(check_search(tags), "files()")
+		end
+
 		def check_tags
 			check_rule("tags")
 		end
@@ -181,6 +186,7 @@ module FileHosting
 			   check_rule("file_add_post", {"file" => fileinfo})
 				raise OperationNotPermittedError.new("file_add(#{fileinfo.uuid.to_s})")
 			end
+			notify_observers("files")
 			notify_observers("files/#{fileinfo.uuid}")
 			fileinfo.tags.each do |tag|
 				notify_observers("tags/#{tag}")
@@ -203,6 +209,7 @@ module FileHosting
 			   check_rule("file_update_post", {"newfile" => fileinfo, "file" => oldinfo})
 				raise OperationNotPermittedError.new("file_update(#{uuid})")
 			end
+			notify_observers("files")
 			notify_observers("files/#{fileinfo.uuid}")
 			new= fileinfo.tags
 			old= oldinfo.tags
@@ -227,6 +234,7 @@ module FileHosting
 		# Returns the fileinfo
 		def update_filedata(uuid, file)
 			check_raise(check_update_fileinfo(uuid), "file_replace(#{uuid.uuid})")
+			notify_observers("files")
 			notify_observers("files/#{uuid.uuid}")
 		end
 
@@ -241,23 +249,24 @@ module FileHosting
 		def remove_file(uuid)
 			fileinfo= read_fileinfo(uuid)
 			check_raise(check_remove_file(fileinfo), "file_remove(#{fileinfo.uuid})")
+			notify_observers("files")
 			notify_observers("files/#{uuid}")
 			if fileinfo.tags.find { |tag| search_tags([tag]).size == 1 }
 				notify_observers("tags")
 			end
 		end
 
-		def check_history_file(uuid)
+		def check_history_file(uuid, age= 1)
 			fileinfo= read_fileinfo(uuid)
-			check_rule("history") or
+			check_rule("history",{"age" => age}) or
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
-			check_rule("history_file", {"file" => fileinfo})
+			check_rule("history_file", {"file" => fileinfo, "age" => age})
 		end
 
 		# returns the history of a file
-		def history_file(uuid)
-			check_raise(check_history_file(uuid), "history_user(#{fileinfo.uuid})")
+		def history_file(uuid, age= 1)
+			check_raise(check_history_file(uuid, age), "history_user(#{uuid.uuid})")
 		end
 
 		def check_user(username)
@@ -312,17 +321,17 @@ module FileHosting
 			notify_observers("user/#{newuser.username}")
 		end
 
-		def check_history_user(username= @user)
+		def check_history_user(username= @user, age= 1)
 			user2= read_user(username)
-			check_rule("user", {}) or
+			check_rule("user", {"age" => age}) or
 			check_rule("user_withdata", {"user2" => user2}) or
 			check_rule("history") or
-			check_rule("history_user", {"user2" => user2})
+			check_rule("history_user", {"user2" => user2, "age" => age})
 		end
 
 		# returns the history of a user
-		def history_user(username= @user)
-			check_raise(check_history_user(username), "history_user(#{username.username})")
+		def history_user(username= @user, age= 1)
+			check_raise(check_history_user(username, age), "history_user(#{username.username})")
 		end
 
 		def check_rules(ruleset)

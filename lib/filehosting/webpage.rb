@@ -21,6 +21,8 @@
 #++
 #
 
+require "filehosting/string"
+
 module FileHosting
 
 	autoload :WebFileInfoPart, "filehosting/webfileinfopart"

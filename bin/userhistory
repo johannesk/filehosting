@@ -32,7 +32,7 @@ require "filehosting/error"
 class UserHistoryArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <user>"
+		super + " [user] [age]
 	end
 
 end
@@ -46,13 +46,14 @@ begin
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size > 1
+	if args.size > 2
 		STDERR.puts argreader.usage
 		exit 1
 	end
 	user= args[0] || config.datasource.user.username
+	age= args[1] || 7
 
-	puts config.datasource.history_user(user).to_text
+	puts config.datasource.history_user(user, age).to_text
 rescue FileHosting::Error => e
 	STDERR.puts e
 	exit 2

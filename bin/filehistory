@@ -34,7 +34,7 @@ require "uuidtools"
 class FileHistoryArgReader < FileHosting::ConfigArgReader
 	
 	def banner
-		super + " <uuid>"
+		super + " <uuid> [age]"
 	end
 
 end
@@ -48,7 +48,7 @@ begin
 
 	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
 
-	if args.size != 1
+	unless [1,2].include?( args.size)
 		STDERR.puts argreader.usage
 		exit 1
 	end
@@ -58,8 +58,9 @@ begin
 		STDERR.puts e
 		exit 1
 	end
+	age= args[1] || 7
 
-	puts config.datasource.history_file(uuid).to_text
+	puts config.datasource.history_file(uuid, age).to_text
 rescue FileHosting::Error => e
 	STDERR.puts e
 	exit 2

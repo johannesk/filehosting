@@ -46,6 +46,7 @@ module FileHosting
 	autoload :WebTagsPage, "filehosting/webtagspage"
 	autoload :WebFile, "filehosting/webfile"
 	autoload :WebLogin, "filehosting/weblogin"
+	autoload :WebFeed, "filehosting/webfeed"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
 
@@ -152,6 +153,21 @@ module FileHosting
 					rules= args["rules"].split("\n") if args["rules"]
 					WebSearchPage.new(config, tags, rules)
 				end
+			when (direction == ["feed"] and (args.keys - ["tags", "action", "age"]).empty?)
+				tags= (args["tags"] || "").split(" ")
+				action= (args["action"] || "file_create file_replace").split(" ")
+				if (action - ["file_create", "file_update", "file_replace", "file_remove", "user_create", "user_update"]).size > 0
+					return Web404Page.new(config)
+				end
+				age= if args["age"]
+					unless args["age"]=~ /^[1-7]$/
+						return Web404Page.new(config)
+					end
+					args["age"].to_i
+				else
+					7
+				end
+				WebFeed.new(config, tags, action, age)
 			when (direction.size == 2 and direction[0] == "files")
 				WebFile.new(config, direction[1], date)
 			when (direction.size == 2 and direction[0] == "fileinfo")

@@ -82,7 +82,14 @@ module FileHosting
 			search_finalize(res, rule)
 		end
 
-		def search_finalize(uuids, rule)
+		# returns fileinfo's for all files
+		def files
+			super()
+			search_finalize(@storage.records.grep(/^fileinfo\//).collect { |r| uuid_from_name(r) })
+		end
+
+
+		def search_finalize(uuids, rule= nil)
 			res= uuids.collect do |uuid|
 				begin
 					fileinfo(uuid)
@@ -159,11 +166,18 @@ module FileHosting
 		end
 
 		# returns the history of a file
-		def history_file(uuid)
-			super(uuid)
-			data= @storage.read(filehistory_name(uuid.uuid))
-			raise NoSuchFileError.new(user) unless data
-			YAMLTools.parse_array(data, HistoryEvent)
+		def history_file(uuid, age= 1)
+			super(uuid, age)
+			raise NoSuchFileError.new(user) unless @storage.exists?(fileinfo_name(uuid))
+			time= Time.now
+			data= @storage.read(filehistory_name(uuid.uuid, time))
+			res= YAMLTools.parse_array(data, HistoryEvent)
+			age.times do |i|
+				time+= 60*60*24
+				data= @storage.read(filehistory_name(uuid.uuid, time))
+				res+= YAMLTools.parse_array(data, HistoryEvent)
+			end
+			res
 		end
 
 		def add_file(fileinfo, file)
@@ -278,11 +292,18 @@ module FileHosting
 		end
 
 		# returns the history of a user
-		def history_user(username= @user)
-			super(user)
-			data= @storage.read(userhistory_name(username.username))
+		def history_user(username= @user, age= 1)
+			super(user, age)
 			raise NoSuchUserError.new(username.username) unless data
-			YAMLTools.parse_array(data, HistoryEvent)
+			time= Time.now
+			data= @storage.read(userhistory_name(username.username, time))
+			res= YAMLTools.parse_array(data, HistoryEvent)
+			age.times do |i|
+				time+= 60*60*24
+				data= @storage.read(userhistory_name(username.username, time))
+				res+= YAMLTools.parse_array(data, HistoryEvent)
+			end
+			res
 		end
 
 		# reads a rule set
@@ -383,19 +404,20 @@ module FileHosting
 			fhistory_name= case action.to_s
 			when /^file/
 				data.delete(:uuid)
-				filehistory_name(entity)
+				filehistory_name(entity, event.time)
 			when /^user/
 				data.delete(:username)
-				userhistory_name(entity)
+				userhistory_name(entity, event.time)
 			end
-			uhistory_name= userhistory_name(event.user)
-			history= YAMLTools.parse_array(@storage.read(history_name), HistoryEvent)
+			uhistory_name= userhistory_name(event.user, event.time)
+			hname= history_name(event.time)
+			history= YAMLTools.parse_array(@storage.read(hname), HistoryEvent)
 			fhistory= YAMLTools.parse_array(@storage.read(fhistory_name), HistoryEvent)
 			uhistory= YAMLTools.parse_array(@storage.read(uhistory_name), HistoryEvent)
 			history<< event
 			fhistory<< event
 			uhistory<< event
-			@storage.store_data(history_name, history.to_yaml)
+			@storage.store_data(hname, history.to_yaml)
 			@storage.store_data(fhistory_name, fhistory.to_yaml)
 			@storage.store_data(uhistory_name, uhistory.to_yaml)
 		end
@@ -413,16 +435,16 @@ module FileHosting
 			"filedata/" + uuid.to_s
 		end
 
-		def filehistory_name(uuid)
-			"filehistory/" + uuid.to_s
+		def filehistory_name(uuid, time)
+			"filehistory/#{uuid}/#{time.strftime("%Y-%m-%d")}"
 		end
 
-		def userhistory_name(user)
-			"userhistory/" + user.to_s
+		def userhistory_name(user, time)
+			"userhistory/#{user}/#{time.strftime("%Y-%m-%d")}"
 		end
 
-		def history_name
-			"history"
+		def history_name(time)
+			"history/#{time.strftime("%Y-%m-%d")}"
 		end
 
 		def ruleset_name(ruleset)
