@@ -39,13 +39,13 @@
 % end
 % if check_info
 			<tr>
-				<th<%  if wrong_date %> class="wrong_data"<% end %>>date</th>
-				<td><input type="text" name="date" value="<%= fileinfo.user_date.form.to_html %>" size="50" /></td>
+				<th<%  if wrong_time %> class="wrong_data"<% end %>>date</th>
+				<td><input type="text" name="date" value="<%= fileinfo.user_time.form.to_html %>" size="50" /></td>
 			</tr>
 % else
 			<tr>
 				<th>date</th>
-				<td><%= fileinfo.user_date.to_html %></td>
+				<td><%= fileinfo.user_time.to_html %></td>
 			</tr>
 % end
 			<tr>
@@ -89,11 +89,11 @@
 % end
 			<tr>
 				<th>metadata last changed</th>
-				<td><%= fileinfo.info_date.to_html %></td>
+				<td><%= fileinfo.info_time.to_html %></td>
 			</tr>
 			<tr>
 				<th>filedata last changed</th>
-				<td><%= fileinfo.data_date.to_html %></td>
+				<td><%= fileinfo.data_time.to_html %></td>
 			</tr>
 			<tr>
 				<th><% if updated %>saved<% end %></th>

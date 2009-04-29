@@ -124,7 +124,7 @@ begin
 	end
 
 	if config[:set_date]
-		fileinfo.user_date= config[:set_date]
+		fileinfo.user_time= config[:set_date]
 	end
 
 	if config[:set_groups]

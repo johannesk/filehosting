@@ -62,13 +62,13 @@ module FileHosting
 		attr_accessor :tags
 
 		# the date of the filedata
-		attr_accessor :data_date
+		attr_accessor :data_time
 
 		# the date of the metadata
-		attr_accessor :info_date
+		attr_accessor :info_time
 
 		# the date which can be configured by the user
-		attr_accessor :user_date
+		attr_accessor :user_time
 
 		# the groups of this file
 		attr_accessor :groups
@@ -101,15 +101,15 @@ module FileHosting
 				:hash_type => @hash_type,
 				:hash      => @hash,
 				:source    => @source,
-				:data_date => @data_date,
-				:info_date => @info_date,
-				:user_date => @user_date,
+				:data_time => @data_time,
+				:info_time => @info_time,
+				:user_time => @user_time,
 				:groups    => @groups,
 			}
 		end
 
 		def to_text
-			to_hash.to_text([:filename, :uuid, :tags, :user_date, :mimetype, :size, :hash_type, :hash, :source, :info_date, :data_date])
+			to_hash.to_text([:filename, :uuid, :tags, :user_time, :mimetype, :size, :hash_type, :hash, :source, :info_time, :data_time])
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
@@ -123,9 +123,9 @@ module FileHosting
 				"hash_type" => lambda { @hash_type },
 				"hash"      => lambda { @hash },
 				"tags"      => lambda { @tags },
-				"data_date" => lambda { @data_date },
-				"info_date" => lambda { @info_date },
-				"user_date" => lambda { @user_date },
+				"data_time" => lambda { @data_time },
+				"info_time" => lambda { @info_time },
+				"user_time" => lambda { @user_time },
 				"groups"    => lambda { @groups },
 			}
 		end
@@ -154,12 +154,12 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		else
 			value["tags"].collect { |x| x.to_s }
 		end
-		raise FileHosting::InternalDataCorruptionError unless value["data_date"].nil? or Time === value["data_date"]
-		res.data_date= value["data_date"]
-		raise FileHosting::InternalDataCorruptionError unless value["info_date"].nil? or Time === value["info_date"]
-		res.info_date= value["info_date"]
-		raise FileHosting::InternalDataCorruptionError unless value["user_date"].nil? or Time === value["user_date"]
-		res.user_date= value["user_date"]
+		raise FileHosting::InternalDataCorruptionError unless value["data_time"].nil? or Time === value["data_time"]
+		res.data_time= value["data_time"]
+		raise FileHosting::InternalDataCorruptionError unless value["info_time"].nil? or Time === value["info_time"]
+		res.info_time= value["info_time"]
+		raise FileHosting::InternalDataCorruptionError unless value["user_time"].nil? or Time === value["user_time"]
+		res.user_time= value["user_time"]
 		res.groups= if value["groups"].nil?
 			nil
 		else

@@ -49,7 +49,7 @@ module FileHosting
 				@cachable= true
 				return
 			end
-			if date and fileinfo.data_date == date
+			if date and fileinfo.data_time == date
 				@status= 304
 			end
 			@header["Content-Type"]= fileinfo.mimetype

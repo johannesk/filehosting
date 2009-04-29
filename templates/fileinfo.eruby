@@ -20,7 +20,7 @@
 		</tr>
 		<tr>
 			<th>date</th>
-			<td><%= fileinfo.user_date.to_html %></td>
+			<td><%= fileinfo.user_time.to_html %></td>
 		</tr>
 		<tr>
 			<th>size</th>
@@ -38,7 +38,7 @@
 % end
 		<tr>
 			<th>last change</th>
-			<td><%= fileinfo.info_date.to_html %></td>
+			<td><%= fileinfo.info_time.to_html %></td>
 		</tr>
 	</table>
 	<div class="actions">

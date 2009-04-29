@@ -41,9 +41,9 @@ module FileHosting
 			@tags<< "#{(rand*2)<1 ? "S" : "W"}S#{rand(30)}"
 			@tags+= [["Uebung"], ["Video", "Vorlesung"], ["Uebung", "Sourcecode"]][random]
 			@groups= []
-			@user_date= Time.at(rand(Time.now.to_i))
-			@info_date= Time.now
-			@data_date= Time.now
+			@user_time= Time.at(rand(Time.now.to_i))
+			@info_time= Time.now
+			@data_time= Time.now
 			@hash_type= "SHA-256"
 			@hash= rand(64**16).to_s(16)
 		end

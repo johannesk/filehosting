@@ -50,7 +50,7 @@ module FileHosting
 					fileinfo.filename= values["filename"] if values["filename"]
 					fileinfo.tags= values["tags"].split(" ") if values["tags"]
 					begin
-						fileinfo.user_date= Time.from_form(values["date"]) if values["date"]
+						fileinfo.user_time= Time.from_form(values["date"]) if values["date"]
 					rescue ArgumentError
 						wrong_date= true
 					end

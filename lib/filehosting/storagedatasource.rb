@@ -214,7 +214,7 @@ module FileHosting
 			super(fileinfo, old)
 			plus= (fileinfo.tags-old.tags).collect { |t| tag_name(t) }
 			minus= (old.tags-fileinfo.tags).collect { |t| tag_name(t) }
-			fileinfo.info_date= Time.now
+			fileinfo.info_time= Time.now
 			begin
 				plus.each do |tag|
 					@storage.store_index(tag, name)
@@ -345,8 +345,8 @@ module FileHosting
 		def store_file(fileinfo, file)
 			filedata_name= filedata_name(fileinfo.uuid)
 			fileinfo.hash_type= "SHA-256"
-			fileinfo.data_date= Time.now
-			fileinfo.info_date= fileinfo.data_date
+			fileinfo.data_time= Time.now
+			fileinfo.info_time= fileinfo.data_time
 			tmp= false
 			begin
 				fm= FileMagic.new(FileMagic::MAGIC_MIME)
