@@ -21,44 +21,17 @@
 #++
 #
 
-require "filehosting/webpage"
+require "filehosting/webdefaultpage"
 require "filehosting/html"
-
-require "uuidtools"
 
 module FileHosting
 
-	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
-
-	# A newsfeed
-	class WebFeed < WebPage
+	# A newsfeed url creation page
+	class WebCreateFeedPage < WebDefaultPage
 
 		def initialize(config, tags, action, age)
-			super(config)
-			@header["Content-Type"]= "application/atom+xml"
-			@cachable= true
-			files= if tags == []
-				datasource.files
-			else
-				datasource.search_tags(tags)
-			end
-			history= files.collect { |f| datasource.history_file(f, age).each { |h| h.entity= f} }
-			history.flatten!
-			history= history.select do |ev|
-				action.include?(ev.action.to_s)
-			end
-			history.sort! { |a,b| a.time <=> b.time }
-			@body= HTML.use_template("feed.eruby", binding)
-			@tags= if tags == []
-				"files"
-			else
-				files.collect { |f| "files/#{f.uuid}" } +
-				tags.collect { |t| "tags/#{t}" }
-			end
-		end
-
-		def size
-			@body.size
+			@config= config
+			super(config, "create Feed", HTML.use_template("createfeed.eruby", binding), "createfeed.css", "createfeed.js")
 		end
 
 	end

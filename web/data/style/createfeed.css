@@ -1,0 +1,25 @@
+div.createfeed {
+	text-align: center;
+}
+
+div.createfeed div.url {
+	border-color: orange;
+	border-width: 1px;
+	border-style: solid;
+	padding: 10px;
+	margin: 10px;
+}
+
+div.createfeed table {
+	display: inline-block;
+}
+
+div.createfeed th {
+	text-align: right;
+	vertical-align: middle;
+}
+
+div.createfeed td {
+	text-align: left;
+	padding-left: 10px;
+}

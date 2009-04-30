@@ -1,0 +1,47 @@
+<div class="createfeed">
+	<h1>Create Feed</h1>
+	<div class="url" id="feedurl">
+% url= "#{ webroot }/feed?tags=#{ tags.join(" ").uri_encode }&amp;action=#{ action.join(" ").uri_encode }&amp;age=#{ age }"
+		<a href="<%= url %>"><%= url %></a>
+	</div>
+	<form method="get" action="<%= webroot %>/createfeed">
+		<table>
+			<tr>
+				<th>tags</th>
+				<td><input id="feedtags" type="text" name="tags" size="50" value="<%= tags.join(" ").to_html %>" /></td>
+			</tr>
+			<tr>
+				<th rowspan="4">type</th>
+				<td><input id="feedaction_file_create" type="checkbox" name="file_create"<% if action.include?("file_create") %>checked="checked" <% end %> />create File</td>
+			</tr>
+			<tr>
+				<td><input id="feedaction_file_update" type="checkbox" name="file_update"<% if action.include?("file_update") %>checked="checked" <% end %> />Medata changed</td>
+			</tr>
+			<tr>
+				<td><input id="feedaction_file_replace" type="checkbox" name="file_replace"<% if action.include?("file_replace") %>checked="checked" <% end %> />Filedata changed</td>
+			</tr>
+			<tr>
+				<td><input id="feedaction_file_remove" type="checkbox" name="file_remove"<% if action.include?("file_remove") %>checked="checked" <% end %> />remove File</td>
+			</tr>
+			<tr>
+				<th>max age</th>
+				<td>
+					<select id="feedage" name="age">
+						<option<% if age == 1 %> selected="selected"<% end %>>1</option>
+						<option<% if age == 2 %> selected="selected"<% end %>>2</option>
+						<option<% if age == 3 %> selected="selected"<% end %>>3</option>
+						<option<% if age == 4 %> selected="selected"<% end %>>4</option>
+						<option<% if age == 5 %> selected="selected"<% end %>>5</option>
+						<option<% if age == 6 %> selected="selected"<% end %>>6</option>
+						<option<% if age == 7 %> selected="selected"<% end %>>7</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th></th>
+				<td><input type="submit" value="create" /></td>
+			</tr>
+		</table>
+	</form>
+</div>
+

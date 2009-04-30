@@ -47,6 +47,7 @@ module FileHosting
 	autoload :WebFile, "filehosting/webfile"
 	autoload :WebLogin, "filehosting/weblogin"
 	autoload :WebFeed, "filehosting/webfeed"
+	autoload :WebCreateFeedPage, "filehosting/webcreatefeedpage"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
 
@@ -153,9 +154,13 @@ module FileHosting
 					rules= args["rules"].split("\n") if args["rules"]
 					WebSearchPage.new(config, tags, rules)
 				end
-			when (direction == ["feed"] and (args.keys - ["tags", "action", "age"]).empty?)
+			when (["feed", "createfeed"].include?(direction[0]) and (args.keys - ["tags", "action", "age", "file_create", "file_update", "file_replace", "file_remove"]).empty?)
 				tags= (args["tags"] || "").split(" ")
-				action= (args["action"] || "file_create file_replace").split(" ")
+				action= (args["action"] || "").split(" ")
+				action<< "file_create" if args["file_create"]
+				action<< "file_update" if args["file_update"]
+				action<< "file_replace" if args["file_replace"]
+				action<< "file_remove" if args["file_remove"]
 				if (action - ["file_create", "file_update", "file_replace", "file_remove", "user_create", "user_update"]).size > 0
 					return Web404Page.new(config)
 				end
@@ -167,7 +172,12 @@ module FileHosting
 				else
 					7
 				end
-				WebFeed.new(config, tags, action, age)
+				case direction[0]
+				when "feed"
+					WebFeed.new(config, tags, action, age)
+				when "createfeed"
+					WebCreateFeedPage.new(config, tags, action, age)
+				end
 			when (direction.size == 2 and direction[0] == "files")
 				WebFile.new(config, direction[1], date)
 			when (direction.size == 2 and direction[0] == "fileinfo")
@@ -197,7 +207,7 @@ module FileHosting
 				res= case
 				when (direction == ["add"] and (args.keys - ["filename", "tags", "date", "source", "filedata", "groups"]).empty?)
 					WebAddPage.new(config, args)
-				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "date", "source", "filedata", "groups"]).empty?)
+				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "time", "source", "filedata", "groups"]).empty?)
 					WebUpdatePage.new(config, direction[1], args)
 				when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
 					WebRemovedPage.new(config, direction[1])

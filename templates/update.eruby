@@ -39,12 +39,12 @@
 % end
 % if check_info
 			<tr>
-				<th<%  if wrong_time %> class="wrong_data"<% end %>>date</th>
-				<td><input type="text" name="date" value="<%= fileinfo.user_time.form.to_html %>" size="50" /></td>
+				<th<%  if wrong_time %> class="wrong_data"<% end %>>time</th>
+				<td><input type="text" name="time" value="<%= fileinfo.user_time.form.to_html %>" size="50" /></td>
 			</tr>
 % else
 			<tr>
-				<th>date</th>
+				<th>time</th>
 				<td><%= fileinfo.user_time.to_html %></td>
 			</tr>
 % end
