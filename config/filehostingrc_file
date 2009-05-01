@@ -1,4 +1,5 @@
 ---
+name: FileHosting
 storage: file
 storage_args: /tmp/filehosting
 datasource: storage

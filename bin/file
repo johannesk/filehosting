@@ -22,13 +22,8 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-require "uuidtools"
 require "io2io"
 require "fileutils"
 
@@ -43,49 +38,30 @@ class FileArgReader < FileHosting::ConfigArgReader
 	end
 
 	def switch_output(file)
+		puts file
 		@values[:output]= file
 	end
 	alias switch_o switch_output
 
+	def arg_count
+		1
+	end
+
 end
 
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= FileArgReader.new
-	args= argreader.parse(ARGV)
+FileHosting::BinEnv.new(FileArgReader.new) do |env|
+	uuid= env.read_uuid(env.args[0])
 
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	begin
-		uuid= UUID.parse(args[0])
-	rescue ArgumentError => e
-		STDERR.puts e
-		exit 1
-	end
-
-	if config[:output] == "-"
-		io= config.datasource.filedata_io(uuid)
-		IO2IO.do(io, STDOUT)
+	out= env.config[:output] || env.config.datasource.fileinfo(uuid).filename
+	file= env.config.datasource.filedata(uuid, IO)
+	case
+	when out == "-"
+		IO2IO.do(file, STDOUT)
+	when File === file
+		FileUtils.cp(file.path, out)
 	else
-		out= config[:output] || config.datasource.fileinfo(uuid).filename
-		file= config.datasource.filedata(uuid, IO)
-		case file
-		when File
-			puts "yeha"
-			FileUtils.cp(file.path, out)
-		else
-			File.open(out, "w") do |f|
-				IO2IO.do(file, f)
-			end
+		File.open(out, "w") do |f|
+			IO2IO.do(file, f)
 		end
 	end
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
 end

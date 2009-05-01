@@ -22,32 +22,8 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-require "uuidtools"
-require "io2io"
-require "fileutils"
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= FileHosting::ConfigArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 0
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
-	config.cache.clear
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
+FileHosting::BinEnv.new do |env|
+	env.config.cache.clear
 end

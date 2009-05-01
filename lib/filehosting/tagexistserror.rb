@@ -27,7 +27,7 @@ module FileHosting
 
 	# This error indicates the creation of an existing tag was
 	# requested.
-	class TagExistsErrorError < TagError
+	class TagExistsError < TagError
 		
 		attr_reader :tag
 

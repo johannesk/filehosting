@@ -22,39 +22,15 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 require "filehosting/web"
 
 require "io2io"
 
-class WebPageArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <page>"
-	end
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["page"])) do |env|
+	page= env.args[0]
 
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= WebPageArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	page= args[0]
-
-	web= FileHosting::Web.new(config)
+	web= FileHosting::Web.new(env.config)
 	page=~ /\?/
 	io= web.get_page($` || page, FileHosting::Web.parse_get($') || Hash.new)
 	unless io
@@ -69,7 +45,4 @@ begin
 			IO2IO.do(out, STDOUT)
 		end
 	end
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
 end

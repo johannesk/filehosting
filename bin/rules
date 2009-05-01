@@ -23,40 +23,13 @@
 #
 
 require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-class RulesArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <ruleset>"
-	end
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["ruleset"])) do |env|
+	ruleset= env.args.shift
 
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= RulesArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	ruleset= args.shift
-
-	rules= config.datasource.rules(ruleset)
+	rules= env.config.datasource.rules(ruleset)
 	rules.each do |rule|
 		puts rule.to_text
 	end
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
 end

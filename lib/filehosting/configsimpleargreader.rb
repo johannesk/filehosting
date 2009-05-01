@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,10 +21,41 @@
 #++
 #
 
-require "filehosting/binenv"
+require "filehosting/configargreader"
 
-FileHosting::BinEnv.new do |env|
-	env.config.datasource.tags.sort.each do |tag|
-		puts tag
+module FileHosting
+
+	class ConfigSimpleArgReader < ConfigArgReader
+
+		def initialize(args, iarg= nil)
+			super()
+			@args= args || []
+			@iarg= iarg
+		end
+
+		def banner
+			super + " " + (@args.collect { |a| "<#{a}>" } +
+			case @iarg
+			when String
+				["<#{@iarg} ... #{@iarg}>"]
+			when Array
+				@iarg.collect { |a| "[#{a}]" }
+			else
+				[]
+			end).join(" ")
+		end
+
+		def arg_count
+			case @iarg
+			when String
+				((@args.size+1)..(1.0/0))
+			when Array
+				((@args.size)..(@args.size+@iarg.size))
+			else
+				@args.size
+			end
+		end
+
 	end
+
 end

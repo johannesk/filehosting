@@ -22,51 +22,17 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-require "uuidtools"
-
-class ReplaceArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid> <file>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= ReplaceArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 2
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["uuid", "file"])) do |env|
+	uuid= env.read_uuid(env.args[0])
+	file= env.args[1]
 	begin
-		uuid= UUID.parse(args.shift)
-	rescue ArgumentError => e
-		STDERR.puts e
-		exit 1
-	end
-	file= Pathname.new(args.shift)
-
-	begin
-		config.datasource.update_filedata(uuid, file)
+		File.open(file) do |f|
+			env.config.datasource.update_filedata(uuid, f)
+		end
 	rescue Errno::ENOENT => e
 		puts e
-		exit 2
+		exit 1
 	end
-rescue FileHosting::Error => e
-	puts e
-	exit 2
 end

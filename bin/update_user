@@ -22,11 +22,7 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
 class UpdateUserArgReader < FileHosting::ConfigArgReader
 	
@@ -69,39 +65,28 @@ class UpdateUserArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_g :switch_groups
 
+	def arg_count
+		(0..1)
+	end
+
 end
 
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= UpdateUserArgReader.new
-	args= argreader.parse(ARGV)
+FileHosting::BinEnv.new(UpdateUserArgReader.new) do |env|
+	username= env.args[0] || env.config.datasource.user.username
 
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
+	user= env.config.datasource.user(username)
 
-	if args.size > 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	username= args[0] || config.datasource.user.username
-
-	user= config.datasource.user(username)
-
-	if config[:set_password]
-		user.generate_hash(config[:set_password])
+	if env.config[:set_password]
+		user.generate_hash(env.config[:set_password])
 	end
 
-	if !config[:set_active].nil?
-		user.active= config[:set_active]
+	if !env.config[:set_active].nil?
+		user.active= env.config[:set_active]
 	end
 
-	if config[:set_groups]
-		user.groups= config[:set_groups]
+	if env.config[:set_groups]
+		user.groups= env.config[:set_groups]
 	end
 
-	config.datasource.update_user(user)
-rescue FileHosting::Error => e
-	puts e
-	exit 2
+	env.config.datasource.update_user(user)
 end

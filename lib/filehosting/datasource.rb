@@ -165,7 +165,7 @@ module FileHosting
 
 		# returns the filedata
 		def filedata(uuid, type= File)
-			check_raise(check_filedata(uuid), "file_data(#{fileinfo.uuid.to_s})")
+			check_raise(check_filedata(uuid), "file_data(#{uuid.uuid.to_s})")
 		end
 
 		def check_add_file

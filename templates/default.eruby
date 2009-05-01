@@ -14,7 +14,7 @@
 	</head>
 	<body>
 		<div class="head">
-			<h1>FileHosting</h1>
+			<h1><%= config[:name] %></h1>
 			<form method="get" action="<%= webroot %>/search">
 				<div class="search">
 				search:

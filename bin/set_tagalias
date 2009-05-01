@@ -22,39 +22,10 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-class SetTagAliasArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <tag> <target>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= SetTagAliasArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 2
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	tag= args[0]
-	target= args[1]
-
-	config.datasource.set_tag_alias(tag, target)
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["tag", "target"])) do |env|
+	tag= env.args[0]
+	target= env.args[1]
+	env.config.datasource.set_tag_alias(tag, target)
 end

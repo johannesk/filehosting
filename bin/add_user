@@ -22,38 +22,13 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 require "filehosting/user"
 
 require "password"
 
-class AddUserArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <user> <group ... group>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddUserArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size < 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
-	username= args.shift
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["user"], "group")) do |env|
+	username= env.args.shift
 	password= Password.get("password: ")
 	unless password == Password.get("retype:   ")
 		STDERR.puts "passwords didn't match"
@@ -61,10 +36,7 @@ begin
 	end
 
 	user= FileHosting::User.new(username, password)
-	user.groups= args
+	user.groups= env.args
 
-	config.datasource.add_user(user)
-rescue FileHosting::Error => e
-	puts e
-	exit 2
+	env.config.datasource.add_user(user)
 end

@@ -22,44 +22,15 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-class TagInfoArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <tag>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= TagInfoArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	tag= args[0]
-
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["tag"])) do |env|
+	tag= env.args[0]
 	res= tag
-	while tag= config.datasource.tag_alias(tag)
+	while tag= env.config.datasource.tag_alias(tag)
 		puts "#{res} => #{tag}"
 		res= tag
 	end
-	info= config.datasource.taginfo(res)
+	info= env.config.datasource.taginfo(res)
 	puts info
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
 end

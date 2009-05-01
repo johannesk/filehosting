@@ -29,9 +29,9 @@ cgi
 filehostingrc
 -------------
 	There is a sample filehostingrc in config/filehostingrc. You should
-	copy it (and modify if you like) to either /etc/filehostingrc or
-	~/.filehostingrc or both locations. I that case settings made in
-	~/.filehostingrc override the ones made in /etc/filehostingrc.
+	copy it (and modify if you like) to either /etc/filehostingrc,
+	~/.filehostingrc, ./filehostingrc or any of this locations. Local
+	settings are always more important than global settings.
 
 User
 ----

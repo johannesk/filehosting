@@ -22,46 +22,19 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
+require "filehosting/binenv"
 require "filehosting/samplefileinfo"
-require "filehosting/error"
 
 require "fileutils"
 
-class GenerateRandomFilesArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <#files>"
-	end
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["#files"])) do |env|
+	count= env.read_int(env.args[0])
 
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= GenerateRandomFilesArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1 or args[0]=~ /[^0-9]/
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
-	count= args[0].to_i
-
-	count.times do
+	count.times do |i|
+		puts "#{i}/#{count}" if env.config[:human]
 		file= `mktemp`.strip
 		`dd if=/dev/zero of=#{file} bs=1 seek=#{(rand*2**(rand*27)).to_i} count=0 2> /dev/null`
-		config.datasource.add_file(FileHosting::SampleFileInfo.new, file)
+		env.config.datasource.add_file(FileHosting::SampleFileInfo.new, file)
 		FileUtils.rm(file)
 	end
-rescue FileHosting::Error => e
-	puts e
-	exit 2
 end

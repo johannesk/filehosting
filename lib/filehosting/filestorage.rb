@@ -123,10 +123,9 @@ module FileHosting
 			begin
 				if File === data[0]
 					d= data.shift.path
-					puts d
 					FileUtils.cp(d, tmp)
 				end
-				File.open(tmp, "w") do |f|
+				File.open(tmp, "a") do |f|
 					data.each do |d|
 						case d
 						when String

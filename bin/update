@@ -22,14 +22,11 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 require "filehosting/time"
 
 require "uuidtools"
+
 
 class UpdateArgReader < FileHosting::ConfigArgReader
 	
@@ -87,52 +84,35 @@ class UpdateArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_g :switch_groups
 
+	def arg_count
+		1
+	end
+
 end
 
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= UpdateArgReader.new
-	args= argreader.parse(ARGV)
+FileHosting::BinEnv.new(UpdateArgReader.new) do |env|
+	uuid= env.read_uuid(env.args[0])
+	fileinfo= env.config.datasource.fileinfo(uuid)
 
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	begin
-		uuid= UUID.parse(args[0])
-	rescue ArgumentError => e
-		STDERR.puts e
-		exit 1
+	if env.config[:set_filename]
+		fileinfo.filename= env.config[:set_filename]
 	end
 
-	fileinfo= config.datasource.fileinfo(uuid)
-
-	if config[:set_filename]
-		fileinfo.filename= config[:set_filename]
+	if env.config[:set_source]
+		fileinfo.source= env.config[:set_source]
 	end
 
-	if config[:set_source]
-		fileinfo.source= config[:set_source]
+	if env.config[:set_tags]
+		fileinfo.tags= env.config[:set_tags]
 	end
 
-	if config[:set_tags]
-		fileinfo.tags= config[:set_tags]
+	if env.config[:set_date]
+		fileinfo.user_time= env.config[:set_date]
 	end
 
-	if config[:set_date]
-		fileinfo.user_time= config[:set_date]
+	if env.config[:set_groups]
+		fileinfo.groups= env.config[:set_groups]
 	end
 
-	if config[:set_groups]
-		fileinfo.groups= config[:set_groups]
-	end
-
-	config.datasource.update_fileinfo(fileinfo)
-rescue FileHosting::Error => e
-	puts e
-	exit 2
+	env.config.datasource.update_fileinfo(fileinfo)
 end

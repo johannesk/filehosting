@@ -22,55 +22,27 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
+require "filehosting/binenv"
 require "filehosting/fileinfo"
-require "filehosting/error"
 
 require "uuidtools"
+require "pathname"
 
-class AddArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <file> <tag ... tag>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size < 2
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
-	file= Pathname.new(args.shift)
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["file"], "tag")) do |env|
+	file= Pathname.new(env.args.shift)
 
 	fileinfo= FileHosting::FileInfo.new
 	fileinfo.uuid= UUID.random_create.to_s
 	fileinfo.source= file.to_s
 	fileinfo.filename= file.basename.to_s
-	fileinfo.tags= args
+	fileinfo.tags= env.args
 
 	begin
-		f= File.open(file)
-		config.datasource.add_file(fileinfo, f)
+		File.open(file) do |f|
+			env.config.datasource.add_file(fileinfo, f)
+		end
 	rescue Errno::ENOENT => e
 		puts e
-		exit 2
-	ensure
-		f.close
+		exit 1
 	end
-rescue FileHosting::Error => e
-	puts e
-	exit 2
 end

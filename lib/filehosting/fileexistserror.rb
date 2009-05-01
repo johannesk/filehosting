@@ -27,7 +27,7 @@ module FileHosting
 
 	# This error indicates the creation of an existing file was
 	# requested.
-	class FileExistsErrorError < FileError
+	class FileExistsError < FileError
 		
 		attr_reader :uuid
 

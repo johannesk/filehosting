@@ -22,11 +22,7 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 require "filehosting/rule"
 require "filehosting/ruleerror"
 
@@ -78,39 +74,28 @@ class SearchArgReader < FileHosting::ConfigArgReader
 	end
 	alias :switch_r :switch_rule
 
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= SearchArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size < 1
-		STDERR.puts argreader.usage
-		exit 1
+	def arg_count
+		(1..(1.0/0))
 	end
 
-	args= config.datasource.optimize_search(args) if $human
-	fileinfos= config.datasource.search_tags(args, config[:rule])
-	fileinfos_partial= config.datasource.search_tags_partial(args, config[:rule]) if config[:partial_match]
-rescue FileHosting::Error => e
-	puts e
-	exit 2
 end
 
-puts "#{fileinfos.size}#{$human ? " Files found" : ""}" if $human or config[:display_count]
-puts "#{fileinfos_partial.size}#{$human ? " Files with partial match found" : ""}" if config[:partial_match] and ($humon or config[:display_count])
-exit 0 if config[:display_count]
-puts if $human and fileinfos.size > 0
-fileinfos+= fileinfos_partial if config[:partial_match]
-puts((fileinfos).collect do |f|
-	unless config[:uuid_only]
-		f.to_text + "\n"
-	else
-		f.uuid.to_s
-	end
-end.join("\n")) if fileinfos.size > 0
+FileHosting::BinEnv.new(SearchArgReader.new) do |env|
+	tags= env.args
+	tags= env.config.datasource.optimize_search(tags) if $human
+	fileinfos= env.config.datasource.search_tags(tags, env.config[:rule])
+	fileinfos_partial= env.config.datasource.search_tags_partial(tags, env.config[:rule]) if env.config[:partial_match]
+
+	puts "#{fileinfos.size}#{$human ? " Files found" : ""}" if $human or env.config[:display_count]
+	puts "#{fileinfos_partial.size}#{$human ? " Files with partial match found" : ""}" if env.config[:partial_match] and ($humon or env.config[:display_count])
+	exit 0 if env.config[:display_count]
+	puts if $human and fileinfos.size > 0
+	fileinfos+= fileinfos_partial if env.config[:partial_match]
+	puts((fileinfos).collect do |f|
+		unless env.config[:uuid_only]
+			f.to_text + "\n"
+		else
+			f.uuid.to_s
+		end
+	end.join("\n")) if fileinfos.size > 0
+end

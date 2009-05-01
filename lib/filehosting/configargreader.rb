@@ -57,6 +57,10 @@ module FileHosting
 					res << arg
 				end
 			end
+			count= arg_count
+			if count
+				switch_help unless count === res.size
+			end
 			res
 		end
 
@@ -129,13 +133,17 @@ module FileHosting
 			"usage: #{$0} [options]"
 		end
 
+		def arg_count
+			nil
+		end
+
 		def help_help
 			"display this message"
 		end
 
 		def switch_help
 			puts usage
-			exit 0
+			exit 1
 		end
 
 		def help_human
@@ -177,4 +185,3 @@ module FileHosting
 	end
 
 end
-

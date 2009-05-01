@@ -22,46 +22,9 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-require "uuidtools"
-
-class FileinfoArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= FileinfoArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size != 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	begin
-		uuid= UUID.parse(args[0])
-	rescue ArgumentError => e
-		STDERR.puts e
-		exit 1
-	end
-
-	fileinfo= config.datasource.fileinfo(uuid)
-	puts fileinfo.to_text
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["uuid"])) do |env|
+	uuid= env.read_uuid(env.args[0])
+	puts env.config.datasource.fileinfo(uuid).to_text
 end

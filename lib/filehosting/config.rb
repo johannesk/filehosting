@@ -40,6 +40,7 @@ module FileHosting
 
 		def initialize(*data)
 			@values= {
+				:name            => "FileHosting",
 				:datasource_args => [],
 				:storage_args    => [],
 				:human           => false,

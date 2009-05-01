@@ -22,39 +22,13 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
-require "filehosting/internaldatacorruptionerror"
+require "filehosting/binenv"
 
 require "uuidtools"
 
-class RemoveArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <uuid ... uuid>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= RemoveArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size < 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new([], "uuid")) do |env|
 	begin
-		uuids= args.collect { |s|  UUID.parse(s) }
+		uuids= env.args.collect { |s|  UUID.parse(s) }
 	rescue ArgumentError => e
 		STDERR.puts e
 		exit 1
@@ -62,14 +36,9 @@ begin
 
 	uuids.each do |uuid|
 		begin
-			config.datasource.remove_file(uuid)
+			env.config.datasource.remove_file(uuid)
 		rescue FileHosting::Error => e
 			STDERR.puts e
-		rescue FileHosting::InternalDataCorruptionError => e
-			STDERR.puts e
-			exit 2
 		end
 	end
-rescue FileHosting::Error => e
-	STDERR.puts e
 end

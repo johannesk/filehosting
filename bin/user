@@ -22,39 +22,9 @@
 #++
 #
 
-require "filehosting/string"
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 
-class UserArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " [username]"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= UserArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size > 1
-		STDERR.puts argreader.usage
-		exit 1
-	end
-	username= args[0] || config.datasource.user.username
-
-	user= config.datasource.user(username)
-	puts user.to_text
-rescue FileHosting::Error => e
-	STDERR.puts e
-	exit 2
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new([], ["user"])) do |env|
+	user= env.args[0] || env.config.datasource.user
+	puts env.config.datasource.user(user).to_text
 end

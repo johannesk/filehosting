@@ -22,37 +22,12 @@
 #++
 #
 
-require "filehosting/config"
-require "filehosting/autoconfigreader"
-require "filehosting/configfilereader"
-require "filehosting/configargreader"
-require "filehosting/error"
+require "filehosting/binenv"
 require "filehosting/rule"
 
-class AddRuleArgReader < FileHosting::ConfigArgReader
-	
-	def banner
-		super + " <ruleset> <result> <expression ... expression>"
-	end
-
-end
-
-begin
-	autoreader= FileHosting::AutoConfigReader.new
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	argreader= AddRuleArgReader.new
-	args= argreader.parse(ARGV)
-
-	config= FileHosting::Config.new(autoreader, etcreader, homereader, argreader)
-
-	if args.size < 2
-		STDERR.puts argreader.usage
-		exit 1
-	end
-
-	ruleset= args.shift
-	result= case args.shift.downcase
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["ruleset", "result"], "expression")) do |env|
+	ruleset= env.args.shift
+	result= case env.args.shift.downcase
 	when "true"
 		true
 	when "false"
@@ -64,12 +39,9 @@ begin
 
 	rule= FileHosting::Rule.new(result)
 
-	args.each do |exp|
+	env.args.each do |exp|
 		rule.add_raw(exp)
 	end
 
-	config.datasource.add_rule(ruleset, rule)
-rescue FileHosting::Error => e
-	puts e
-	exit 2
+	env.config.datasource.add_rule(ruleset, rule)
 end

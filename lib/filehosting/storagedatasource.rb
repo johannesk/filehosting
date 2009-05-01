@@ -294,9 +294,9 @@ module FileHosting
 		# returns the history of a user
 		def history_user(username= @user, age= 1)
 			super(user, age)
-			raise NoSuchUserError.new(username.username) unless data
 			time= Time.now
 			data= @storage.read(userhistory_name(username.username, time))
+			raise NoSuchUserError.new(username.username) unless data
 			res= YAMLTools.parse_array(data, HistoryEvent)
 			age.times do |i|
 				time+= 60*60*24
