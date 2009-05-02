@@ -145,6 +145,7 @@ module FileHosting
 		end
 
 		def read_fileinfo(uuid)
+			super(uuid)
 			return uuid if FileInfo === uuid
 			data= @storage.read(fileinfo_name(uuid))
 			raise NoSuchFileError.new(uuid) unless data
@@ -255,6 +256,7 @@ module FileHosting
 
 		# returns information about a user
 		def read_user(username)
+			super(username)
 			return username if User === username
 			name= user_name(username)
 			raise NoSuchUserError.new(username) unless @storage.exists?(name)
@@ -308,6 +310,7 @@ module FileHosting
 
 		# reads a rule set
 		def read_rules(ruleset)
+			super(ruleset)
 			name= ruleset_name(ruleset)
 			YAMLTools.parse_array(@storage.read(name), Rule)
 		end

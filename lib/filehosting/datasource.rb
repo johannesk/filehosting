@@ -25,6 +25,7 @@ require "filehosting/user"
 require "filehosting/uuid"
 
 require "observer"
+require "thread"
 require "text"
 
 module FileHosting
@@ -33,6 +34,16 @@ module FileHosting
 	autoload :InvalidRuleSetError , "filehosting/invalidruleseterror"
 	autoload :UserAuthenticationError, "filehosting/userauthenticationerror"
 	autoload :OperationNotPermittedError, "filehosting/operationnotpermittederror"
+
+	class DataSourceCountStruct
+
+		attr_accessor :ops
+
+		def initialize
+			@ops= []
+		end
+
+	end
 
 	# The DataSource knows everything
 	class DataSource
@@ -63,6 +74,18 @@ module FileHosting
 			@user= user
 		end
 
+		# count all data which was read
+		def count(&block)
+			array= Thread.current[global_name]
+			array= Thread.current[global_name]= [] unless array
+			struct= DataSourceCountStruct.new
+			array << struct
+			block.call
+			array.pop
+			register_op(struct.ops)
+			struct.ops
+		end
+
 		# The following methods (except check_...) should be reimplemented in a
 		# child class of DataSource.
 
@@ -73,16 +96,19 @@ module FileHosting
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
+			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
+			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
 
 		# returns fileinfo's for all files
 		def files
 			check_raise(check_search(tags), "files()")
+			register_op("files")
 		end
 
 		def check_tags
@@ -92,6 +118,7 @@ module FileHosting
 		# returns all available tags
 		def tags
 			check_raise(check_tags, "tags()")
+			register_op("tags")
 		end
 
 		def check_tag_alias
@@ -102,17 +129,19 @@ module FileHosting
 		def set_tag_alias(tag, target)
 			check_raise(check_tag_alias, "set_tag_alias(#{tag.inspect}, #{target.inspect})")
 			notify_observers("tags")
+			notify_observers("tags/#{tag}")
 		end
 
 		# removes a tag alias
 		def remove_tag_alias(tag)
 			check_raise(check_tag_alias, "remove_tag_alias(#{tag.inspect}")
 			notify_observers("tags")
+			notify_observers("tags/#{tag}")
 		end
 
 		# reads the target of a tag alias
 		def tag_alias(tag)
-			raise NotImplementedError
+			register_op("tags/#{tag}")
 		end
 
 		# resolves tag aliases until a real tag is reached
@@ -128,6 +157,7 @@ module FileHosting
 		# returns infos about a tag
 		def taginfo(tag)
 			check_raise(check_tags, "taginfo(#{tag.inspect})")
+			register_op("taginfo/#{tag}")
 		end
 
 		# stores infos about a tag
@@ -152,7 +182,7 @@ module FileHosting
 
 		# returns the fileinfo for the file with this uuid
 		def read_fileinfo(uuid)
-			raise NotImplementedError
+			register_op("files/#{uuid.uuid}")
 		end
 		protected :read_fileinfo
 
@@ -166,6 +196,7 @@ module FileHosting
 		# returns the filedata
 		def filedata(uuid, type= File)
 			check_raise(check_filedata(uuid), "file_data(#{uuid.uuid.to_s})")
+			register_op("files/#{uuid.uuid}")
 		end
 
 		def check_add_file
@@ -267,6 +298,7 @@ module FileHosting
 		# returns the history of a file
 		def history_file(uuid, age= 1)
 			check_raise(check_history_file(uuid, age), "history_user(#{uuid.uuid})")
+			register_op("files/#{uuid.uuid}")
 		end
 
 		def check_user(username)
@@ -278,7 +310,10 @@ module FileHosting
 
 		# returns information about a user
 		def user(username= nil)
-			return @user unless username
+			unless username
+				register_op("user/#{@user.username}")
+				return @user
+			end
 			result= read_user(username)
 			check_raise(check_user(result), "user_read(#{result.username})")
 			return result
@@ -286,7 +321,7 @@ module FileHosting
 
 		# returns information about a user
 		def read_user(username)
-			raise NotImplementedError
+			register_op("user/#{username.username}")
 		end
 		protected :read_user
 
@@ -332,6 +367,7 @@ module FileHosting
 		# returns the history of a user
 		def history_user(username= @user, age= 1)
 			check_raise(check_history_user(username, age), "history_user(#{username.username})")
+			register_op("user/#{username.username}")
 		end
 
 		def check_rules(ruleset)
@@ -348,7 +384,7 @@ module FileHosting
 
 		# reads a rule set
 		def read_rules(ruleset)
-			raise NotImplementedError
+			register_op("rules/#{ruleset}")
 		end
 		protected :read_rules
 
@@ -469,6 +505,18 @@ module FileHosting
 				"file_remove",
 			].include?(ruleset)
 		end
+
+		def global_name
+			"FileHosting::DataSource?#{self.object_id}"
+		end
+		protected :global_name
+
+		def register_op(*op)
+			array= Thread.current[global_name]
+			struct= array[-1] if array
+			struct.ops+= op.flatten if struct
+		end
+		protected :register_op
 
 	end
 
