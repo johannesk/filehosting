@@ -41,6 +41,7 @@ module FileHosting
 	class FileStorage < Storage
 
 		def initialize(dir)
+			super()
 			dir= Pathname.new(dir) unless Pathname === dir
 			dir.mkpath unless dir.directory?
 			@dir= dir
@@ -49,6 +50,7 @@ module FileHosting
 
 		# Reads a record.
 		def read(prefix, name, type= String)
+			super(prefix, name, type)
 			file= prefix_data_file(prefix, name)
 			return nil unless file.file?
 			case
@@ -117,6 +119,7 @@ module FileHosting
 		
 		# Stores data.
 		def store_data(prefix, name, data)
+			super(prefix, name, data)
 			file= prefix_data_file(prefix, name)
 			tmp= file.dirname + (file.basename.to_s + ".tmp")
 			data= [data].flatten

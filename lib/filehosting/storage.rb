@@ -29,6 +29,14 @@ module FileHosting
 	# class. It is only intended as parent class for real
 	# Storage's.
 	class Storage
+		
+		attr_reader :count_read
+		attr_reader :count_write
+
+		def initialize
+			@count_read= 0
+			@count_write= 0
+		end
 
 		# Stores data and index's to it.
 		def store(prefix, name, data, index, date= nil)
@@ -55,7 +63,7 @@ module FileHosting
 
 		# Reads a record.
 		def read(prefix, name, type)
-			raise NotImplementedError
+			@count_read+= 1
 		end
 
 		# Reads the date of a record
@@ -95,7 +103,7 @@ module FileHosting
 
 		# Stores data.
 		def store_data(prefix, name, data)
-			raise NotImplementedError
+			@count_write+= 1
 		end
 
 		# Links one's data to target data.

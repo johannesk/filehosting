@@ -40,7 +40,7 @@ module FileHosting
 		attr_accessor :ops
 
 		def initialize
-			@ops= []
+			@ops= Hash.new(0)
 		end
 
 	end
@@ -82,7 +82,9 @@ module FileHosting
 			array << struct
 			block.call
 			array.pop
-			register_op(struct.ops)
+			struct.ops.each do |op, num|
+				array[-1].ops[op]+= num
+			end if array[-1]
 			struct.ops
 		end
 
@@ -513,8 +515,13 @@ module FileHosting
 
 		def register_op(*op)
 			array= Thread.current[global_name]
-			struct= array[-1] if array
-			struct.ops+= op.flatten if struct
+			return unless array
+			struct= array[-1]
+			return unless struct
+			hash= struct.ops
+			op.flatten.each do |o|
+				hash[o]+= 1
+			end
 		end
 		protected :register_op
 

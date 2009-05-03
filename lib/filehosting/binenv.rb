@@ -48,7 +48,26 @@ module FileHosting
 				argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
 				@args= argreader.parse(ARGV)
 				@config= Config.new(autoreader, etcreader, homereader, localreader, argreader)
-				block.call(self)
+				count= config.datasource.count do
+					block.call(self)
+				end
+				if ENV["DEBUG"]
+					STDERR.puts "#{config.storage.count_read} reads"
+					STDERR.puts "#{config.storage.count_write} writes"
+					STDERR.puts "#{count.keys.size} different operations"
+					STDERR.puts "#{count.values.inject(0) { |a,b| a+b }} total operations"
+					max= count.keys.inject(0) do |last, op, num,|
+						size= op.size+10+num.to_s.size
+						if size >= last
+							size
+						else
+							last
+						end
+					end
+					count.each do |op, num|
+						STDERR.puts op + " "*(max-op.size-num.to_s.size) + num.to_s
+					end
+				end
 			rescue Error => e
 				puts e
 				exit 2
