@@ -44,7 +44,7 @@ module FileHosting
 				autoreader= AutoConfigReader.new
 				etcreader= ConfigFileReader.new("/etc/filehostingrc")
 				homereader= ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-				localreader= ConfigFileReader.new("./.filehostingrc")
+				localreader= ConfigFileReader.new("./filehostingrc")
 				argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
 				@args= argreader.parse(ARGV)
 				@config= Config.new(autoreader, etcreader, homereader, localreader, argreader)
