@@ -65,6 +65,7 @@ div.head li+li {
 }
 
 div.license {
+	clear: both;
 	font-size: 80%;
 	text-align: left;
 	padding: 1px 10% 1px 10%;

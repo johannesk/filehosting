@@ -14,3 +14,7 @@ div.fileinfo td {
 	text-align: left;
 	padding-left: 10px;
 }
+
+div.fileinfo div.actions li {
+	display: inline;
+}

@@ -66,13 +66,30 @@ div.search_result td {
 	padding-left: 10px;
 }
 
+div.search_result div.fileinfo {
+	clear: left;
+}
+
+div.search_result div.fileinfo+div.fileinfo {
+	padding-top: 10px;
+}
+
 div.search_result div.fileinfo table {
-	display: inline-block;
+	float: left;
 }
 
 div.search_result div.fileinfo div.actions {
-	display: inline-block;
-	vertical-align: top;
 	text-align: right;
-	width: 20%;
+}
+
+ul {
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+div.search_result div.fileinfo div.actions li {
+	display: block;
+	padding: 5px;
+	margin: 0px;
 }

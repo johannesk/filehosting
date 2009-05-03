@@ -15,6 +15,10 @@ div.fileinfo td {
 	padding-left: 10px;
 }
 
+div.fileinfo div.actions li {
+	display: inline;
+}
+
 div.removed {
 	text-align: center;
 }

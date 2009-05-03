@@ -527,7 +527,8 @@ module FileHosting
 
 		def count_struct
 			array= Thread.current[global_name]
-			return nil unless array
+			array= Thread.current[global_name]= [] unless array
+			array<< DataSourceCountStruct.new unless array[-1]
 			array[-1]
 		end
 

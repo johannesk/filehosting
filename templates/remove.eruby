@@ -13,7 +13,7 @@
 			<img src="<%= webroot %>/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
 % 	end
 			<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a>
-			<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= $webroot %>/images/download.png" alt="download" /></a>
+			<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= webroot %>/images/download.png" alt="download" /></a>
 		</h1>
 		<table>
 			<tr>
@@ -40,9 +40,20 @@
 % 	end
 		</table>
 		<div class="actions">
-			<%= use_part(WebFileInfoButtonPart, fileinfo) %>
-			<%= use_part(WebFileHistoryButtonPart, fileinfo) %>
-			<%= use_part(WebUpdateButtonPart, fileinfo) %>
+			<ul>
+% fileinfo_button= use_part(WebFileInfoButtonPart, fileinfo)
+% unless fileinfo_button.empty?
+				<li><%= fileinfo_button  %></li>
+% end
+% history_button= use_part(WebFileHistoryButtonPart, fileinfo)
+% unless history_button.empty?
+				<li><%= history_button  %></li>
+% end
+% update_button= use_part(WebUpdateButtonPart, fileinfo)
+% unless update_button.empty?
+				<li><%= update_button  %></li>
+% end
+			<ul>
 		</div>
 	</div>
 </div>

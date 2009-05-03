@@ -19,3 +19,7 @@ div.update_form th.wrong_data {
 	color: red;
 	font-weight: bold;
 }
+
+div.update_form div.actions li {
+	display: inline;
+}
