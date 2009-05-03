@@ -21,12 +21,14 @@
 #++
 #
 
-require "filehosting/ruleevalerror"
-require "filehosting/ruleoperanderror"
 require "filehosting/string"
 require "filehosting/yaml"
+require "filehosting/ruleoperanddatamissingerror.rb"
 
 module FileHosting
+
+	autoload :RuleEvalError, "filehosting/ruleevalerror"
+	autoload :RuleOperandError, "filehosting/ruleoperanderror"
 
 	class Rule
 		
@@ -52,6 +54,21 @@ module FileHosting
 			end
 		end
 
+		# Returns a new rule where everything which can
+		# already be evaluated, doesn't need to be evaluated
+		# again.
+		def prepare(data)
+			res= Rule.new(@result)
+			@conditions.each do |a, test, b|
+				begin
+					return Rule.new(nil) unless test_condition(parse_operand(a, data), test, parse_operand(b, data))
+				rescue RuleOperandDataMissingError
+					res.add_condition(a, test, b)
+				end
+			end
+			res
+		end
+
 		def test(data)
 			@conditions.each do |a, test, b|
 				return @nil unless test_condition(parse_operand(a, data), test, parse_operand(b, data))
@@ -64,7 +81,7 @@ module FileHosting
 			when /^(\w+)((\.\w+)+)$/
 				op= $2[1..-1]
 				res= data[$1]
-				raise RuleOperandError.new(operand) unless res
+				raise RuleOperandDataMissingError.new(operand) unless res
 				while op=~ /^(\w+)((\.\w+)*)$/
 					op= $2[1..-1] || ""
 					bl= res.rule_operand[$1]

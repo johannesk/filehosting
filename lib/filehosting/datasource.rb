@@ -38,9 +38,11 @@ module FileHosting
 	class DataSourceCountStruct
 
 		attr_accessor :ops
+		attr_accessor :prepared_rules
 
 		def initialize
 			@ops= Hash.new(0)
+			@prepared_rules= Hash.new
 		end
 
 	end
@@ -421,13 +423,23 @@ module FileHosting
 
 		# check if something is allowed
 		def check_rule(ruleset, data= Hash.new)
-			data["user"]= @user
-			return nil if data["user"].username == "root"
-			read_rules(ruleset).each do |rule|
-				res= rule.test(data)
-				return res unless res.nil?
+			return nil if user.username == "root"
+			struct= count_struct
+			if struct and rules= struct.prepared_rules[ruleset]
+				rules.each do |rule|
+					res= rule.test(data)
+					return res unless res.nil?
+				end
+				return nil
 			end
-			nil
+			rules= []
+			read_rules(ruleset).find do |rule|
+				res= rule.prepare({ "user" => @user })
+				rules<< res
+				res.conditions.size == 0
+			end
+			struct.prepared_rules[ruleset]= rules
+			check_rule(ruleset, data)
 		end
 		protected :check_rule
 
@@ -513,10 +525,14 @@ module FileHosting
 		end
 		protected :global_name
 
-		def register_op(*op)
+		def count_struct
 			array= Thread.current[global_name]
-			return unless array
-			struct= array[-1]
+			return nil unless array
+			array[-1]
+		end
+
+		def register_op(*op)
+			struct= count_struct
 			return unless struct
 			hash= struct.ops
 			op.flatten.each do |o|

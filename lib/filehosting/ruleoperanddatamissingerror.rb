@@ -21,27 +21,13 @@
 #++
 #
 
-require "filehosting/webpart"
-require "filehosting/html"
+require "filehosting/ruleoperanderror"
 
 module FileHosting
 
-	class WebButtonPart < WebPart
-
-		def initialize(config, name, &block)
-			super(config, "button/#{name}") do
-				visible, tags, target, image, text= block.call
-				unless visible
-					["", tags]
-				else
-					[HTML.use_template("button.eruby", binding), tags]
-				end
-			end
-		end
-
-		def cachable
-			false
-		end
+	# This error indicates an error while evaluating a Rule,
+	# caused by missing data
+	class RuleOperandDataMissingError < RuleOperandError
 
 	end
 

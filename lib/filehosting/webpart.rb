@@ -33,13 +33,13 @@ module FileHosting
 		def initialize(config, name, &block)
 			@config= config
 			name= "webpart/#{config.datasource.user.username}/#{name}"
-			@body= @config.cache.retrieve(name)
+			@body= @config.cache.retrieve(name) if cachable
 			if @body
 				@tags= @config.cache.tags(name)
 			else
 				@body, tags= yield
 				@tags= ((@tags || []) + tags).uniq
-				@config.cache.store(name, @body, @tags)
+				@config.cache.store(name, @body, @tags) if cachable
 			end
 		end
 
@@ -52,6 +52,10 @@ module FileHosting
 			@tags= [] unless @tags
 			@tags= (@tags+part.tags).uniq
 			part.body
+		end
+
+		def cachable
+			true
 		end
 
 		def webroot
