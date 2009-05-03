@@ -141,7 +141,12 @@ module FileHosting
 		def set_taginfo(tag, info)
 			tag= real_tag(tag)
 			super(tag, info)
-			@storage.store_data(taginfo_name(tag), info)
+			name= taginfo_name(tag)
+			if info.size == 0
+				@storage.remove(name)
+			else
+				@storage.store_data(name, info)
+			end
 		end
 
 		def read_fileinfo(uuid)
