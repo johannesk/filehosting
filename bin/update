@@ -104,6 +104,7 @@ FileHosting::BinEnv.new(UpdateArgReader.new) do |env|
 
 	if env.config[:set_tags]
 		fileinfo.tags= env.config[:set_tags]
+		env.usage if fileinfo.tags.size == 0
 	end
 
 	if env.config[:set_date]

@@ -45,9 +45,9 @@ module FileHosting
 				etcreader= ConfigFileReader.new("/etc/filehostingrc")
 				homereader= ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
 				localreader= ConfigFileReader.new("./filehostingrc")
-				argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
-				@args= argreader.parse(ARGV)
-				@config= Config.new(autoreader, etcreader, homereader, localreader, argreader)
+				@argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
+				@args= @argreader.parse(ARGV)
+				@config= Config.new(autoreader, etcreader, homereader, localreader, @argreader)
 				count= config.datasource.count do
 					block.call(self)
 				end
@@ -72,6 +72,12 @@ module FileHosting
 				puts e
 				exit 2
 			end
+		end
+
+		# display usage and exit
+		def usage
+			STDERR.puts @argreader.usage
+			exit 1
 		end
 
 		def read_uuid(str)

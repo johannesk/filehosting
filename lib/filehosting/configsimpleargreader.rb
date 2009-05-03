@@ -48,7 +48,7 @@ module FileHosting
 		def arg_count
 			case @iarg
 			when String
-				((@args.size+1)..(1.0/0))
+				((@args.size)..(1.0/0))
 			when Array
 				((@args.size)..(@args.size+@iarg.size))
 			else

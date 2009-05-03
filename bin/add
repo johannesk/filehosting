@@ -36,6 +36,7 @@ FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["file"], "tag"))
 	fileinfo.source= file.to_s
 	fileinfo.filename= file.basename.to_s
 	fileinfo.tags= env.args
+	env.usage if fileinfo.tags.size == 0
 
 	begin
 		File.open(file) do |f|
