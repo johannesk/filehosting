@@ -28,15 +28,37 @@ require "filehosting/fileinfo"
 require "uuidtools"
 require "pathname"
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["file"], "tag")) do |env|
+class AddArgReader < FileHosting::ConfigArgReader
+
+	def banner
+		super + " <file> <tag ... tag>"
+	end
+
+	def help_source
+		"the files source"
+	end
+
+	def switch_source(source)
+		@values[:set_source]= source
+	end
+	alias :switch_s :switch_source
+
+	def arg_count
+		(1..(1.0/0))
+	end
+
+end
+
+FileHosting::BinEnv.new(AddArgReader.new) do |env|
 	file= Pathname.new(env.args.shift)
 
 	fileinfo= FileHosting::FileInfo.new
 	fileinfo.uuid= UUID.random_create.to_s
-	fileinfo.source= file.to_s
+	fileinfo.source= env.config[:set_source] || ""
 	fileinfo.filename= file.basename.to_s
 	fileinfo.tags= env.args
 	env.usage if fileinfo.tags.size == 0
+	fileinfo.user_time= file.ctime
 
 	begin
 		File.open(file) do |f|
