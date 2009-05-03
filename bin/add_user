@@ -25,14 +25,38 @@
 require "filehosting/binenv"
 require "filehosting/user"
 
-require "password"
+autoload :Password, "password"
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["user"], "group")) do |env|
+class AddUserArgReader < FileHosting::ConfigArgReader
+
+	def usage
+		super + "<username> <group ... group>"
+	end
+
+	def help_newpassword
+		"newpassword"
+	end
+
+	def switch_newpassword(password)
+		@values[:newpassword]= password
+	end
+	alias :switch_n :switch_newpassword
+
+	def arg_count
+		(1..(1.0/0))
+	end
+
+end
+
+FileHosting::BinEnv.new(AddUserArgReader.new) do |env|
 	username= env.args.shift
-	password= Password.get("password: ")
-	unless password == Password.get("retype:   ")
-		STDERR.puts "passwords didn't match"
-		exit 2
+	password= env.config[:newpassword]
+	unless password
+		password= Password.get("password: ")
+		unless password == Password.get("retype:   ")
+			STDERR.puts "passwords didn't match"
+			exit 2
+		end
 	end
 
 	user= FileHosting::User.new(username, password)
