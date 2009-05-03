@@ -43,7 +43,7 @@ module FileHosting
 			end
 			super(config, "fileinfo/#{uuid}") do
 				fileinfo= block.call unless FileInfo === fileinfo
-				[HTML.use_template("fileinfo.eruby", binding), ["files/#{fileinfo.uuid}", "rules/file", "rules/file_info"]]
+				HTML.use_template("fileinfo.eruby", binding)
 			end
 		end
 

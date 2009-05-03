@@ -30,11 +30,11 @@ module FileHosting
 
 		def initialize(config, name, &block)
 			super(config, "button/#{name}") do
-				visible, tags, target, image, text= block.call
+				visible, target, image, text= block.call
 				unless visible
-					["", tags]
+					""
 				else
-					[HTML.use_template("button.eruby", binding), tags]
+					HTML.use_template("button.eruby", binding)
 				end
 			end
 		end

@@ -39,14 +39,12 @@ module FileHosting
 		attr_reader :body
 		attr_reader :size
 		attr_reader :config
-		attr_reader :tags
 		attr_reader :cachable
 		attr_reader :date
 
 		def initialize(config)
 			@config= config
 			@status= 200
-			@tags= []
 			@header= Hash.new
 			@size= nil
 			@date= Time.now
@@ -67,8 +65,6 @@ module FileHosting
 
 		def use_part(partclass, *args)
 			part= partclass.new(config, *args)
-			@tags= [] unless @tags
-			@tags= (@tags+part.tags).uniq
 			part.body
 		end
 

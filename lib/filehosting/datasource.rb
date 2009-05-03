@@ -540,7 +540,6 @@ module FileHosting
 				hash[o]+= 1
 			end
 		end
-		protected :register_op
 
 	end
 

@@ -28,18 +28,18 @@ module FileHosting
 
 		attr_reader :config
 		attr_reader :body
-		attr_reader :tags
 
 		def initialize(config, name, &block)
 			@config= config
 			name= "webpart/#{config.datasource.user.username}/#{name}"
-			@body= @config.cache.retrieve(name) if cachable
+			@body= config.cache.retrieve(name) if cachable
 			if @body
-				@tags= @config.cache.tags(name)
+				config.datasource.register_op(config.cache.tags(name))
 			else
-				@body, tags= yield
-				@tags= ((@tags || []) + tags).uniq
-				@config.cache.store(name, @body, @tags) if cachable
+				tags= config.datasource.count do
+					@body= yield
+				end.keys
+				config.cache.store(name, @body, tags) if cachable
 			end
 		end
 
@@ -49,8 +49,6 @@ module FileHosting
 			rescue ArgumentError
 				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
 			end
-			@tags= [] unless @tags
-			@tags= (@tags+part.tags).uniq
 			part.body
 		end
 

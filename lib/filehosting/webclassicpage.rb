@@ -36,16 +36,12 @@ module FileHosting
 			title+= tags.join("/") unless tags.empty?
 			if tags.empty?
 				tags= config.datasource.tags.sort
-				dep= ["tags"]
 				body= HTML.use_template("classic_new.eruby", binding)
 			else
 				search_result= config.datasource.search_tags(tags)
-				dep= tags.collect { |tag| "tags/#{tag}" } + search_result.collect { |file| "files/#{file.uuid.to_s}" }
-				dep+= ["rules/search", "rules/search_filter", "rules/file", "rules/file_info"]
 				body= HTML.use_template("classic.eruby", binding)
 			end
 			super(config, title, body, "classic.css", "sortable.js")
-			@tags+= dep
 		end
 
 	end

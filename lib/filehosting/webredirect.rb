@@ -30,11 +30,10 @@ module FileHosting
 
 		attr_reader :location
 
-		def initialize(config, location, *tags)
+		def initialize(config, location)
 			super(config)
 			@location= location
 			@header["Location"]= webroot.to_s+location
-			@tags= tags.flatten
 		end
 
 		def status

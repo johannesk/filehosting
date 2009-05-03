@@ -39,7 +39,6 @@ module FileHosting
 			error= nil
 			if search.empty?
 				tags= config.datasource.tags.sort
-				dep= ["tags"]
 				body= HTML.use_template("search_new.eruby", binding)
 			else
 				begin
@@ -52,17 +51,14 @@ module FileHosting
 						end
 					end
 					search_result= config.datasource.search_tags(search, rule)
-					dep= ["rules/search", "rules/search_filter"]
 					body= HTML.use_template("search.eruby", binding)
 				rescue RuleError => e
 					error= e.to_s
 					tags= config.datasource.tags.sort
-					dep= ["tags"]
 					body= HTML.use_template("search_new.eruby", binding)
 				end
 			end
 			super(config, title, body, "search.css")
-			@tags+= dep
 		end
 
 	end

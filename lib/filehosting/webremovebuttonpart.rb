@@ -29,7 +29,7 @@ module FileHosting
 
 		def initialize(config, uuid)
 			super(config, "remove/#{uuid.uuid}") do
-				[!datasource.check_update_fileinfo(uuid), ["rules/file", "rules/file_withdata", "rules/file_remove"], "/remove/#{uuid.uuid}", "remove", "remove"]
+				[!datasource.check_update_fileinfo(uuid), "/remove/#{uuid.uuid}", "remove", "remove"]
 			end
 		end
 

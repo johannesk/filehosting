@@ -49,12 +49,6 @@ module FileHosting
 			end
 			history.sort! { |a,b| a.time <=> b.time }
 			@body= HTML.use_template("feed.eruby", binding)
-			@tags= if tags == []
-				"files"
-			else
-				files.collect { |f| "files/#{f.uuid}" } +
-				tags.collect { |t| "tags/#{t}" }
-			end
 		end
 
 		def size

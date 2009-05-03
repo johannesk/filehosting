@@ -31,7 +31,6 @@ module FileHosting
 
 		def initialize(config)
 			@config= config
-			@tags= ["tags"]
 			tags= config.datasource.tags.sort
 			super(config, "tags", HTML.use_template("tags.eruby", binding), "tags.css", "sortable.js")
 		end

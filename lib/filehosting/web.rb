@@ -76,20 +76,23 @@ module FileHosting
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
 			direction= path.split("/")
-			begin
-				page= unless input
-					page_switch(direction,args, date)
-				else
-					page_input_switch(direction, args, input, type, date)
+			page= nil
+			tags= @config.datasource.count do
+				begin
+					page= unless input
+						page_switch(direction,args, date)
+					else
+						page_input_switch(direction, args, input, type, date)
+					end
+				rescue OperationNotPermittedError
+					return create_error_page(401, "operation not permitted")
 				end
-			rescue OperationNotPermittedError
-				return create_error_page(401, "operation not permitted")
-			end
+			end.keys
 			case
 			when page.status == 401
 				create_error_page(401, page.auth_reason)
 			when page.status == 404
-				@config.cache.store_link(cache_name, "weberror/404", page.tags) if page.cachable
+				@config.cache.store_link(cache_name, "weberror/404", tags) if page.cachable
 				create_error_page(404)
 			when page.status == 304
 				return "Status: 304\n\n"
@@ -98,13 +101,13 @@ module FileHosting
 				location=~ /\?/
 				path= $` || location
 				args= self.class.parse_get($' || "")
-				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", page.tags, page.date)
+				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", tags, page.date)
 				create_page(path, args)
 			when (not page.cachable)
 				page.to_output
 			else
 				res= page.to_output
-				@config.cache.store(cache_name, res, page.tags)
+				@config.cache.store(cache_name, res, tags)
 				res
 			end
 		end
@@ -114,16 +117,19 @@ module FileHosting
 			cache_name+= "/#{args.dir_encode}" if args
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
-			page= case error
-			when 404
-				Web404Page.new(config)
-			when 401
-				Web401Page.new(config, args)
-			else
-				NotImplemntedError
-			end
+			page= nil
+			tags= @config.datasource.count do
+				page= case error
+				when 404
+					Web404Page.new(config)
+				when 401
+					Web401Page.new(config, args)
+				else
+					NotImplemntedError
+				end
+			end.keys
 			res= page.to_output
-			@config.cache.store(cache_name, res, page.tags) if page.cachable
+			@config.cache.store(cache_name, res, tags) if page.cachable
 			res
 		end
 
@@ -148,7 +154,7 @@ module FileHosting
 					else
 						""
 					end
-					WebRedirect.new(config, "/search?tags=" + better.join(" ").uri_encode+rules, "tags")
+					WebRedirect.new(config, "/search?tags=" + better.join(" ").uri_encode+rules)
 				else
 					rules= nil
 					rules= args["rules"].split("\n") if args["rules"]

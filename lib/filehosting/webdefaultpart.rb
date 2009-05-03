@@ -34,7 +34,7 @@ module FileHosting
 
 		def initialize(config, title, body, includes)
 			super(config, "default") do
-				[HTML.use_template("default.eruby", binding), []]
+				HTML.use_template("default.eruby", binding)
 			end
 			@body= ERB.new(@body, nil, "%").result(binding)
 		end

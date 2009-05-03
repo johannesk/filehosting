@@ -29,7 +29,7 @@ module FileHosting
 
 		def initialize(config, uuid)
 			super(config, "update/#{uuid.uuid}") do
-				[!datasource.check_update_fileinfo(uuid), ["rules/file", "rules/file_withdata", "rules/file_update"], "/update/#{uuid.uuid}", "update", "update"]
+				[!datasource.check_update_fileinfo(uuid), "/update/#{uuid.uuid}", "update", "update"]
 			end
 		end
 

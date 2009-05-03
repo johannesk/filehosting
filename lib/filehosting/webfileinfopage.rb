@@ -35,14 +35,12 @@ module FileHosting
 		def initialize(config, uuid, *includes)
 			includes= ["fileinfo.css"] unless block_given?
 			super(config, uuid, *includes) do |uuid|
-				@tags= ["files/#{uuid.to_s}"]
 				begin
 					@fileinfo= config.datasource.fileinfo(uuid)
 				rescue NoSuchFileError
 					@status= 404
 					next ["", ""]
 				end
-				@tags+= ["rules/file", "rules/file_info"]
 				if block_given?
 					yield @fileinfo
 				else

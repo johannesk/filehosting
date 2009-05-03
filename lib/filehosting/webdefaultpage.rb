@@ -32,14 +32,12 @@ module FileHosting
 		def initialize(config, title, body, *includes)
 			header= @header
 			status= @status
-			tags= @tags
 			cachable= @cachable
 			super(config)
 			@header["Content-Type"]= "text/html; charset=utf-8"
 			@cachable= true
 			@header.merge(header) unless header.nil?
 			@status= status unless status.nil?
-			@tags= tags+@tags unless tags.nil?
 			@cachable= cachable unless cachable.nil?
 			@body= use_part(WebDefaultPart, title, body, includes)
 		end
