@@ -81,11 +81,11 @@ module FileHosting
 			when /^(\w+)((\.\w+)+)$/
 				op= $2[1..-1]
 				res= data[$1]
-				raise RuleOperandDataMissingError.new(operand) unless res
+				raise RuleOperandDataMissingError.new(self, operand) unless res
 				while op=~ /^(\w+)((\.\w+)*)$/
 					op= $2[1..-1] || ""
 					bl= res.rule_operand[$1]
-					raise RuleOperandError.new(operand) unless bl
+					raise RuleOperandError.new(self, operand) unless bl
 					res= bl.call
 				end
 				res
@@ -99,7 +99,7 @@ module FileHosting
 			when /^"(.*?)"/
 				$1.user_decode
 			else
-				raise RuleOperandError.new(operand)
+				raise RuleOperandError.new(self, operand)
 			end
 		end
 

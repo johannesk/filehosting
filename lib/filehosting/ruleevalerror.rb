@@ -28,11 +28,10 @@ module FileHosting
 	# This error indicates an error while evaluating a Rule.
 	class RuleEvalError < RuleError
 
-		attr_reader :rule
 		attr_reader :error
 		
 		def initialize(rule, error= nil)
-			@rule= rule
+			super(rule)
 			@error= error
 		end
 

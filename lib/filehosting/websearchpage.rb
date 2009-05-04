@@ -53,6 +53,7 @@ module FileHosting
 					search_result= config.datasource.search_tags(search, rule)
 					body= HTML.use_template("search.eruby", binding)
 				rescue RuleError => e
+					raise e unless e.rule == rule
 					error= e.to_s
 					tags= config.datasource.tags.sort
 					body= HTML.use_template("search_new.eruby", binding)

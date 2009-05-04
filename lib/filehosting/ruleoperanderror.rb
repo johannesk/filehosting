@@ -30,7 +30,8 @@ module FileHosting
 
 		attr_reader :operand
 		
-		def initialize(operand)
+		def initialize(rule, operand)
+			super(rule)
 			@operand= operand
 		end
 
