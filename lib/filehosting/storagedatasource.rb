@@ -368,7 +368,7 @@ module FileHosting
 				when String
 					fileinfo.size= file.size
 					fileinfo.hash= Digest::SHA256.hexdigest(file)
-					fileinfo.mimetype= fm.buffer(file).sub(/; .*?$/, "")
+					fileinfo.mimetype= fm.buffer(file).sub(/;?\s+.*?$/, "")
 				when IO
 					if !(File === file)
 						tmp= true
@@ -382,7 +382,7 @@ module FileHosting
 					end
 					fileinfo.size= File.size(file.path)
 					fileinfo.hash= Digest::SHA256.file(file.path).to_s
-					fileinfo.mimetype= fm.file(file.path).sub(/; .*?$/, "")
+					fileinfo.mimetype= fm.file(file.path).sub(/;?\s+.*?$/, "")
 				else
 					raise NotImplementedError
 				end

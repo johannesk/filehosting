@@ -56,7 +56,7 @@ module FileHosting
 		end
 
 		def body
-			@config.datasource.filedata_io(@uuid)
+			@config.datasource.filedata(@uuid, IO)
 		end
 
 	end
