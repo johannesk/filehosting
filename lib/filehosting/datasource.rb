@@ -292,6 +292,9 @@ module FileHosting
 			check_raise(check_remove_file(fileinfo), "file_remove(#{fileinfo.uuid})")
 			notify_observers("files")
 			notify_observers("files/#{uuid}")
+			fileinfo.tags.each do |tag|
+				notify_observers ("tags/#{tag}")
+			end
 			if fileinfo.tags.find { |tag| search_tags([tag]).size == 1 }
 				notify_observers("tags")
 			end

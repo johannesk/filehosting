@@ -259,8 +259,9 @@ module FileHosting
 			begin
 				@storage.remove(name)
 				@storage.remove(filedata_name(uuid.uuid))
-			rescue
+			rescue Excption => e
 				@storage.store(name, old.to_yaml, index)
+				raise e
 			end
 			store_history(:file_remove, uuid.uuid.to_s, Hash.new)
 		end
