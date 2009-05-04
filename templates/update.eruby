@@ -69,7 +69,7 @@
 			</tr>
 			<tr>
 				<th<%  if wrong_groups %> class="wrong_data"<% end %>>groups</th>
-				<td><input type="text" name="groups" value="<%= fileinfo.groups.join(" ").to_html %>" size="50" /></td>
+				<td><input type="text" name="groups" value="<%= (fileinfo.groups || []).join(" ").to_html %>" size="50" /></td>
 			</tr>
 % if check_info and check_data
 			<tr>

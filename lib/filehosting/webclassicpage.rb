@@ -35,7 +35,7 @@ module FileHosting
 			title= "/"
 			title+= tags.join("/") unless tags.empty?
 			if tags.empty?
-				tags= config.datasource.tags.sort
+				tags= config.datasource.real_tags.sort
 				body= HTML.use_template("classic_new.eruby", binding)
 			else
 				search_result= config.datasource.search_tags(tags)

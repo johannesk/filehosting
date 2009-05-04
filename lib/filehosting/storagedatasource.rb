@@ -110,6 +110,12 @@ module FileHosting
 			@storage.records.grep(/^tagalias\//).collect { |r| tag_from_name(r) }
 		end
 
+		# returns all tags which are not linsk
+		def real_tags
+			super()
+			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
+		end
+
 		# sets a tag as an alias to another tag
 		def set_tag_alias(tag, target)
 			super(tag, target)

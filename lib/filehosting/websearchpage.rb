@@ -38,7 +38,7 @@ module FileHosting
 			title+= ": #{search.join(", ")}" unless search.empty?
 			error= nil
 			if search.empty?
-				tags= config.datasource.tags.sort
+				tags= config.datasource.real_tags.sort
 				body= HTML.use_template("search_new.eruby", binding)
 			else
 				begin

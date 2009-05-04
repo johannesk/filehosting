@@ -21,6 +21,12 @@ div.tags table td.alias {
 	padding-left: 5px;
 }
 
-div.tags table .description {
+div.tags table th.description {
+	padding-left: 5px;
+	text-align: left;
+}
+
+div.tags table td.description {
 	padding-left: 20px;
+	text-align: left;
 }

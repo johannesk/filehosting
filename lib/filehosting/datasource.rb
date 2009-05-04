@@ -125,6 +125,12 @@ module FileHosting
 			register_op("tags")
 		end
 
+		# returns all tags which are not symlinks
+		def real_tags
+			check_raise(check_tags, "real_tags()")
+			register_op("tags")
+		end
+
 		def check_tag_alias
 			check_rule("tags_alias")
 		end

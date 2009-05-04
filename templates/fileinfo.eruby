@@ -1,8 +1,8 @@
 <div class="fileinfo">
 	<h1>
-% mimefile= Pathname.new("web/images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
+% mimefile= Pathname.new("web/data/images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
 % if mimefile.file?
-		<img src="<%= webroot %>/<%= mimefile.relative_path_from(Pathname.new("web")).to_html %>" alt="<%= fileinfo.mimetype.to_html %>" />
+		<img src="<%= webroot %>/<%= mimefile.relative_path_from(Pathname.new("web/data")).to_html %>" alt="<%= fileinfo.mimetype.to_html %>" />
 % else
 		<img src="<%= webroot %>/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
 % end

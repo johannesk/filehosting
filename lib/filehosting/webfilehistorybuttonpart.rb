@@ -29,7 +29,8 @@ module FileHosting
 
 		def initialize(config, uuid)
 			super(config, "filehistory/#{uuid.uuid}") do
-				[!datasource.check_update_fileinfo(uuid), "/filehistory/#{uuid.uuid}", "history", "view history"]
+				[false, "/filehistory/#{uuid.uuid}", "history", "view history"]
+				#[!datasource.check_history_file(uuid), "/filehistory/#{uuid.uuid}", "history", "view history"]
 			end
 		end
 
