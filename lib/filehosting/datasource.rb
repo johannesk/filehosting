@@ -444,6 +444,7 @@ module FileHosting
 			rules= []
 			read_rules(ruleset).find do |rule|
 				res= rule.prepare({ "user" => @user })
+				next if res.result.nil?
 				rules<< res
 				res.conditions.size == 0
 			end
