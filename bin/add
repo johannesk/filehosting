@@ -58,7 +58,7 @@ FileHosting::BinEnv.new(AddArgReader.new) do |env|
 	fileinfo.filename= file.basename.to_s
 	fileinfo.tags= env.args
 	env.usage if fileinfo.tags.size == 0
-	fileinfo.user_time= file.ctime
+	fileinfo.user_time= file.mtime
 
 	begin
 		File.open(file) do |f|
