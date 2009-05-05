@@ -41,22 +41,29 @@ module FileHosting
 				return
 			end
 			begin
-				fileinfo= @config.datasource.fileinfo(@uuid)
+				@fileinfo= @config.datasource.fileinfo(@uuid)
 			rescue NoSuchFileError
 				@status= 404
 				@cachable= true
 				return
 			end
-			if date and fileinfo.data_time == date
+			if date and @fileinfo.data_time == date
 				@status= 304
 			end
-			@header["Content-Type"]= fileinfo.mimetype
-			@header["Content-Disposition"]= "attachment;filename=#{fileinfo.filename}"
-			@size= fileinfo.size
+			@header["Content-Type"]= @fileinfo.mimetype
+			@header["Content-Disposition"]= "attachment;filename=#{@fileinfo.filename}"
 		end
 
 		def body
 			@config.datasource.filedata(@uuid, IO)
+		end
+
+		def time
+			@fileinfo.data_time
+		end
+
+		def size
+			@fileinfo.size
 		end
 
 	end

@@ -25,8 +25,18 @@
 
 VALUE t_do(VALUE self, VALUE in, VALUE out, VALUE size)
 {
-	FILE *source= RFILE(in)->fptr->f;
-	FILE *destination= RFILE(out)->fptr->f;
+	rb_check_type(in, T_FILE);
+	rb_check_type(out, T_FILE);
+	FILE *source;
+	if (rb_funcall(rb_eval_string("Socket"), rb_intern("=="), 1, rb_class_of(in)) == Qtrue)
+		source= RFILE(in)->fptr->f2;
+	else
+		source= RFILE(in)->fptr->f;
+	FILE *destination;
+	if (rb_funcall(rb_eval_string("Socket"), rb_intern("=="), 1, rb_class_of(out)) == Qtrue)
+		destination= RFILE(out)->fptr->f2;
+	else
+		destination= RFILE(out)->fptr->f;
 	VALUE result= INT2NUM(0);
 	char buffer[1024];
 	while ((size == Qnil) || (rb_funcall(result, rb_intern("<"), 1, size) == Qtrue)) {

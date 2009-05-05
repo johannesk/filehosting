@@ -21,6 +21,8 @@
 #++
 #
 
+require "fileutils"
+
 class File
 
 		# Creates a temporary file and opens it for writing.
@@ -29,7 +31,15 @@ class File
 			@tmpfile= true
 			path= `mktemp`.strip
 			if block_given?
-				File.open(path, "w") { |f| yield f }
+				filename= nil
+				begin
+					File.open(path, "w") do |f|
+						filename= f.path
+						yield f
+					end
+				ensure
+					FileUtils.rm(filename)
+				end
 			else
 				File.open(path, "w")
 			end

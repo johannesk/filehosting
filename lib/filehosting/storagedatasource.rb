@@ -97,8 +97,8 @@ module FileHosting
 					nil
 				end
 			end.compact
-			res= res.find_all { |info| !check_rule("search_filter", {"fileinfo" => info}) }
-			res= res.find_all { |info| rule.test({"user" => @user, "fileinfo" => info}) } if rule
+			res= res.find_all { |info| !check_rule("search_filter", {"file" => info}) }
+			res= res.find_all { |info| rule.test({"user" => @user, "file" => info}) } if rule
 			res.sort { |a,b| (b.user_time || Time.now) <=> (a.user_time || Time.now) }
 		end
 		private :search_finalize

@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -21,28 +22,42 @@
 #++
 #
 
-require "io2io_c"
+require "filehosting/binenv"
+require "filehosting/httpmirror"
 
-require "socket"
+require "uri"
 
-module IO2IO
+class AddArgReader < FileHosting::ConfigArgReader
 
-	def self.do(input, output, size= nil, interval= nil)
-		if block_given? and interval
-			done= 0
-			while !size or (done + interval) <= size
-				tmp= do_c(input, output, interval)
-				done+= tmp
-				yield done
-				return done if tmp < interval
-			end
-			if done!= size
-				do_c(input, output, size-(done-interval))
-				yield size
-			end
-		else
-			do_c(input, output, size)
-		end
+	def banner
+		super + " <name> <url> <pattern> <tag ... tag>"
 	end
 
+	def help_source
+		"the files source"
+	end
+
+	def switch_source(source)
+		@values[:set_source]= source
+	end
+	alias :switch_s :switch_source
+
+	def arg_count
+		(4..(1.0/0))
+	end
+
+end
+
+FileHosting::BinEnv.new(AddArgReader.new) do |env|
+	name= env.args.shift
+	begin
+		url= URI.parse(env.args.shift)
+	rescue ArgumentError => e
+		puts e
+		exit 1
+	end
+	pattern= /#{env.args.shift}/
+	tags= env.args
+	mirror= FileHosting::HTTPMirror.new(env.config, name, tags, env.config["set_source"])
+	mirror.update(url, pattern)
 end
