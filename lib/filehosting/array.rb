@@ -56,7 +56,6 @@ class Array
 				res<< x
 			end
 		end
-		puts res.inspect
 		res
 	end
 

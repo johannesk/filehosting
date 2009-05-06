@@ -31,12 +31,20 @@ require "pathname"
 require "net/http"
 require "uri"
 require "uuidtools"
+require "observer"
 
 module FileHosting
 
 	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
 
 	class HTTPMirror
+
+		include Observable
+
+		def notify_observers(*args)
+			changed
+			super(*args)
+		end
 
 		# make a http get and returns the body as string on
 		# success
@@ -97,6 +105,7 @@ module FileHosting
 							return nil
 						end
 						@config.datasource.update_filedata(file, res.read_body)
+						notify_observers(:update, url, file.uuid)
 					end
 				end
 			end
@@ -117,7 +126,7 @@ module FileHosting
 			begin
 				new.each do |url, tags, source|
 					uuid= create_file(url, tags, source)
-					filelist<< [url, uuid]
+					filelist<< [url, uuid] if uuid
 				end
 			ensure
 				store_file_list(name, filelist)
@@ -142,6 +151,7 @@ module FileHosting
 							return nil
 						end
 						@config.datasource.add_file(file, res.read_body)
+						notify_observers(:create, url, file.uuid)
 						ret= file.uuid
 					end
 				end
