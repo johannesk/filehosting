@@ -22,6 +22,7 @@
 #
 
 require "filehosting/configreader"
+require "filehosting/configfilereader"
 
 module FileHosting
 
@@ -181,6 +182,15 @@ module FileHosting
 			@values[:password]= password
 		end
 		alias :switch_p :switch_password
+
+		def help_config
+			"load a config file"
+		end
+
+		def switch_config(filename)
+			@values.merge!(ConfigFileReader.new(filename).read)
+		end
+		alias :switch_c :switch_config
 
 	end
 
