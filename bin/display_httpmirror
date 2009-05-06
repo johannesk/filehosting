@@ -25,39 +25,17 @@
 require "filehosting/binenv"
 require "filehosting/httpmirror"
 
-require "uri"
-
-class AddArgReader < FileHosting::ConfigArgReader
-
-	def banner
-		super + " <name> <url> <pattern> <tag ... tag>"
-	end
-
-	def help_source
-		"the files source"
-	end
-
-	def switch_source(source)
-		@values[:set_source]= source
-	end
-	alias :switch_s :switch_source
-
-	def arg_count
-		(4..(1.0/0))
-	end
-
-end
-
-FileHosting::BinEnv.new(AddArgReader.new) do |env|
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new("name")) do |env|
 	name= env.args.shift
-	begin
-		url= URI.parse(env.args.shift)
-	rescue ArgumentError => e
-		puts e
-		exit 1
-	end
-	pattern= /#{env.args.shift}/
-	tags= env.args
 	mirror= FileHosting::HTTPMirror.new(env.config)
-	mirror.register(name, url, pattern, tags, env.config[:set_source])
+	mirror.url_list(name).each do |url, pattern, tags, source|
+		puts url.to_s
+		print "\tpattern: "
+		puts pattern.inspect
+		print "\ttags:    "
+		puts tags.to_text
+
+		print "\tsource:  " if source
+		puts source if source
+	end
 end

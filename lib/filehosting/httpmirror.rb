@@ -91,6 +91,14 @@ module FileHosting
 			store_url_list(name, list)
 		end
 
+		def remove(name, url, pattern)
+			list= url_list(name)
+			list.delete_if do |turl, tpattern|
+				url == turl and pattern == tpattern
+			end
+			store_url_list(name, list)
+		end
+
 		# try's to update a file via http
 		def update_file(file, url)
 			http= Net::HTTP.new(url.host, url.port)
@@ -197,11 +205,21 @@ module FileHosting
 		end
 
 		def store_file_list(name, list)
-			@storage.store_data(file_list_name(name), list.collect { |url, uuid| [url.to_s, uuid.uuid.to_s] }.to_yaml)
+			name= file_list_name(name)
+			if list.size == 0
+				@storage.remove(name)
+			else
+				@storage.store_data(name, list.collect { |url, uuid| [url.to_s, uuid.uuid.to_s] }.to_yaml)
+			end
 		end
 
 		def store_url_list(name, list)
-			@storage.store_data(url_list_name(name), list.collect { |url, pattern, tags, source| [url.to_s, pattern, tags, source] }.to_yaml)
+			name= url_list_name(name)
+			if list.size == 0
+				@storage.remove(name)
+			else
+				@storage.store_data(name, list.collect { |url, pattern, tags, source| [url.to_s, pattern, tags, source] }.to_yaml)
+			end
 		end
 
 		def file_list_name(name)
