@@ -30,6 +30,7 @@ module FileHosting
 		def initialize(args, iarg= nil)
 			super()
 			@args= args || []
+			@args= [@args].flatten
 			@iarg= iarg
 		end
 

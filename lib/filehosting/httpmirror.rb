@@ -24,6 +24,7 @@
 require "filehosting/yamltools"
 require "filehosting/fileinfo"
 require "filehosting/file"
+require "filehosting/array"
 
 require "erb"
 require "pathname"
@@ -71,12 +72,15 @@ module FileHosting
 			res
 		end
 
-		def initialize(config, name, tags, source= nil)
+		def initialize(config)
 			@config= config
-			@name= name
-			@tags= tags
-			@source= nil
 			@storage= config.storage.prefix("httpmirror")
+		end
+
+		def register(name, url, pattern, tags, source= nil)
+			list= url_list(name)
+			list<< [url, pattern, tags, source]
+			store_url_list(name, list)
 		end
 
 		# try's to update a file via http
@@ -98,30 +102,35 @@ module FileHosting
 			end
 		end
 
-		def update(urls, pattern= nil)
-			filelist= file_list
-			new= [urls].flatten.collect { |url| self.class.find_urls(url, pattern) }.flatten
-			new.delete_if { |url| filelist.find { |a| a[0] == url } }
+		def update(name)
+			filelist= file_list(name)
+			urllist= url_list(name)
+			new= urllist.collect do |url, pattern, tags, source|
+				self.class.find_urls(url, pattern).collect do |x|
+					[x, tags, source]
+				end
+			end.flatten(1)
+			new.delete_if { |url, tags, source| filelist.find { |oldurl, file| oldurl == url } }
 			filelist.each do |url, file|
 				update_file(file, url)
 			end
 			begin
-				new.each do |url|
-					uuid= create_file(url)
+				new.each do |url, tags, source|
+					uuid= create_file(url, tags, source)
 					filelist<< [url, uuid]
 				end
 			ensure
-				store_file_list(filelist)
+				store_file_list(name, filelist)
 			end
 		end
 
 		# loads a file from a url and stores it into the
 		# datasource. Returns the uuid
-		def create_file(url)
+		def create_file(url, tags, source= nil)
 			file= FileInfo.new
-			file.source= @source || url.to_s
+			file.source= source || url.to_s
 			file.filename= Pathname.new(url.path).basename
-			file.tags= @tags
+			file.tags= tags
 			ret= nil
 			Net::HTTP.get_response(url) do |res|
 				case res
@@ -140,8 +149,29 @@ module FileHosting
 			ret
 		end
 
-		def file_list
-			list= @storage.read(@name)
+		def url_list(name)
+			list= @storage.read(url_list_name(name))
+			return [] unless list
+			list= YAMLTools.parse_array(list, Array)
+			list.collect do |a|
+				raise IntenralDataCorruption unless a.size == 4
+				begin
+					url= URI.parse(a[0])
+				rescue ArgumentError
+					raise IntenralDataCorruption
+				end
+				raise IntenralDataCorruption unless Regexp === a[1]
+				pattern= a[1]
+				raise IntenralDataCorruption unless Array === a[2]
+				tags= a[2].collect { |x| x.to_s }
+				source= a[3]
+				source.to_s unless source.nil?
+				[url, pattern, tags, source]
+			end
+		end
+
+		def file_list(name)
+			list= @storage.read(file_list_name(name))
 			return [] unless list
 			list= YAMLTools.parse_array(list, Array)
 			list.collect do |a|
@@ -156,8 +186,20 @@ module FileHosting
 			end
 		end
 
-		def store_file_list(list)
-			@storage.store_data(@name, list.collect { |url, uuid| [url.to_s, uuid.uuid.to_s] }.to_yaml)
+		def store_file_list(name, list)
+			@storage.store_data(file_list_name(name), list.collect { |url, uuid| [url.to_s, uuid.uuid.to_s] }.to_yaml)
+		end
+
+		def store_url_list(name, list)
+			@storage.store_data(url_list_name(name), list.collect { |url, pattern, tags, source| [url.to_s, pattern, tags, source] }.to_yaml)
+		end
+
+		def file_list_name(name)
+			"filelist/#{name}"
+		end
+
+		def url_list_name(name)
+			"urllist/#{name}"
 		end
 
 	end
