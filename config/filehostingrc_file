@@ -4,5 +4,6 @@ storage: file
 storage_args: /tmp/filehosting
 datasource: storage
 human: true
+# default_search: ["defaultSearch"]
 # username: anonymous
 # password: ""

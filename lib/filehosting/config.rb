@@ -47,7 +47,8 @@ module FileHosting
 				:user            => "unknown",
 				:webroot         => "",
 				:username        => "anonymous",
-				:password        => ""
+				:password        => "",
+				:default_search  => [],
 			}
 			data.each do |d|
 				@values.merge!(case d

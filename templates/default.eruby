@@ -18,7 +18,7 @@
 			<form method="get" action="<%= webroot %>/search">
 				<div class="search">
 				search:
-					<input type="text" name="tags" />
+					<input type="text" name="tags" value="<%= config[:default_search].to_html %>" />
 				</div>
 			</form>
 			<ul>

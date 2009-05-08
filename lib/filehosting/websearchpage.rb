@@ -39,6 +39,7 @@ module FileHosting
 			error= nil
 			if search.empty?
 				tags= config.datasource.real_tags.sort
+				search= config[:default_search]
 				body= HTML.use_template("search_new.eruby", binding)
 			else
 				begin
