@@ -36,7 +36,7 @@ module FileHosting
 			fileinfo= FileInfo.new
 			wrong_filename= false
 			wrong_tags= false
-			wrong_date= false
+			wrong_time= false
 			wrong_source= false
 			wrong_filedata= false
 			wrong_groups= false
@@ -47,7 +47,7 @@ module FileHosting
 				begin
 					fileinfo.user_time= Time.from_form(values["date"]) if values["date"]
 				rescue ArgumentError
-					wrong_date= true
+					wrong_time= true
 				end
 				fileinfo.source= values["source"]
 				fileinfo.groups= values["groups"].split(" ") if values["groups"]

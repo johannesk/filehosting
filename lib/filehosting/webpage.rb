@@ -61,7 +61,7 @@ module FileHosting
 				end.join +
 				(size ? "Content-Length: #{size}\n" : "") +
 				"Status: #{status}\n" +
-				"Last-Modified: #{time.httpdate}\n") +
+				"Last-Modified: #{time.httpdate}\n" +
 				"\n",
 				body
 			]

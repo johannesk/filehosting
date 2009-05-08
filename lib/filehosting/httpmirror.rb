@@ -25,6 +25,7 @@ require "filehosting/yamltools"
 require "filehosting/fileinfo"
 require "filehosting/file"
 require "filehosting/array"
+require "filehosting/string"
 
 require "erb"
 require "pathname"
@@ -44,15 +45,19 @@ module FileHosting
 		def notify_observers(*args)
 			changed
 			super(*args)
+			@pages= Hash.new
 		end
 
 		# make a http get and returns the body as string on
 		# success
 		def self.read(url)
+			found= @pages[url]
+			return found if found
 			url= URI.prase(url) unless URI === url
 			res= Net::HTTP.get_response(url)
 			case res
 			when Net::HTTPSuccess
+				@pages[url]= res.body
 				res.body
 			else
 				nil
@@ -68,7 +73,7 @@ module FileHosting
 			res= []
 			return res unless body
 			body=~ /^/
-			while $'=~ /<a(\s+\w+="[^"]")*\s+href="([^"]+)"(\s+\w+="[^"]")*\s*>/
+			while $'=~ /<a(\s+\w+=['"][^'"]*['"])*\s+href=['"]([^'"]+)['"](\s+\w+=['"][^"]*['"])*\s*>/
 				begin
 					link= url + URI.parse($2)
 				rescue URI::InvalidURIError
@@ -128,6 +133,8 @@ module FileHosting
 				end
 			end.flatten(1)
 			new.delete_if { |url, tags, source| filelist.find { |oldurl, file| oldurl == url } }
+			tmplist= []
+			new.delete_if { |url, tags, source| tmplist.include?(url) ? true : (tmplist << url; false) }
 			filelist.each do |url, file|
 				update_file(file, url)
 			end
@@ -146,7 +153,7 @@ module FileHosting
 		def create_file(url, tags, source= nil)
 			file= FileInfo.new
 			file.source= source || url.to_s
-			file.filename= Pathname.new(url.path).basename
+			file.filename= Pathname.new(url.path).basename.to_s.uri_decode
 			file.tags= tags
 			ret= nil
 			Net::HTTP.get_response(url) do |res|
