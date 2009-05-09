@@ -45,12 +45,11 @@ module FileHosting
 		def notify_observers(*args)
 			changed
 			super(*args)
-			@pages= Hash.new
 		end
 
 		# make a http get and returns the body as string on
 		# success
-		def self.read(url)
+		def read(url)
 			found= @pages[url]
 			return found if found
 			url= URI.prase(url) unless URI === url
@@ -67,7 +66,7 @@ module FileHosting
 		# Finds all url's enclosed in <a href="URL">, from an
 		# url. If pattern is giving only those matching that
 		# pattern.
-		def self.find_urls(url, pattern= nil)
+		def find_urls(url, pattern= nil)
 			url= URI.parse(url) unless URI === url
 			body= read(url)
 			res= []
@@ -88,6 +87,7 @@ module FileHosting
 		def initialize(config)
 			@config= config
 			@storage= config.storage.prefix("httpmirror")
+			@pages= Hash.new
 		end
 
 		def register(name, url, pattern, tags, source= nil)
@@ -128,7 +128,7 @@ module FileHosting
 			filelist= file_list(name)
 			urllist= url_list(name)
 			new= urllist.collect do |url, pattern, tags, source|
-				self.class.find_urls(url, pattern).collect do |x|
+				find_urls(url, pattern).collect do |x|
 					[x, tags, source]
 				end
 			end.flatten(1)
