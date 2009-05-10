@@ -221,8 +221,15 @@ module FileHosting
 		end
 
 		def update_fileinfo(fileinfo)
+			fileinfo= fileinfo.clone
 			name= fileinfo_name(fileinfo)
 			old= read_fileinfo(fileinfo.uuid)
+			fileinfo.mimetype= old.mimetype
+			fileinfo.size= old.size
+			fileinfo.hash_type= old.hash_type
+			fileinfo.hash= old.hash
+			fileinfo.data_time= old.data_time
+			fileinfo.info_time= old.info_time
 			super(fileinfo, old)
 			plus= (fileinfo.tags-old.tags).collect { |t| tag_name(t) }
 			minus= (old.tags-fileinfo.tags).collect { |t| tag_name(t) }
