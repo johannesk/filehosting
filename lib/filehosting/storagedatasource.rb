@@ -212,7 +212,7 @@ module FileHosting
 		end
 
 		def update_filedata(uuid, file)
-			old= read_fileinfo(uuid)
+			old= read_fileinfo(uuid.uuid)
 			super(old, file)
 			new= old.clone
 			new= store_file(new, file)

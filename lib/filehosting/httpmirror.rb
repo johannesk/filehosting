@@ -80,7 +80,14 @@ module FileHosting
 					res<< link
 				end
 			end
-			res= res.find_all { |link| link.to_s=~ pattern } if pattern
+			res= res.collect! do |link|
+				if link.to_s=~ pattern
+					[link, $~]
+				else
+					nil
+				end
+			end if pattern
+			res.compact!
 			res
 		end
 
@@ -117,7 +124,9 @@ module FileHosting
 						rescue ArgumentError
 							return nil
 						end
+						file.user_time= time
 						@config.datasource.update_filedata(file, res.read_body)
+						@config.datasource.update_fileinfo(file)
 						notify_observers(:update, url, file.uuid)
 					end
 				end
@@ -128,8 +137,8 @@ module FileHosting
 			filelist= file_list(name)
 			urllist= url_list(name)
 			new= urllist.collect do |url, pattern, tags, source|
-				find_urls(url, pattern).collect do |x|
-					[x, tags, source]
+				find_urls(url, pattern).collect do |x, mdata|
+					[x, mdata, tags, source]
 				end
 			end.flatten(1)
 			new.delete_if { |url, tags, source| filelist.find { |oldurl, file| oldurl == url } }
@@ -139,7 +148,18 @@ module FileHosting
 				update_file(file, url)
 			end
 			begin
-				new.each do |url, tags, source|
+				new.each do |url, mdata, tags, source|
+					tags= tags.collect do |tag|
+						tag.gsub(/\\([1-9%])/) do
+							s= $1
+							case s
+							when "%"
+								"\\"
+							else
+								mdata[s.to_i]
+							end
+						end
+					end
 					uuid= create_file(url, tags, source)
 					filelist<< [url, uuid] if uuid
 				end
