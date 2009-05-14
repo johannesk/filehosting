@@ -62,7 +62,7 @@ module FileHosting
 				end
 				FileUtils.mv(tmp, file)
 			rescue Exception => e
-				tmp.delete
+				tmp.delete?
 				raise e
 			end
 		end

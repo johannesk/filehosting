@@ -192,8 +192,21 @@ module FileHosting
 				WebUpdatePage.new(config, direction[1])
 			when (direction.size == 2 and direction[0] == "remove")
 				WebRemovePage.new(config, direction[1])
-			when direction[0] == "classic"
-				WebClassicPage.new(config, *direction[1..-1])
+			when (direction[0] == "classic" and (args.keys - ["tags"]).size == 0)
+				redirect= false
+				path= @config.datasource.optimize_search(direction[1..-1])
+				redirect= true if path != direction[1..-1]
+				tags= nil
+				if args["tags"]
+					raw= args["tags"].split(" ")
+					tags= @config.datasource.optimize_search(raw)
+					redirect= true if raw != tags
+				end
+				if redirect
+					WebRedirect.new(config, "/classic" + WebClassicPage.url(path, tags))
+				else
+					WebClassicPage.new(config, direction[1..-1], tags)
+				end
 			else
 				Web404Page.new(config)
 			end

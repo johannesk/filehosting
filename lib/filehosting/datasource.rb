@@ -494,7 +494,7 @@ module FileHosting
 				end
 				search[search.index(wrong)]= better unless better.empty?
 			end
-			search.collect { |t| real_tag(t) }
+			search.collect { |t| real_tag(t) }.uniq
 		end
 
 		# check if ruleset is a valid ruleset

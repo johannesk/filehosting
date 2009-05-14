@@ -29,19 +29,38 @@ module FileHosting
 	# The classic page
 	class WebClassicPage < WebDefaultPage
 
-		def initialize(config, *tags)
+		def initialize(config, path, tags= nil)
 			@config= config
-			tags.flatten!
+			tags= [tags].flatten if tags
+			path= [path].flatten
 			title= "/"
-			title+= tags.join("/") unless tags.empty?
-			if tags.empty?
-				tags= config.datasource.real_tags.sort
+			title+= path.join("/") unless path.empty?
+			if path.empty?
+				dirs= config.datasource.real_tags.sort
+				dirs= dirs.find_all { |x| tags.include?(x) } if tags
 				body= HTML.use_template("classic_new.eruby", binding)
 			else
-				search_result= config.datasource.search_tags(tags)
+				search_result= config.datasource.search_tags(path)
+				search_result.sort { |a,b| b.user_time <=> a.user_time }
 				body= HTML.use_template("classic.eruby", binding)
 			end
 			super(config, title, body, "classic.css", "sortable.js")
+		end
+
+		def self.url(path, tags, encode= false)
+			path= path.join("/")
+			path= "/" + path unless path.empty?
+			path= path.uri_encode if encode
+			path + case
+			when !tags
+				""
+			when tags.size == 0
+				""
+			else
+				t= tags.join(" ")
+				t= t.uri_encode if encode
+				"?tags=" + t
+			end
 		end
 
 	end

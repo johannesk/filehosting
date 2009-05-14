@@ -6,11 +6,11 @@
 			<th class="numeric">Größe</th>
 			<th>Type</th></tr>
 		</tr>
-% tags.each do |tag|
+% dirs.each do |tag|
 		<tr>
-			<td><a href="<%= webroot %>/classic/<%= tag.to_html %>"><%= tag.to_html %></a></td>
+			<td><a href="<%= webroot %>/classic<%= WebClassicPage.url([tag], tags, true) %>"><%= tag.to_html %></a></td>
 			<td></td>
-			<td class="size">4.0K</td>
+			<td class="size"></td>
 			<td>application/x-directory</td>
 		</tr>
 % end
