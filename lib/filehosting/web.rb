@@ -48,6 +48,7 @@ module FileHosting
 	autoload :WebLogin, "filehosting/weblogin"
 	autoload :WebFeed, "filehosting/webfeed"
 	autoload :WebCreateFeedPage, "filehosting/webcreatefeedpage"
+	autoload :WebDownLoadList, "filehosting/webdownloadlist"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
 
@@ -145,7 +146,7 @@ module FileHosting
 				WebLogin.new(config)
 			when direction == ["tags"]
 				WebTagsPage.new(config)
-			when (direction == ["search"] and (args.keys - ["tags", "rules"]).empty?)
+			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
 				better= @config.datasource.optimize_search(tags)
 				if better != tags
@@ -154,11 +155,16 @@ module FileHosting
 					else
 						""
 					end
-					WebRedirect.new(config, "/search?tags=" + better.join(" ").uri_encode+rules)
+					WebRedirect.new(config, "/#{direction[0]}?tags=" + better.join(" ").uri_encode+rules)
 				else
 					rules= nil
 					rules= args["rules"].split("\n") if args["rules"]
-					WebSearchPage.new(config, tags, rules)
+					case direction[0]
+					when "search"
+						WebSearchPage.new(config, tags, rules)
+					when "downloadlist"
+						WebDownLoadList.new(config, tags, rules)
+					end
 				end
 			when (["feed", "createfeed"].include?(direction[0]) and (args.keys - ["tags", "action", "age", "file_create", "file_update", "file_replace", "file_remove"]).empty?)
 				tags= (args["tags"] || "").split(" ")

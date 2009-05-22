@@ -25,20 +25,18 @@ require "filehosting/ruleerror"
 
 module FileHosting
 
-	# This error indicates an error while evaluating a Rule.
-	class RuleEvalError < RuleError
+	# This error indicates an error while parsing a Rule.
+	class RuleParseError < RuleError
 
-		attr_reader :error
-		attr_reader :string
+		attr_reader :raw
 		
-		def initialize(rule, string, error= nil)
+		def initialize(rule, raw)
 			super(rule)
-			@error= error
-			@string= string
+			@raw= raw
 		end
 
 		def to_s
-			"the rule '#{@string}' can not be evaluated"
+			"the string '#{@raw}' can not be parses as rule"
 		end
 
 	end

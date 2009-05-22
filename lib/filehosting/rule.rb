@@ -28,6 +28,7 @@ require "filehosting/ruleoperanddatamissingerror.rb"
 module FileHosting
 
 	autoload :RuleEvalError, "filehosting/ruleevalerror"
+	autoload :RuleParseError, "filehosting/ruleparseerror"
 	autoload :RuleOperandError, "filehosting/ruleoperanderror"
 
 	class Rule
@@ -50,7 +51,7 @@ module FileHosting
 			if raw=~ /^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$/
 				add_condition($1, $2, $3)
 			else
-				raise RuleEvalError.new(raw)
+				raise RuleParseError.new(self, raw)
 			end
 		end
 
@@ -140,7 +141,7 @@ module FileHosting
 					raise "can not execute '#{test}'"
 				end
 			rescue Exception => e
-				raise RuleEvalError.new("#{data.inspect} #{test} #{operand.inspect}", e)
+				raise RuleEvalError.new(self, "#{data.inspect} #{test} #{operand.inspect}", e)
 			end
 		end
 

@@ -83,9 +83,9 @@ module FileHosting
 		end
 
 		# returns fileinfo's for all files
-		def files
+		def files(rule= nil)
 			super()
-			search_finalize(@storage.records.grep(/^fileinfo\//).collect { |r| uuid_from_name(r) })
+			search_finalize(@storage.records.grep(/^fileinfo\//).collect { |r| uuid_from_name(r) }, rule)
 		end
 
 

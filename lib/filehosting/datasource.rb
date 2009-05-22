@@ -110,7 +110,7 @@ module FileHosting
 		end
 
 		# returns fileinfo's for all files
-		def files
+		def files(rule= nil)
 			check_raise(check_search(tags), "files()")
 			register_op("files")
 		end

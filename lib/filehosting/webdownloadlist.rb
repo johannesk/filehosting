@@ -21,27 +21,45 @@
 #++
 #
 
+require "filehosting/webpage"
+require "filehosting/rule"
 require "filehosting/ruleerror"
 
 module FileHosting
 
-	# This error indicates an error while evaluating a Rule.
-	class RuleEvalError < RuleError
+	# The download list
+	class WebDownLoadList < WebPage
 
-		attr_reader :error
-		attr_reader :string
-		
-		def initialize(rule, string, error= nil)
-			super(rule)
-			@error= error
-			@string= string
-		end
-
-		def to_s
-			"the rule '#{@string}' can not be evaluated"
+		def initialize(config, tags=[], rules= nil)
+			@config= config
+			@header= {"Content-Type" => "text/plain; charset=utf-8"}
+			@status= 200
+			@cachable= true
+			tags.flatten!
+			begin
+				rule= nil
+				if rules
+					rule= FileHosting::Rule.new(true)
+					rules.each do |r|
+						next if r.strip.empty?
+						rule.add_raw(r)
+					end
+				end
+				files= if tags.empty?
+					config.datasource.files(rule)
+				else
+					config.datasource.search_tags(tags, rule)
+				end
+				@body= files.collect { |f| "#{webroot}/files/#{f.uuid}\n" }.join
+				@size= @body.size
+			rescue RuleError => e
+				raise e unless e.rule == rule
+				@status= 400
+				@body= ""
+				@size= 0
+			end
 		end
 
 	end
 
 end
-
