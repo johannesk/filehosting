@@ -46,7 +46,7 @@ class String
 	end
 
 	def uri_encode
-		self.gsub(/[^a-z0-9\-_ ]/) do |c|
+		self.gsub(/[^a-zA-Z0-9\-_ ]/) do |c|
 			"%#{ c[0]<16 ? "0" : "" }#{ c[0].to_s(16).upcase }"
 		end.gsub(" ", "+")
 	end

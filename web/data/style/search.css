@@ -54,7 +54,7 @@ div.search_result h2 {
 
 div.search_result h3 {
 	font-size: 80%;
-	font-variant: monospace;
+	font-family: monospace;
 }
 
 div.search_result th {
@@ -67,7 +67,7 @@ div.search_result td {
 }
 
 div.search_result div.fileinfo {
-	clear: left;
+	clear: both;
 }
 
 div.search_result div.fileinfo+div.fileinfo {
@@ -92,4 +92,16 @@ div.search_result div.fileinfo div.actions li {
 	display: block;
 	padding: 5px;
 	margin: 0px;
+}
+
+div.download_box {
+	float: right;
+	width: 70%;
+	margin: 0px 0px 10px 10px;
+	padding: 3px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
+	font-size: 70%;
+	background-color: #FFD39B;
 }

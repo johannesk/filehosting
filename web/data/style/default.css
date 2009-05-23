@@ -4,6 +4,7 @@ body {
 	margin: 0px;
 	padding: 10px;
 	text-align: left;
+	font-family: serif;
 }
 
 a {
@@ -17,6 +18,27 @@ img {
 
 h1 {
 	font-size: 120%;
+	font-family: sans-serif;
+}
+
+h2 {
+	font-family: sans-serif;
+}
+
+h3 {
+	font-family: sans-serif;
+}
+
+h4 {
+	font-family: sans-serif;
+}
+
+h5 {
+	font-family: sans-serif;
+}
+
+h6 {
+	font-family: sans-serif;
 }
 
 h1 a {
@@ -79,4 +101,13 @@ div.license {
 div.license img {
 	float: left;
 	margin-right: 10px;
+}
+
+div.shell {
+	font-family: monospace;
+	border-width: 1px;
+	border-color: orange;
+	border-style: solid;
+	margin: 10px;
+	padding: 10px;
 }

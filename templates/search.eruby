@@ -1,4 +1,11 @@
 <div class="search_result">
+	<div class="download_box">
+		To download all files from this search result use:
+		<div class="shell">
+% require "filehosting/webdownloadlist"
+			wget -O - "<%= webroot %><%= WebDownLoadList.url(search, rule) %>" | wget -i - -N
+		</div>
+	</div>
 	<h1>search result for: <%= search.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
 % if rules
 % 	rules.each do |rule|

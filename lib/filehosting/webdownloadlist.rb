@@ -60,6 +60,16 @@ module FileHosting
 			end
 		end
 
+		def self.url(tags=[], rule= nil)
+			rules= if rule
+				"&rules="+
+				rule.conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" \n ").uri_encode
+			else
+				""
+			end
+			"/downloadlist?tags=" + tags.join(" ").uri_encode+rules
+		end
+
 	end
 
 end
