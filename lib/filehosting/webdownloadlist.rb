@@ -24,6 +24,7 @@
 require "filehosting/webpage"
 require "filehosting/rule"
 require "filehosting/ruleerror"
+require "filehosting/webfile"
 
 module FileHosting
 
@@ -50,7 +51,7 @@ module FileHosting
 				else
 					config.datasource.search_tags(tags, rule)
 				end
-				@body= files.collect { |f| "#{webroot}/files/#{f.uuid}\n" }.join
+				@body= files.collect { |f| webroot + WebFile.url(f) + "\n" }.join
 				@size= @body.size
 			rescue RuleError => e
 				raise e unless e.rule == rule

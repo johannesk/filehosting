@@ -190,6 +190,8 @@ module FileHosting
 				when "createfeed"
 					WebCreateFeedPage.new(config, tags, action, age)
 				end
+			when (direction.size == 3 and ["files", "fileinfo", "update", "remove"].include?(direction[0]))
+				WebRedirect.new(config, "/#{direction[0].uri_encode}/#{direction[1].uri_encode}")
 			when (direction.size == 2 and direction[0] == "files")
 				WebFile.new(config, direction[1], date)
 			when (direction.size == 2 and direction[0] == "fileinfo")

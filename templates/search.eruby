@@ -1,8 +1,8 @@
+% require "filehosting/webdownloadlist"
 <div class="search_result">
 	<div class="download_box">
 		To download all files from this search result use:
 		<div class="shell">
-% require "filehosting/webdownloadlist"
 			wget -O - "<%= webroot %><%= WebDownLoadList.url(search, rule) %>" | wget -i - -N
 		</div>
 	</div>

@@ -1,3 +1,4 @@
+% require "filehosting/webfile"
 <div class="fileinfo">
 	<h1>
 % mimefile= Pathname.new("web/data/images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
@@ -6,8 +7,8 @@
 % else
 		<img src="<%= webroot %>/images/mimetype/unknown.png" alt="<%= fileinfo.mimetype %>" />
 % end
-		<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><%= fileinfo.filename.to_html %></a>
-		<a href="<%= webroot %>/files/<%= fileinfo.uuid.to_html %>"><img src="<%= webroot %>/images/download.png" alt="download" /></a>
+		<a href="<%= webroot %><%= WebFile.url(fileinfo) %>"><%= fileinfo.filename.to_html %></a>
+		<a href="<%= webroot %><%= WebFile.url(fileinfo) %>"><img src="<%= webroot %>/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
 		<tr>

@@ -23,6 +23,7 @@
 
 require "filehosting/webpage"
 require "filehosting/nosuchfileerror"
+require "filehosting/fileinfo"
 
 module FileHosting
 
@@ -64,6 +65,13 @@ module FileHosting
 
 		def size
 			@fileinfo.size
+		end
+
+		def self.url(uuid, filename= nil)
+			unless FileInfo === uuid or filename
+				raise ArgumentError.new("fileinfo or filename must be given")
+			end
+			"/files/#{uuid.uuid}/#{(filename || uuid.filename).uri_encode}"
 		end
 
 	end
