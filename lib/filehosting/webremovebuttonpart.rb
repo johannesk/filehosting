@@ -22,14 +22,15 @@
 #
 
 require "filehosting/webbuttonpart"
+require "filehosting/webremovepage"
 
 module FileHosting
 
 	class WebRemoveButtonPart < WebButtonPart
 
-		def initialize(config, uuid)
-			super(config, "remove/#{uuid.uuid}") do
-				[!datasource.check_remove_file(uuid), "/remove/#{uuid.uuid}", "remove", "remove"]
+		def initialize(config, fileinfo)
+			super(config, "remove/#{fileinfo.uuid}") do
+				[!datasource.check_remove_file(fileinfo), WebRemovePage.url(fileinfo), "remove", "remove"]
 			end
 		end
 

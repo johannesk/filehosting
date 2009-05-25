@@ -234,9 +234,9 @@ module FileHosting
 				res= case
 				when (direction == ["add"] and (args.keys - ["filename", "tags", "date", "source", "filedata", "groups"]).empty?)
 					WebAddPage.new(config, args)
-				when (direction.size == 2 and direction[0] == "update" and (args.keys - ["filename", "tags", "time", "source", "filedata", "groups"]).empty?)
+				when ((2..3) === direction.size and direction[0] == "update" and (args.keys - ["filename", "tags", "time", "source", "filedata", "groups"]).empty?)
 					WebUpdatePage.new(config, direction[1], args)
-				when (direction.size == 2 and direction[0] == "remove" and args == { "sure" => "true" })
+				when ((2..3) === direction.size and direction[0] == "remove" and args == { "sure" => "true" })
 					WebRemovedPage.new(config, direction[1])
 				else
 					Web404Page.new(config)

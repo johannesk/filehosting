@@ -22,14 +22,15 @@
 #
 
 require "filehosting/webbuttonpart"
+require "filehosting/webupdatepage"
 
 module FileHosting
 
 	class WebUpdateButtonPart < WebButtonPart
 
-		def initialize(config, uuid)
-			super(config, "update/#{uuid.uuid}") do
-				[!datasource.check_update_fileinfo(uuid), "/update/#{uuid.uuid}", "update", "update"]
+		def initialize(config, fileinfo)
+			super(config, "update/#{fileinfo.uuid}") do
+				[!datasource.check_update_fileinfo(fileinfo), WebUpdatePage.url(fileinfo), "update", "update"]
 			end
 		end
 

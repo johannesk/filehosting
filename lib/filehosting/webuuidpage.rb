@@ -44,6 +44,18 @@ module FileHosting
 			super(config, title, body, *includes)
 		end
 
+		def self.url_prefix
+			self.to_s.downcase=~ /(^|::)web(\w+)page$/
+			$2
+		end
+
+		def self.url(uuid, filename= nil)
+			unless FileInfo === uuid or filename
+				raise ArgumentError.new("fileinfo or filename must be given")
+			end
+			"/#{url_prefix}/#{uuid.uuid}/#{(filename || uuid.filename).uri_encode}"
+		end
+
 	end
 
 end

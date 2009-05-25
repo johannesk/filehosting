@@ -1,4 +1,6 @@
 % require "filehosting/webfile"
+% require "filehosting/webfileinfopage"
+% require "filehosting/webupdatepage"
 <div class="update_form">
 	<h1>
 % mimefile= Pathname.new("images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
@@ -11,7 +13,7 @@
 		<a href="<%= webroot %><%= WebFile.url(fileinfo) %>"><img src="<%= webroot %>/images/download.png" alt="download" /></a>
 	</h1>
 	<table>
-		<form method="post" enctype="multipart/form-data" action="<%= webroot %>/update/<%= fileinfo.uuid.to_html %>">
+		<form method="post" enctype="multipart/form-data" action="<%= webroot %><%= WebUpdatePage.url(fileinfo) %>">
 % if check_info
 			<tr>
 				<th<%  if wrong_filename %> class="wrong_data"<% end %>>filename</th>
@@ -25,7 +27,7 @@
 % end
 			<tr>
 				<th>uuid</th>
-				<td><a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
+				<td><a href="<%= webroot %><%= WebFileInfoPage.url(fileinfo) %>"><%= fileinfo.uuid.to_s %></a></td>
 			</tr>
 % if check_info
 			<tr>

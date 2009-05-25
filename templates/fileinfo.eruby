@@ -1,4 +1,5 @@
 % require "filehosting/webfile"
+% require "filehosting/webfileinfopage"
 <div class="fileinfo">
 	<h1>
 % mimefile= Pathname.new("web/data/images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")
@@ -13,7 +14,7 @@
 	<table>
 		<tr>
 			<th>uuid</th>
-			<td><a href="<%= webroot %>/fileinfo/<%= fileinfo.uuid.to_s %>"><%= fileinfo.uuid.to_s %></a></td>
+			<td><a href="<%= webroot %><%= WebFileInfoPage.url(fileinfo) %>"><%= fileinfo.uuid.to_s %></a></td>
 		</tr>
 		<tr>
 			<th>tags</th>
