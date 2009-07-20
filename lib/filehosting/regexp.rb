@@ -1,4 +1,3 @@
-#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -22,20 +21,15 @@
 #++
 #
 
-require "filehosting/binenv"
-require "filehosting/httpmirror"
+class Regexp
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new("name")) do |env|
-	name= env.args.shift
-	mirror= FileHosting::HTTPMirror.new(env.config)
-	mirror.url_list(name).each do |url, pattern, tags, source|
-		puts url.to_s
-		print "\tpattern: "
-		puts pattern.inspect
-		print "\ttags:    "
-		puts tags.to_text
-
-		print "\tsource:  " if source
-		puts source if source
+	def to_text
+		if $human
+			"/#{source}/"
+		else
+			source
+		end
 	end
+
 end
+

@@ -61,7 +61,8 @@ module FileHosting
 		# The following 9 methods should be implemented by all
 		# child classes of Storage.
 
-		# Reads a record.
+		# Reads a record. Possible types are String, File and
+		# IO.
 		def read(prefix, name, type)
 			@count_read+= 1
 		end

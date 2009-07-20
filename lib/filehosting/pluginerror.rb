@@ -26,6 +26,11 @@ require "filehosting/errorwrapper"
 module FileHosting
 
 	class PluginError < ErrorWrapper
+
+		def to_s
+			"plugin error: #{super}"
+		end
+
 	end
 
 end

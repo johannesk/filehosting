@@ -194,8 +194,8 @@ module FileHosting
 				raise InternalDataCorruptionError unless Array === a
 				r= Hash.new
 				a.each do |b|
-					raise IntenralDataCorruption unless Array === b
-					raise IntenralDataCorruption unless b.size == 2
+					raise InternalDataCorruptionError unless Array === b
+					raise InternalDataCorruptionError unless b.size == 2
 					begin
 						uuid= UUID.parse(b[0])
 					rescue ArgumentError
