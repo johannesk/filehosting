@@ -140,7 +140,7 @@ module FileHosting
 				raise InternalDataCorruptionError
 			end
 			old_urls= files.values.collect do |fileinfo, data|
-				raise InternalDataCorruption unless String === data
+				raise InternalDataCorruptionError unless String === data
 				begin
 					URI.parse(data)
 				rescue URI::InvalidURIError
@@ -161,7 +161,7 @@ module FileHosting
 		def check_update(files)
 			result= []
 			files.values.each do |fileinfo, data|
-				raise InternalDataCorruption unless String === data
+				raise InternalDataCorruptionError unless String === data
 				begin
 					url= URI.parse(data)
 				rescue URI::InvalidURIError

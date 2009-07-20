@@ -36,6 +36,10 @@ FileHosting::BinEnv.new do |env|
 		case filename
 		when /^urllist\/(.*?)$/
 			name= $1.dir_decode
+			unless mirror.locations(name).empty?
+				STDERR.puts "not overwriting locations for '#{name}'"
+				next
+			end
 			data= FileHosting::YAMLTools.parse_array(httpmirrorstorage.read(filename, String), Array)
 			data.each do |a|
 				raise FileHosting::InternalDataCorruptionError unless a.size == 4
@@ -64,6 +68,10 @@ FileHosting::BinEnv.new do |env|
 			end
 		when /^filelist\/(.*?)$/
 			name= $1.dir_decode
+			unless mirror.locations(name).empty? and ! mirrorstorage.exists?("files/#{name.dir_encode}")
+				STDERR.puts "not overwriting files for '#{name}'"
+				next
+			end
 			data= FileHosting::YAMLTools.parse_array(httpmirrorstorage.read(filename, String), Array)
 			data.collect! do |a|
 				raise InternalDataCorruptionError unless a.size == 2

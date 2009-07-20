@@ -503,7 +503,7 @@ module FileHosting
 		end
 
 		def tag_from_name(name)
-			raise InternalDataCorruption unless name=~ /^\w+\/(.+?)$/
+			raise InternalDataCorruptioErrorn unless name=~ /^\w+\/(.+?)$/
 			$1
 		end
 

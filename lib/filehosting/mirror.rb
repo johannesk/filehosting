@@ -33,6 +33,19 @@ module FileHosting
 	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
 	autoload :PluginError, "filehosting/pluginerror"
 
+	# This class handles mirror locations. It remembers which
+	# locations to mirror. If asked it checks all files in the to
+	# be mirrored locations for changes.
+	#
+	# Every location gets a name. Multiple locations can have the
+	# same name. locations with the same name can not be checked
+	# for updates individually.
+	#
+	# This class does not know how to mirror. The mirroring itself
+	# is delegated to the mirroring plugins. To see how to write
+	# your own plugins look at MirrorPlugin and the existing
+	# plugin HTTPMirror. All added plugins should live in
+	# 'plugins/mirror/'.
 	class Mirror
 
 		def plugin_http
@@ -47,6 +60,7 @@ module FileHosting
 			super(*args)
 		end
 
+		# this methods should only be called from Observable
 		def update(*args)
 			check_plugin_error do
 				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless args.size == 3
@@ -65,12 +79,15 @@ module FileHosting
 			@update_list= []
 		end
 
+		# register a location to be mirrored
 		def register(name, location)
 			list= location_list(name)
 			list<< location
 			store_location_list(name, list)
 		end
 
+		# remove a location from the list of locations to be
+		# mirrored
 		def remove(name, location)
 			list= location_list(name)
 			list.delete_if do |l|
@@ -129,12 +146,15 @@ module FileHosting
 			end
 		end
 
-		def location_list(name)
+		# Returns an array of all locations to be mirrored
+		# for this name.
+		def locations(name)
 			list= @storage.read(location_list_name(name))
 			return [] unless list
 			list= YAMLTools.parse_array(list, MirrorLocation)
 			list
 		end
+		alias :location_list :locations
 
 		private
 
