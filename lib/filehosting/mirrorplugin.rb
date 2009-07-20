@@ -21,29 +21,44 @@
 #++
 #
 
+require "observer"
+
 module FileHosting
 
 	class MirrorPlugin
+
+		include Observable
+
+		# This method is used to notify the client of an
+		# success full action. Possible types are :create
+		# and :update.
+		def notify_observers(type, human_readable, uuid)
+			changed
+			super(type, human_readable, uuid)
+		end
 
 		def initialize(config)
 			@config= config
 		end
 
 		# This method should check for all new files in
-		# location. Files are of the following form:
+		# location. Files are all files which are already
+		# known files. Files are of the following form:
 		# { uuid => [fileinfo, data] }
-		# It should return [[fileinfo, filedata, data]] for
+		# It should return
+		# [[fileinfo, filedata, data, human_readable]] for
 		# all new files.
 		def check_new(location, files)
 			raise NotImplementedError
 		end
 
 		# This method should check for all changed files in
-		# location. Files are of the following form:
+		# files. Files are of the following form:
 		# { uuid => [fileinfo, data] }
-		# It should return [[fileinfo, filedata, data]] for
+		# It should return
+		# [[fileinfo, filedata, data, human_readable]] for
 		# all changed files.
-		def check_update(location, files)
+		def check_update(files)
 			raise NotImplementedError
 		end
 

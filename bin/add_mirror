@@ -29,7 +29,7 @@ require "filehosting/mirrorlocation"
 class AddArgReader < FileHosting::ConfigArgReader
 
 	def banner
-		super + " <name> <type> <location> <tag ... tag>"
+		super + " <name> <type> <location> <pattern> <tag ... tag>"
 	end
 
 	def help_source
@@ -42,7 +42,7 @@ class AddArgReader < FileHosting::ConfigArgReader
 	alias :switch_s :switch_source
 
 	def arg_count
-		(4..(1.0/0))
+		(5..(1.0/0))
 	end
 
 end
@@ -50,9 +50,10 @@ end
 FileHosting::BinEnv.new(AddArgReader.new) do |env|
 	name= env.args.shift
 	loc= FileHosting::MirrorLocation.new
-	loc.type= env.args.shift
+	loc.type= env.args.shift.to_sym
 	loc.location= env.args.shift
-	loc.tags= env.args.shift
+	loc.pattern= /#{env.args.shift}/
+	loc.tags= env.args
 	loc.source= env.config[:set_source]
 
 	mirror= FileHosting::Mirror.new(env.config)

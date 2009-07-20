@@ -26,11 +26,12 @@ require "filehosting/binenv"
 require "filehosting/mirror"
 require "filehosting/mirrorlocation"
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["name", "type", "location"])) do |env|
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["name", "type", "location", "pattern"])) do |env|
 	name= env.args.shift
 	loc= FileHosting::MirrorLocation.new
-	loc.type= env.args.shift
+	loc.type= env.args.shift.to_sym
 	loc.location= env.args.shift
+	loc.pattern= /#{env.args.shift}/
 
 	mirror= FileHosting::Mirror.new(env.config)
 	mirror.remove(name, loc)

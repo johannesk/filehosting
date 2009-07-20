@@ -23,6 +23,7 @@
 
 require "filehosting/hash"
 require "filehosting/yaml"
+require "filehosting/regexp"
 require "filehosting/internaldatacorruptionerror"
 
 require "yaml"
@@ -41,15 +42,19 @@ module FileHosting
 		# the location of the mirror
 		attr_accessor :location
 
+		# the pattern which all new filenames must match
+		attr_accessor :pattern
+
 		# which tags should the mirrored files have
 		attr_accessor :tags
 
 		# with what should the source be overwritten
 		attr_accessor :source
 
-		def initialize(type= nil, location= nil, tags= nil, source= nil)
+		def initialize(type= nil, location= nil, pattern= nil, tags= nil, source= nil)
 			@type= type
 			@location= location
+			@pattern= pattern
 			@tags= tags
 			@source= source
 		end
@@ -58,17 +63,27 @@ module FileHosting
 			{
 				:type     => @type,
 				:location => @location,
+				:pattern  => @pattern,
 				:tags     => @tags,
 				:source   => @source,
 			}
 		end
-		alias :to_yaml_properties :to_hash
 
-		def to_text
-			to_hash.to_text([:type, :location, :tags, :source])
+		def to_yaml_properties
+			{
+				"type"     => lambda { @type },
+				"location" => lambda { @location },
+				"pattern"  => lambda { @pattern.source },
+				"tags"     => lambda { @tags },
+				"source"   => lambda { @source },
+			}
 		end
 
-		def to_yaml_tye
+		def to_text
+			to_hash.to_text([:type, :location, :pattern, :tags, :source])
+		end
+
+		def to_yaml_type
 			"!filehosting/mirrorlocation"
 		end
 
@@ -81,6 +96,7 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "mirrorlocation") do |tag, val
 		res= FileHosting::MirrorLocation.new
 		res.type= value["type"].to_sym
 		res.location= value["location"].to_s
+		res.pattern= /#{value["pattern"].to_s}/
 		res.tags= value["tags"].collect { |x| x.to_s }
 		res.source= value["source"].to_s
 		res
