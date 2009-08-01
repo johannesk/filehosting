@@ -123,7 +123,7 @@ module FileHosting
 				do_check_return(lfiles, new_files) do |fileinfo, filedata, data, human_readable|
 					fileinfo.tags= self.class.grep_tags(loc.tags, human_readable.match(loc.pattern))
 					fileinfo.source= data
-					fileinfo.source= loc.source if loc.source
+					fileinfo.source= loc.source if loc.source and !loc.source.empty?
 					@config.datasource.add_file(fileinfo, filedata)
 					notify_observers(:create, human_readable, fileinfo.uuid) unless @update_list.include?(fileinfo.uuid)
 				end

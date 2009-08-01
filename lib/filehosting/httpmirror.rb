@@ -31,6 +31,7 @@ require "filehosting/string"
 require "erb"
 require "pathname"
 require "net/http"
+require "net/https"
 require "uri"
 require "uuidtools"
 
@@ -45,19 +46,34 @@ module FileHosting
 			@pages= Hash.new
 		end
 
+		# make a http get and returns the http response
+		def read_http(url, header= {})
+			url= URI.prase(url) unless URI === url
+			http= Net::HTTP.new(url.host, url.port)
+			http.use_ssl= true if url.scheme == "https"
+			http.start do
+				request = Net::HTTP::Get.new(url.path)
+				if url.user
+					request.basic_auth(url.user, url.password)
+				end
+				header.each do |key, val|
+					request[key]= val
+				end
+				http.request(request)
+			end
+		end
+
 		# make a http get and returns the body as string on
 		# success
-		def read(url)
+		def read(url, header= {})
 			found= @pages[url]
 			return found if found
-			url= URI.prase(url) unless URI === url
-			res= Net::HTTP.get_response(url)
-			case res
+			case res= read_http(url, header)
 			when Net::HTTPSuccess
 				@pages[url]= res.body
-				res.body
+				return @pages[url]
 			else
-				nil
+				return nil
 			end
 		end
 
@@ -88,21 +104,19 @@ module FileHosting
 			file= FileInfo.new
 			file.source= url.to_s
 			file.filename= Pathname.new(url.path).basename.to_s.uri_decode
-			Net::HTTP.get_response(url) do |res|
-				case res
-				when Net::HTTPSuccess
-					if res["Last-Modified"]
-						begin
-							file.user_time= Time.httpdate(res["Last-Modified"])
-						rescue ArgumentError
-							return nil
-						end
-						return [file, res.read_body]
+			case res= read_http(url)
+			when Net::HTTPSuccess
+				if res["Last-Modified"]
+					begin
+						file.user_time= Time.httpdate(res["Last-Modified"])
+					rescue ArgumentError
+						return nil
 					end
-					return false
-				else
-					return false
+					return [file, res.read_body]
 				end
+				return false
+			else
+				return false
 			end
 		end
 
@@ -110,25 +124,22 @@ module FileHosting
 		# returns false if no update was found
 		# returns the new filedata if file was updated
 		def update_file(file, url)
-			http= Net::HTTP.new(url.host, url.port)
-			http.request_get(url.path, {"If-Modified-Since" => file.user_time.httpdate}) do |res|
-				case res
-				when Net::HTTPSuccess
-					if res["Last-Modified"]
-						begin
-							time= Time.httpdate(res["Last-Modified"])
-							return if time <= file.user_time
-						rescue ArgumentError
-							return nil
-						end
-						file.user_time= time
-						return res.read_body
-					else
-						return false
+			case res= get_http(url, "If-Modified-Since" => file.user_time.httpdate)
+			when Net::HTTPSuccess
+				if res["Last-Modified"]
+					begin
+						time= Time.httpdate(res["Last-Modified"])
+						return if time <= file.user_time
+					rescue ArgumentError
+						return nil
 					end
+					file.user_time= time
+					return res.read_body
 				else
 					return false
 				end
+			else
+				return false
 			end
 		end
 
