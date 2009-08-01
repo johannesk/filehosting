@@ -430,29 +430,45 @@ module FileHosting
 			notify_observers("rules")
 		end
 
-		# check if something is allowed
+		# check if something is forbidden
+		# returns true if it is forbidden
+		# some rulesets need additional data to be evaluated
 		def check_rule(ruleset, data= Hash.new)
+			# root is allowed to do everything
 			return nil if user.username == "root"
+			# the count struct holds prepared rulesets
 			struct= count_struct
-			if struct and rules= struct.prepared_rules[ruleset]
-				rules.each do |rule|
-					res= rule.test(data)
-					return res unless res.nil?
-				end
-				return nil
+			prepared_rule(ruleset).each do |rule|
+				res= rule.test(data)
+				return res unless res.nil?
 			end
+			return nil
+		end
+		protected :check_rule
+
+		# returns a prepared rule
+		# Some data like the user does not change. There is
+		# no need to evaluate these kind of rules twice.
+		def prepared_rule(ruleset)
+			struct= count_struct
+			# test wether the ruleset is prepared
+			r= struct.prepared_rules[ruleset]
+			return r if r
 			rules= []
 			read_rules(ruleset).find do |rule|
 				res= rule.prepare({ "user" => @user })
+				# we don't need rules with no
+				# possible result
 				next if res.result.nil?
 				rules<< res
 				res.conditions.size == 0
 			end
 			struct.prepared_rules[ruleset]= rules
-			check_rule(ruleset, data)
 		end
-		protected :check_rule
+		protected :prepared_rule
 
+		# Raises an operation not permited error if the first
+		# argument is true
 		def check_raise(result, string)
 			raise OperationNotPermittedError.new(string) if result
 		end

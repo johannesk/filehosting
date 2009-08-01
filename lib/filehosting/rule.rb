@@ -62,8 +62,17 @@ module FileHosting
 			res= Rule.new(@result)
 			@conditions.each do |a, test, b|
 				begin
+					# all conditions are "and"
+					# related if one conditios is
+					# false: we can return the
+					#        empty rule
+					# true:  we don't need this
+					#        condition
 					return Rule.new(nil) unless test_condition(parse_operand(a, data), test, parse_operand(b, data))
 				rescue RuleOperandDataMissingError
+					# the condition needs to be
+					# evaluated later, when all
+					# data is available
 					res.add_condition(a, test, b)
 				end
 			end
