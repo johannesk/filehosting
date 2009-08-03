@@ -26,7 +26,8 @@ require "filehosting/uuid"
 
 require "observer"
 require "thread"
-require "text"
+
+autoload :Text, "text"
 
 module FileHosting
 

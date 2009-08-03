@@ -29,8 +29,8 @@ autoload :Password, "password"
 
 class AddUserArgReader < FileHosting::ConfigArgReader
 
-	def usage
-		super + "<username> <group ... group>"
+	def banner
+		super + " <username> <group ... group>"
 	end
 
 	def help_newpassword

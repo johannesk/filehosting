@@ -21,6 +21,38 @@
 #++
 #
 
+# we need to do this before any requires, so we can intercept
+# dependency problems
+module FileHosting
+
+	class BinEnv
+
+		def self.deps
+			{
+				"filemagic" => "ruby-filemagic",
+				"password" => "ruby-password",
+				"text" => "Text",
+				"uuidtools" => "uuidtools",
+			}
+		end
+
+	end
+
+end
+
+def require(file)
+	begin
+		super(file)
+	rescue LoadError => e
+		if name= FileHosting::BinEnv.deps[file]
+			puts "missing dependency: '#{name}'"
+			exit 3
+		else
+			raise e
+		end
+	end
+end
+
 require "filehosting/config"
 require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
@@ -98,3 +130,4 @@ module FileHosting
 	end
 
 end
+
