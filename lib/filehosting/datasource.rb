@@ -478,6 +478,111 @@ module FileHosting
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.
 
+		# Guesses possible tags, which could be meant for a
+		# given tag. The given tag does not need to be an
+		# existing tag. Returns an array of all possibilities
+		# sorted from most likely, to most unlikely.
+		def guess_tag(tag)
+			tags.collect do |x|
+			# get all distances to this tag
+				[did_you_mean_distance(tag, x), x]
+			end.select do |distance, x|
+			# only negative distances are used
+				distance <= 0
+			end.sort do |a, b|
+			# sort from most likely, to most unlikely
+				a[0] <=> b[0]
+			end.collect do |distacne, x|
+			# return only the tag
+				x
+			end
+		end
+
+		# Computes the did you mean distance between two
+		# strings. If the longest common subsequence (lcs)
+		# contains adjacent characters which where adjacent in
+		# the original strings, the distance will be lowered.
+		# If between two in the lcs adjacent character, or the
+		# beginning of the lcs and the first character, or the
+		# last character of the lcs and the end of the string,
+		# are other characters in the original strings, the
+		# distance will be raised. This is computed for every
+		# possible lcs (the lcs is not unique). The lowest
+		# distance found for an lcs is taken as the original
+		# strings distance.
+		def did_you_mean_distance(a, b)
+			a= a.downcase
+			b= b.downcase
+			lcs(a, b).collect do |lcs|
+				res= 0
+				(lcs.size-1).times do |i|
+				# find all character which are
+				# adjacent in the lcs and the original
+				# strings
+					res-= 2 if lcs[i][0]+1 == lcs[i+1][0] and lcs[i][1]+1 == lcs[i+1][1]
+				end
+				lcs2= [[-1, -1]] + lcs + [[a.size, b.size]]
+				(lcs.size+1).times do |i|
+				# calculate whether between two in the
+				# lcs adjacent characters are
+				# characters in the original strings
+					u1= lcs2[i][0]+1 - lcs2[i+1][0]
+					u2= lcs2[i][1]+1 - lcs2[i+1][1]
+					res+= case
+					when u1 == 0 && u2 == 0
+					# no characters between
+						0
+					when u1 == 0 || u2 == 0
+					# characters between in one
+					# string
+						1
+					else
+					# characters between in both
+					# strings
+						2
+					end
+				end
+				res
+			end.min
+		end
+
+		# Returns all possibilities for the lcs of the two
+		# strings a and b. The lcs is returned as an array of
+		# positions in both strings.
+		# ex. "abc", "12b3" a possible lcs is "b" which will
+		# be returned as [[1,2]] which means it consists of
+		# the character which can be found at "abc"[1] and
+		# "12b3[2]
+		def lcs(a, b)
+			# the lcs for a[0..i], "" is ""
+			arr= Array.new(a.size + 1, [[]])
+			1.upto(b.size) do |ii|
+				tmp= [[]]
+				1.upto(a.size) do |i|
+				# calculate the lcs for a[0..i], b[0..ii]
+					v= arr[i]
+					case v[0].size <=> (arr[i-1][0].size)
+					when -1
+						v= arr[i-1]
+					when 0
+						v= (v + arr[i-1]).uniq
+					end
+					if a[i-1] == b[ii-1]
+					# we found a common character
+						case v[0].size <=> (tmp[0].size + 1)
+						when -1
+							v= tmp.collect { |ar| ar + [[i-1, ii-1]] }
+						when 0
+							v= (v + tmp.collect { |ar| ar + [[i-1, ii-1]] }).uniq
+						end
+					end
+					tmp= arr[i]
+					arr[i]= v
+				end
+			end
+			arr[a.size]
+		end
+
 		# Returns a better set of search tags
 		def optimize_search(*search)
 			search.flatten!
