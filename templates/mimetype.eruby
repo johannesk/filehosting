@@ -1,0 +1,6 @@
+% mimefile= Pathname.new("web/data/images/mimetype")+(mimetype.sub("/", "-")+".png")
+% if mimefile.file?
+		<img src="<%= webroot %>/<%= mimefile.relative_path_from(Pathname.new("web/data")).to_html %>" alt="<%= mimetype.to_html %>" />
+% else
+		<img src="<%= webroot %>/images/mimetype/unknown.png" alt="<%= mimetype %>" />
+% end

@@ -23,34 +23,15 @@
 
 require "filehosting/webpart"
 require "filehosting/html"
-require "filehosting/fileinfo"
-
-require "uuidtools"
 
 module FileHosting
 
 	# the fileinfo part
-	class WebFileInfoPart < WebPart
+	class WebMimeTypePart < WebPart
 
-		def initialize(config, fileinfo, small= false)
-			uuid= case fileinfo
-			when UUID
-				fileinfo
-			when FileInfo
-				fileinfo.uuid
-			else
-				raise NotImplementedError
-			end
-			if small
-				super(config, "smallfileinfo/#{uuid}") do
-					fileinfo= block.call unless FileInfo === fileinfo
-					HTML.use_template("smallfileinfo.eruby", binding)
-				end
-			else
-				super(config, "fileinfo/#{uuid}") do
-					fileinfo= block.call unless FileInfo === fileinfo
-					HTML.use_template("fileinfo.eruby", binding)
-				end
+		def initialize(config, mimetype)
+			super(config, "mimetype/#{mimetype}") do
+				HTML.use_template("mimetype.eruby", binding)
 			end
 		end
 

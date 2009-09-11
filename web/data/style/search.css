@@ -66,32 +66,41 @@ div.search_result td {
 	padding-left: 10px;
 }
 
-div.search_result div.fileinfo {
+div.search_result div.smallfileinfo {
+	border-color: orange;
+	border-width: 1px;
+	border-style: solid;
+	min-height: 48px;
 	clear: both;
 }
 
-div.search_result div.fileinfo+div.fileinfo {
-	padding-top: 10px;
+div.search_result div.smallfileinfo + div.smallfileinfo {
+	margin-top: 5px;
 }
 
-div.search_result div.fileinfo table {
-	float: left;
+div.search_result div.smallfileinfo div {
+	display: table-cell;
+	vertical-align: top;
 }
 
-div.search_result div.fileinfo div.actions {
-	text-align: right;
+div.search_result div.smallfileinfo div.namesizetime {
+	font-size: 60%;
+	padding: 0px 0px 5px 5px;
 }
 
-ul {
-	list-style-type: none;
-	padding: 0px;
+div.search_result div.smallfileinfo div.namesizetime h1 {
 	margin: 0px;
-}
-
-div.search_result div.fileinfo div.actions li {
-	display: block;
 	padding: 5px;
-	margin: 0px;
+	font-size: 180%;
+}
+
+div.search_result div.smallfileinfo div.tags {
+	width: 100%;
+	padding: 5px 0px 5px 5px;
+}
+
+div.search_result div.smallfileinfo div.info {
+	padding: 8px;
 }
 
 div.download_box {

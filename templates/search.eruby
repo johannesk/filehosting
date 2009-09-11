@@ -14,6 +14,6 @@
 % end
 	<h2><%= search_result.size %> Files found</h2>
 % search_result.each do |fileinfo|
-	<%= use_part(WebFileInfoPart, fileinfo) %>
+	<%= use_part(WebFileInfoPart, fileinfo, true) %>
 % end
 </div>

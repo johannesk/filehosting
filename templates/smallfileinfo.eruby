@@ -1,0 +1,27 @@
+% require "filehosting/webfile"
+% require "filehosting/webfileinfopage"
+% require "filehosting/webmimetypepart"
+% require "filehosting/time"
+<div class="smallfileinfo">
+	<div class="mimetype">
+		<%= use_part(WebMimeTypePart, fileinfo.mimetype) %>
+	</div>
+	<div class="namesizetime">
+		<h1>
+% filename= fileinfo.filename
+% if filename.size > 50
+% 	filename= filename[0..49]+"…"
+% end
+			<a href="<%= webroot %><%= WebFile.url(fileinfo) %>"><%= filename.to_html %></a>
+		</h1>
+		<%= fileinfo.size.to_html.gsub(/\s/, "&nbsp;") %>&nbsp;&nbsp;<%= fileinfo.user_time.to_html.gsub(/\s/, "&nbsp;")%>
+	</div>
+	<div class="tags">
+		<%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %>
+	</div>
+	<div class="info">
+		<a href="<%= webroot %><%= WebFileInfoPage.url(fileinfo) %>">
+			<img alt="more info" src="<%= webroot %>/images/info.png" />
+		</a>
+	</div>
+</div>

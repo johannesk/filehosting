@@ -32,5 +32,9 @@ class Time
 		Time.local($3, $2, $1, $4, $5, $6)
 	end
 
+	def to_text
+		strftime("%c")
+	end
+
 end
 
