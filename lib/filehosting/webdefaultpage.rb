@@ -39,11 +39,35 @@ module FileHosting
 			@header.merge(header) unless header.nil?
 			@status= status unless status.nil?
 			@cachable= cachable unless cachable.nil?
-			@body= use_part(WebDefaultPart, title, body, includes)
+			@body= self.class.indent(use_part(WebDefaultPart, title, body, includes))
 		end
 
 		def size
 			@body.size
+		end
+
+		def self.indent(html)
+			indent= 0
+			html.collect do |line|
+				line=~ /^\t*(.*?)\n?$/
+				line= $1
+				offset= case line
+				when ""
+				# remove empty lines
+					next ""
+				when /^<[a-z]+(\s+[a-z]+=\"[^>]*?\")*\s*>$/
+				# start tag found
+					indent+= 1
+					-1
+				when /^<\/[a-z]+>$/
+				# end tag found
+					indent-= 1 if indent > 0
+					0
+				else
+					0
+				end
+				"\t"*(indent+offset) + line + "\n"
+			end.join
 		end
 
 	end
