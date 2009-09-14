@@ -43,6 +43,31 @@ module FileHosting
 				body= HTML.use_template("search_new.eruby", binding)
 			else
 				begin
+					tags= config.datasource.tags
+
+					# mark all non existing tags
+					tag_exists= Hash.new(true)
+					search.each do |s|
+						tag_exists[s]= false unless tags.include?(s)
+					end
+
+					guessed_tags= Hash.new([])
+					search.each_with_index do |s, i|
+						guessed_tags[s]= config.datasource.guess_tag(s)
+						if !tag_exists[s] and guessed_tags[s][0] and s.downcase == guessed_tags[s][0].downcase
+						# automaticly correct
+						# in case of wrong
+						# case
+							new= guessed_tags[s].delete_at(0)
+							search[i]= new
+							guessed_tags[new]= guessed_tags[s]
+							guessed_tags.delete(s)
+							tag_exists.delete(s)
+						end
+					end
+
+					# Create the rule, in case the
+					# user gave one.
 					rule= nil
 					if rules
 						rule= FileHosting::Rule.new(true)
@@ -51,7 +76,17 @@ module FileHosting
 							rule.add_raw(r)
 						end
 					end
-					search_result= config.datasource.search_tags(search, rule)
+
+					# If one search tag does not
+					# exist, no search is needed,
+					# Nothing would be found if
+					# searched.
+					search_result= if tag_exists.keys.size == 0
+						config.datasource.search_tags(search, rule)
+					else
+						[]
+					end
+
 					body= HTML.use_template("search.eruby", binding)
 				rescue RuleError => e
 					raise e unless e.rule == rule
@@ -61,6 +96,17 @@ module FileHosting
 				end
 			end
 			super(config, title, body, "search.css")
+		end
+
+		def self.url(tags=[], rule= nil)
+			tags= [tags].flatten
+			rules= if rule
+				"&rules="+
+				rule.conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" \n ").uri_encode
+			else
+				""
+			end
+			"/search?tags=" + tags.join(" ").uri_encode+rules
 		end
 
 	end

@@ -1,3 +1,5 @@
+% require "filehosting/websearchpage"
+% require "filehosting/rule"
 <form method="get" action="<%= webroot %>/search">
 	<div class="search_box">
 		<h1>search:</h1>
@@ -29,13 +31,13 @@
 		</table>
 % end
 % if !rules
-		<p><a href="<%= webroot %>/search?rules=">advanced search</a></p>
+		<p><a href="<%= webroot %><%= WebSearchPage.url([], Rule.new) %>">advanced search</a></p>
 % end
 		<div class="tags">
 			<h1><a href="<%= webroot %>/tags">available tags:</a></h1>
 			<ul>
 % tags.each do |tag|
-				<li><a href="<%= webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></li>
+				<li><a href="<%= webroot %><%= WebSearchPage.url(tag) %>"><%= tag.to_html %></a></li>
 % end
 			</ul>
 		</div>

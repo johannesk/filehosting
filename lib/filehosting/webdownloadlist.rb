@@ -62,6 +62,7 @@ module FileHosting
 		end
 
 		def self.url(tags=[], rule= nil)
+			tags= [tags].flatten
 			rules= if rule
 				"&rules="+
 				rule.conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" \n ").uri_encode

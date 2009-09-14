@@ -84,6 +84,12 @@ module FileHosting
 			datasource.user
 		end
 
+		# Each WebPage child should implement how to build the
+		# url to reach it.
+		def self.url(*args)
+			raise NotImplementedError
+		end
+
 	end
 
 end

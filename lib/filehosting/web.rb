@@ -148,23 +148,13 @@ module FileHosting
 				WebTagsPage.new(config)
 			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
-				better= @config.datasource.optimize_search(tags)
-				if better != tags
-					rules= if args["rules"]
-						"&rules=#{args["rules"].uri_encode}" if args["rules"]
-					else
-						""
-					end
-					WebRedirect.new(config, "/#{direction[0]}?tags=" + better.join(" ").uri_encode+rules)
-				else
-					rules= nil
-					rules= args["rules"].split("\n") if args["rules"]
-					case direction[0]
-					when "search"
-						WebSearchPage.new(config, tags, rules)
-					when "downloadlist"
-						WebDownLoadList.new(config, tags, rules)
-					end
+				rules= nil
+				rules= args["rules"].split("\n") if args["rules"]
+				case direction[0]
+				when "search"
+					WebSearchPage.new(config, tags, rules)
+				when "downloadlist"
+					WebDownLoadList.new(config, tags, rules)
 				end
 			when (["feed", "createfeed"].include?(direction[0]) and (args.keys - ["tags", "action", "age", "file_create", "file_update", "file_replace", "file_remove"]).empty?)
 				tags= (args["tags"] || "").split(" ")

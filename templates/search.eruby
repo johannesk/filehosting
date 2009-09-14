@@ -1,12 +1,24 @@
 % require "filehosting/webdownloadlist"
+% require "filehosting/websearchpage"
 <div class="search_result">
 	<div class="download_box">
-		To download all files from this search result use:
 		<div class="shell">
 			wget -O - "<%= webroot %><%= WebDownLoadList.url(search, rule) %>" | wget -i - -N
 		</div>
 	</div>
-	<h1>search result for: <%= search.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %></h1>
+	<h1>search result</h1>
+	<div class="search_tags">
+		<% search.each_with_index do |s, i| %>
+			<div class="tag_box">
+				<a class="<% unless tag_exists[s] %>no_<% end %>tag" href="<%= WebSearchPage.url(search.reject { |x| x==s }, rule) %>"><%= s.to_html %><img alt="-" src="<%= webroot %>/images/remove_small.png" /></a>
+% 				new= search.clone
+				<% guessed_tags[s].each do |guessed| %>
+% 					new[i]= guessed
+					<a class="guessed_tag" href="<%= WebSearchPage.url(new, rule) %>"><%= guessed.to_html %></a>
+				<% end %>
+			</div>
+		<% end %>
+	</div>
 % if rules
 % 	rules.each do |rule|
 	<h3><%= rule.to_html %></h3>

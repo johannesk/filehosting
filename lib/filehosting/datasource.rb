@@ -483,18 +483,29 @@ module FileHosting
 		# existing tag. Returns an array of all possibilities
 		# sorted from most likely, to most unlikely.
 		def guess_tag(tag)
+			used= [tag]
 			tags.collect do |x|
 			# get all distances to this tag
 				[did_you_mean_distance(tag, x), x]
 			end.select do |distance, x|
 			# only negative distances are used
-				distance <= 0
+				distance < 0
 			end.sort do |a, b|
 			# sort from most likely, to most unlikely
 				a[0] <=> b[0]
 			end.collect do |distacne, x|
 			# return only the tag
 				x
+			end.reject do |x|
+			# no tag should be twice in the list, this
+			# could happen through tagaliases
+				real= real_tag(x)
+				if used.include?(real)
+					true
+				else
+					used<< real
+					false
+				end
 			end
 		end
 

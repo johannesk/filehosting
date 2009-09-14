@@ -1,3 +1,4 @@
+% require "filehosting/websearchpage"
 <div class="tags">
 	<h1>Tags</h1>
 	<table class="sortable" id="tags">
@@ -5,15 +6,15 @@
 			<th class="tag">tag</th>
 			<th class="description">description</th>
 		</tr>
-% tags.each do |tag|
-		<tr>
-			<td class="tag"><a href="<%= webroot %>/search?tags=<%= tag.to_html %>"><%= tag.to_html %></a></td>
-% 	if target= datasource.tag_alias(tag)
-			<td class="alias">→ <%= target.to_html %></td>
-% 	else
-			<td class="description"><%= datasource.taginfo(tag).to_html %></td>
-% 	end
-		</tr>
-% end
+% 		tags.each do |tag|
+			<tr>
+				<td class="tag"><a href="<%= webroot %><%= WebSearchPage.url(tag) %>"><%= tag.to_html %></a></td>
+%			 	if target= datasource.tag_alias(tag)
+					<td class="alias">→ <%= target.to_html %></td>
+%			 	else
+					<td class="description"><%= datasource.taginfo(tag).to_html %></td>
+% 				end
+			</tr>
+% 		end
 	</table>
 </div>

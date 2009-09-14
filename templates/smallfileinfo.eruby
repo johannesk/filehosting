@@ -17,7 +17,9 @@
 		<%= fileinfo.size.to_html.gsub(/\s/, "&nbsp;") %>&nbsp;&nbsp;<%= fileinfo.user_time.to_html.gsub(/\s/, "&nbsp;")%>
 	</div>
 	<div class="tags">
-		<%= fileinfo.tags.collect { |t| t.to_html }.collect { |t| "<a href=\"#{webroot}/search?tags=#{t}\">#{t}</a>" }.join(", ") %>
+		<% fileinfo.tags.each do |t| %>
+			<a href="<%= webroot %><%= WebSearchPage.url(t) %>"><%= t.to_html %></a>,
+		<% end %>
 	</div>
 	<div class="info">
 		<a href="<%= webroot %><%= WebFileInfoPage.url(fileinfo) %>">

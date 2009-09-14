@@ -11,7 +11,7 @@
 	<entry>
 % 	event_name= event.action.to_s.sub(/^\w+_/, "")
 		<title><%= event_name %>: <%= event.entity.filename.to_html %></title>
-		<link href="<%= webroot %><%= WebFileInfoPage.url(event.entitiy) %>" />
+		<link href="<%= webroot %><%= WebFileInfoPage.url(event.entity) %>" />
 		<id><%= webroot %>/namespace/feedentry/<%= event.entity.uuid.to_s.uri_encode %>/<%= event.time.to_f %></id>
 		<updated><%= event.time.xmlschema %></updated>
 		<author>
