@@ -1,0 +1,12 @@
+<div class="search_tags">
+	<% tags.each_with_index do |tag, i| %>
+		<div class="tag_box">
+			<a class="<% unless tag_exists[tag] %>no_<% end %>tag" href="<%= build_url(tags.reject { |x| x==tag }) %>"><%= tag.to_html %><img alt="-" src="<%= webroot %>/images/remove_small.png" /></a>
+% 				new= tags.clone
+			<% guessed_tags[tag].each do |guessed| %>
+% 					new[i]= guessed
+				<a class="guessed_tag" href="<%= build_url(new) %>"><%= guessed.to_html %></a>
+			<% end %>
+		</div>
+	<% end %>
+</div>

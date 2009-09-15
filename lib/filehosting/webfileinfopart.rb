@@ -29,7 +29,7 @@ require "uuidtools"
 
 module FileHosting
 
-	# the fileinfo part
+	# Displays information about a file as part of a webpage.
 	class WebFileInfoPart < WebPart
 
 		def initialize(config, fileinfo, small= false)

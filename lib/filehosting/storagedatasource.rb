@@ -55,7 +55,11 @@ module FileHosting
 			super(config)
 		end
 
+		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
+			tags.each do |tag|
+				return [] unless tag_exists?(tag)
+			end
 			tags= tags.clone
 			tags.collect! { |t| real_tag(t) }
 			super(tags, rule)
@@ -66,7 +70,11 @@ module FileHosting
 			search_finalize(res, rule)
 		end
 
+		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule= nil)
+			tags.each do |tag|
+				return [] unless tag_exists?(tag)
+			end
 			tags= tags.clone
 			tags.collect! { |t| real_tag(t) }
 			super(tags, rule)
@@ -116,10 +124,16 @@ module FileHosting
 			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
 		end
 
+		# returns weather this tag exists
+		def tag_exists?(tag)
+			super(tag)
+			@storage.index_exists?(tag_name(tag))
+		end
+
 		# sets a tag as an alias to another tag
 		def set_tag_alias(tag, target)
 			super(tag, target)
-			raise TagExistsError.new(tag) if @storage.index_exists?(tag_name(tag))
+			raise TagExistsError.new(tag) if tag_exists?(tag)
 			@storage.store_data(tag_alias_name(tag), target)
 		end
 

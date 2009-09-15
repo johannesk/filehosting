@@ -126,6 +126,12 @@ module FileHosting
 			register_op("tags")
 		end
 
+		# returns weather this tag exists
+		def tag_exists?(tag)
+			check_raise(check_tags, "tag_exists?(#{tag})")
+			register_op("tags")
+		end
+
 		# returns all tags which are not symlinks
 		def real_tags
 			check_raise(check_tags, "real_tags()")

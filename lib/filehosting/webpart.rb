@@ -29,13 +29,14 @@ module FileHosting
 		attr_reader :config
 		attr_reader :body
 
-		def initialize(config, name, &block)
+		def initialize(config, name)
 			@config= config
 			name= "webpart/#{config.datasource.user.username}/#{name}"
 			@body= config.cache.retrieve(name) if cachable
 			if @body
 				config.datasource.register_op(config.cache.tags(name))
 			else
+				raise ArgumentError.new("a block must be given if @body is not set") unless block_given?
 				tags= config.datasource.count do
 					@body= yield
 				end.keys
@@ -45,7 +46,11 @@ module FileHosting
 
 		def use_part(partclass, *args)
 			begin
-				part= partclass.new(config, *args)
+				part= if block_given?
+					partclass.new(config, *args) { |*x| yield(*x) }
+				else
+					partclass.new(config, *args)
+				end
 			rescue ArgumentError
 				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
 			end
