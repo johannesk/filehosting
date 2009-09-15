@@ -71,11 +71,11 @@ module FileHosting
 				unless wrong_filename or wrong_tags or wrong_source or wrong_filedata
 					config.datasource.add_file(fileinfo, file)
 					@status= 201
-					super(config, "added file", HTML.use_template("fileinfo.eruby", binding), "fileinfo.css")
+					super(config, "added file", HTML.use_template("fileinfo.eruby", binding))
 					return
 				end
 			end
-			super(config, "add file", HTML.use_template("add.eruby", binding), "add.css")
+			super(config, "add file", HTML.use_template("add.eruby", binding))
 		end
 
 	end

@@ -34,14 +34,14 @@ module FileHosting
 		attr_reader :uuid
 
 		def initialize(config, uuid, *includes, &block)
-			@config= config
-			begin
-				@uuid= UUID.parse(uuid)
-			rescue ArgumentError
-				@status= 404
+			super(config) do
+				begin
+					@uuid= UUID.parse(uuid)
+				rescue ArgumentError
+					@status= 404
+				end
+				yield @uuid
 			end
-			title, body= yield @uuid
-			super(config, title, body, *includes)
 		end
 
 		def self.url_prefix

@@ -100,6 +100,7 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
+			STDERR.puts tags
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
@@ -670,7 +671,7 @@ module FileHosting
 		end
 
 		def global_name
-			"FileHosting::DataSource?#{self.object_id}"
+			:"FileHosting::DataSource?#{self.object_id}"
 		end
 		protected :global_name
 

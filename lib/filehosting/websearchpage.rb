@@ -32,40 +32,41 @@ module FileHosting
 	class WebSearchPage < WebDefaultPage
 
 		def initialize(config, search=[], rules= nil)
-			@config= config
-			search.flatten!
-			title= "search"
-			title+= ": #{search.join(", ")}" unless search.empty?
-			error= nil
-			if search.empty?
-				tags= config.datasource.real_tags.sort
-				search= config[:default_search]
-				body= HTML.use_template("search_new.eruby", binding)
-			else
-				begin
-					# Create the rule, in case the
-					# user gave one.
-					rule= nil
-					if rules
-						rule= FileHosting::Rule.new(true)
-						rules.each do |r|
-							next if r.strip.empty?
-							rule.add_raw(r)
+			super(config) do
+				search.flatten!
+				title= "search"
+				error= nil
+				if search.empty?
+					tags= config.datasource.real_tags.sort
+					search= config[:default_search]
+					[tilte, HTML.use_template("search_new.eruby", binding)]
+				else
+					title+= ": #{search.join(", ")}"
+					begin
+						# Create the rule, in case the
+						# user gave one.
+						rule= nil
+						if rules
+							rule= FileHosting::Rule.new(true)
+							rules.each do |r|
+								next if r.strip.empty?
+								rule.add_raw(r)
+							end
 						end
+
+						# do the search
+						STDERR.puts "t: #{search.inspect}"
+						search_result= config.datasource.search_tags(search, rule)
+
+						[title, HTML.use_template("search.eruby", binding)]
+					rescue RuleError => e
+						raise e unless e.rule == rule
+						error= e.to_s
+						tags= config.datasource.tags.sort
+						[title, HTML.use_template("search_new.eruby", binding)]
 					end
-
-					# do the search
-					search_result= config.datasource.search_tags(search, rule)
-
-					body= HTML.use_template("search.eruby", binding)
-				rescue RuleError => e
-					raise e unless e.rule == rule
-					error= e.to_s
-					tags= config.datasource.tags.sort
-					body= HTML.use_template("search_new.eruby", binding)
 				end
 			end
-			super(config, title, body, "search.css")
 		end
 
 		def self.url(tags=[], rule= nil)

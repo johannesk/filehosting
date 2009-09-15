@@ -57,6 +57,13 @@ module FileHosting
 			part.body
 		end
 
+		# Includes a stylesheet or javascript file into the
+		# page.
+		def use(usethis)
+			webpage= Thread.current[:"filehosting/webpage"]
+			webpage[-1].use(usethis) if webpage and webpage.size > 0
+		end
+
 		def cachable
 			true
 		end

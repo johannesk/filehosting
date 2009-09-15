@@ -50,7 +50,7 @@ module FileHosting
 				tags.each_with_index do |tag, i|
 					# get the guessed tags
 					guessed_tags[tag]= config.datasource.guess_tag(tag)
-					if !tag_exists[tag] and guessed_tags[tag][0] and s.downcase == guessed_tags[tag][0].downcase
+					if !tag_exists[tag] and guessed_tags[tag][0] and tag.downcase == guessed_tags[tag][0].downcase
 					# automaticly correct
 					# in case of wrong
 					# case

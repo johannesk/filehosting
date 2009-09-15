@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Author:: Johannes Krude
 # Copyright:: (c) Johannes Krude 2009
@@ -21,20 +22,36 @@
 #++
 #
 
-require "filehosting/webdefaultpage"
-require "filehosting/html"
-
-module FileHosting
-
-	# A tag overview page
-	class WebTagsPage < WebDefaultPage
-
-		def initialize(config)
-			@config= config
-			tags= config.datasource.tags.sort
-			super(config, "tags", HTML.use_template("tags.eruby", binding))
-		end
-
-	end
-
+if ARGV.size != 0
+	STDERR.puts "usage: ./remove_unused_date.rb"
+	exit 1
 end
+
+require "pathname"
+
+$files= []
+Pathname.new(".").children.each do |file|
+	next unless file.file?
+	if file.basename == file.read
+		$files<< file.basename
+	end
+end
+
+def find_files(file)
+	case
+	when file.directory?
+		file.children.each do |child|
+			find_files(child)
+		end
+	when file.symlink?
+		$files.delete(file.readlink.basename)
+	else
+		STDERR.puts "file '#{file}' does not exist"
+	end
+end
+
+
+find_files(Pathname.new("date"))
+$files.each do |file|
+	puts file
+	file.delete

@@ -1,3 +1,5 @@
+% use "createfeed.css"
+% use "cretaefeed.js"
 <div class="createfeed">
 	<h1>Create Feed</h1>
 	<div class="url" id="feedurl">

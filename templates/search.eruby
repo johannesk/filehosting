@@ -1,5 +1,6 @@
 % require "filehosting/webdownloadlist"
 % require "filehosting/websearchpage"
+% use "search.css"
 <div class="search_result">
 	<div class="download_box">
 		<div class="shell">

@@ -32,9 +32,8 @@ module FileHosting
 
 		attr_reader :fileinfo
 
-		def initialize(config, uuid, *includes)
-			includes= ["fileinfo.css"] unless block_given?
-			super(config, uuid, *includes) do |uuid|
+		def initialize(config, uuid)
+			super(config, uuid) do |uuid|
 				begin
 					@fileinfo= config.datasource.fileinfo(uuid)
 				rescue NoSuchFileError

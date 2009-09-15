@@ -31,7 +31,7 @@ module FileHosting
 	class WebUpdatePage < WebFileInfoPage
 
 		def initialize(config, uuid, values= nil)
-			super(config, uuid, "update.css") do |fileinfo|
+			super(config, uuid) do |fileinfo|
 				check_info= !config.datasource.check_update_fileinfo(fileinfo)
 				check_data= !config.datasource.check_update_filedata(fileinfo)
 				unless check_info or check_data

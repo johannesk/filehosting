@@ -1,3 +1,4 @@
+% use "tagsearchpart.css"
 <div class="search_tags">
 	<% tags.each_with_index do |tag, i| %>
 		<div class="tag_box">

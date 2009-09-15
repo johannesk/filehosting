@@ -1,6 +1,7 @@
 % require "filehosting/webfile"
 % require "filehosting/webfileinfopage"
 % require "filehosting/webremovepage"
+% use "remove.css"
 <div class="remove_form">
 	<h1>Do you realy want to remove ‘<%= fileinfo.uuid.to_html %>’?</h1>
 	<form method="post" action="<%= webroot %><%= WebRemovePage.url(fileinfo) %>">

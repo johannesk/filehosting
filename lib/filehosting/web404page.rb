@@ -33,7 +33,7 @@ module FileHosting
 		def initialize(config)
 			@config= config
 			error= "file not found"
-			super(config, "file not found", HTML.use_template("error.eruby", binding), "error.css")
+			super(config, "file not found", HTML.use_template("error.eruby", binding))
 		end
 
 		def status

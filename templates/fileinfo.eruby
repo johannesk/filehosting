@@ -2,6 +2,7 @@
 % require "filehosting/webfileinfopage"
 % require "filehosting/webmimetypepart"
 % require "filehosting/websearchpage"
+% use "fileinfopart.css"
 <div class="fileinfo">
 	<h1>
 		<%= use_part(WebMimeTypePart, fileinfo.mimetype) %>

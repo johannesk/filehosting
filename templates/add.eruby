@@ -1,3 +1,4 @@
+% use "add.css"
 <div class="add_form">
 	<h1>add File</h1>
 	<table>

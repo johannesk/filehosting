@@ -1,6 +1,7 @@
 % require "filehosting/webfile"
 % require "filehosting/webfileinfopage"
 % require "filehosting/webupdatepage"
+% use "update.css"
 <div class="update_form">
 	<h1>
 % mimefile= Pathname.new("images/mimetype")+(fileinfo.mimetype.sub("/", "-")+".png")

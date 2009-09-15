@@ -1,5 +1,6 @@
 % require "filehosting/websearchpage"
 % require "filehosting/rule"
+% use "newsearch.css"
 <form method="get" action="<%= webroot %>/search">
 	<div class="search_box">
 		<h1>search:</h1>

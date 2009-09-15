@@ -31,7 +31,7 @@ module FileHosting
 
 		def initialize(config, tags, action, age)
 			@config= config
-			super(config, "create Feed", HTML.use_template("createfeed.eruby", binding), "createfeed.css", "createfeed.js")
+			super(config, "create Feed", HTML.use_template("createfeed.eruby", binding))
 		end
 
 	end

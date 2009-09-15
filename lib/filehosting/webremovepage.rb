@@ -33,7 +33,7 @@ module FileHosting
 	class WebRemovePage < WebFileInfoPage
 
 		def initialize(config, uuid)
-			super(config, uuid, "remove.css") do |fileinfo|
+			super(config, uuid) do |fileinfo|
 				if config.datasource.check_remove_file(fileinfo)
 					raise OperationNotPermittedError.new("remove(#{uuid})")
 				end

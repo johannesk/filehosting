@@ -1,4 +1,6 @@
 % require "filehosting/websearchpage"
+% use "tags.css"
+% use "sortable.js"
 <div class="tags">
 	<h1>Tags</h1>
 	<table class="sortable" id="tags">

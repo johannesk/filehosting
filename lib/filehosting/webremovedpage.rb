@@ -32,7 +32,7 @@ module FileHosting
 	class WebRemovedPage < WebUUIDPage
 
 		def initialize(config, uuid)
-			super(config, uuid, "remove.css") do |uuid|
+			super(config, uuid) do |uuid|
 				begin
 					config.datasource.remove_file(uuid)
 					@status= 200

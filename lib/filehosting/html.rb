@@ -29,10 +29,6 @@ module FileHosting
 	# Create a webpage
 	class HTML
 
-		def self.error_page(error, status= 200)
-			page("error", use_template("error.eruby", binding), "error.css", status)
-		end
-
 		def self.use_template(file, bind)
 			tfile= Pathname.new("templates") + file
 			template= ERB.new(tfile.read, nil, "%")

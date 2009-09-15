@@ -68,19 +68,6 @@ module FileHosting
 			]
 		end
 
-		def use_part(partclass, *args)
-			begin
-				part= if block_given?
-					partclass.new(config, *args) { |*x| yield(*x) }
-				else
-					partclass.new(config, *args)
-				end
-			rescue ArgumentError
-				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
-			end
-			part.body
-		end
-
 		def webroot
 			config[:webroot]
 		end
