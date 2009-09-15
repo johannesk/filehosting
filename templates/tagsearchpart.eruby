@@ -2,7 +2,7 @@
 <div class="search_tags">
 	<% tags.each_with_index do |tag, i| %>
 		<div class="tag_box">
-			<a class="<% unless tag_exists[tag] %>no_<% end %>tag" href="<%= build_url(tags.reject { |x| x==tag }) %>"><%= tag.to_html %><img alt="-" src="<%= webroot %>/images/remove_small.png" /></a>
+			<a class="<% unless tag_exists[tag] %>no_<% end %>tag" href="<%= build_url(tags.reject { |x| x==tag }) %>"><%= tag.to_html %><img alt="-" src="<%= webroot %>/images/minus.png" /></a>
 % 				new= tags.clone
 			<% guessed_tags[tag].each do |guessed| %>
 % 					new[i]= guessed
@@ -10,4 +10,11 @@
 			<% end %>
 		</div>
 	<% end %>
+	<div class="tag_box">
+		<form action="<%= webroot %><%= build_url([]) %>" method="get">
+			<input type="hidden" name="tags" value="<%= tags.join(" ").to_html %>" />
+			<input class="text" type="text" name="newtags" />
+			<input class="button" type="image" alt="+" src="<%= webroot %>/images/plus.png" />
+		</form>
+	</div>
 </div>

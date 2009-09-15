@@ -39,7 +39,7 @@ module FileHosting
 				if search.empty?
 					tags= config.datasource.real_tags.sort
 					search= config[:default_search]
-					[tilte, HTML.use_template("search_new.eruby", binding)]
+					[title, HTML.use_template("search_new.eruby", binding)]
 				else
 					title+= ": #{search.join(", ")}"
 					begin
@@ -55,7 +55,6 @@ module FileHosting
 						end
 
 						# do the search
-						STDERR.puts "t: #{search.inspect}"
 						search_result= config.datasource.search_tags(search, rule)
 
 						[title, HTML.use_template("search.eruby", binding)]

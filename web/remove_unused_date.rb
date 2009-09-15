@@ -32,7 +32,7 @@ require "pathname"
 $files= []
 Pathname.new(".").children.each do |file|
 	next unless file.file?
-	if file.basename == file.read
+	if file.basename.to_s == file.read
 		$files<< file.basename
 	end
 end
@@ -55,3 +55,4 @@ find_files(Pathname.new("date"))
 $files.each do |file|
 	puts file
 	file.delete
+end

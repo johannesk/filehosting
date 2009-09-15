@@ -32,3 +32,15 @@ div.search_tags div.tag_box a.guessed_tag + a.guessed_tag {
 	border-width: 0px;
 }
 
+div.search_tags div.tag_box img {
+	vertical-align: middle;
+}
+
+div.search_tags div.tag_box form {
+	margin: 0px;
+	padding: 0px;
+}
+
+div.search_tags div.tag_box input.button {
+	vertical-align: middle;
+}

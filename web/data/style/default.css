@@ -45,6 +45,11 @@ h1 a {
 	color: black;
 }
 
+input {
+	background-color: #F5F5DC;
+	color: black;
+}
+
 div.head {
 	padding: 1px;
 	border-style: solid;

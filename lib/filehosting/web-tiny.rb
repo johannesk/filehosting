@@ -88,6 +88,8 @@ module FileHosting
 				value= $2
 				res[key.uri_decode]= value.uri_decode
 			end
+			res.delete("x")
+			res.delete("y")
 			res
 		end
 

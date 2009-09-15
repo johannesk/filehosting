@@ -146,8 +146,9 @@ module FileHosting
 				WebLogin.new(config)
 			when direction == ["tags"]
 				WebTagsPage.new(config)
-			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "rules"]).empty?)
+			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "newtags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
+				tags+= (args["newtags"] || "").split(" ")
 				rules= nil
 				rules= args["rules"].split("\n") if args["rules"]
 				case direction[0]
