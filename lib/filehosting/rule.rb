@@ -33,6 +33,7 @@ module FileHosting
 
 	class Rule
 		
+		include Enumerable
 		include YAMLPropertiesByEval
 
 		attr_accessor :result
@@ -60,7 +61,7 @@ module FileHosting
 		# again.
 		def prepare(data)
 			res= Rule.new(@result)
-			@conditions.each do |a, test, b|
+			each do |a, test, b|
 				begin
 					# all conditions are "and"
 					# related if one conditios is
@@ -80,7 +81,7 @@ module FileHosting
 		end
 
 		def test(data)
-			@conditions.each do |a, test, b|
+			each do |a, test, b|
 				return @nil unless test_condition(parse_operand(a, data), test, parse_operand(b, data))
 			end
 			return @result
@@ -113,8 +114,35 @@ module FileHosting
 			end
 		end
 
+		def self.from_string(string)
+			rule= Rule.new(true)
+			string.each do |r|
+				next if r.strip.empty?
+				rule.add_raw(r)
+			end
+			rule
+		end
+
+		def to_a
+			@conditions
+		end
+
+		def each(&block)
+			to_a.each do |a, test, b|
+				block.call(a, test, b)
+			end
+		end
+
+		# Each but in raw string presentation rather than in
+		# [a, test, b] presentation.
+		def each_raw(&block)
+			each do |a, test, b|
+				block.call("#{a} #{test} #{b}")
+			end
+		end
+
 		def to_s
-			"#{@result} if #{@conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" and ")}"
+			"#{@result} if #{collect { |a, test, b| "#{a} #{test} #{b}" }.join(" and ")}"
 		end
 		alias :to_text :to_s
 

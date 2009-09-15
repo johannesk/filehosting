@@ -97,7 +97,7 @@ module FileHosting
 				create_error_page(404)
 			when page.status == 304
 				return "Status: 304\n\n"
-			when WebRedirect === page
+			when WebRedirect === page && !page.external
 				location= page.location.sub(/^\//, "")
 				location=~ /\?/
 				path= $` || location
@@ -149,13 +149,22 @@ module FileHosting
 			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "newtags", "rules"]).empty?)
 				tags= (args["tags"] || "").split(" ")
 				tags+= (args["newtags"] || "").split(" ")
-				rules= nil
-				rules= args["rules"].split("\n") if args["rules"]
+
+				# Create the rule, in case the
+				# user gave one.
+				rule= nil
+				rule= args["rules"].split("\n") if args["rules"]
+				rule= Rule.from_string(rule) if rule
+
 				case direction[0]
 				when "search"
-					WebSearchPage.new(config, tags, rules)
+					if (args["newtags"])
+						WebRedirect.new(config, WebSearchPage.url(tags, rule), true)
+					else
+						WebSearchPage.new(config, tags, rule)
+					end
 				when "downloadlist"
-					WebDownLoadList.new(config, tags, rules)
+					WebDownLoadList.new(config, tags, rule)
 				end
 			when (["feed", "createfeed"].include?(direction[0]) and (args.keys - ["tags", "action", "age", "file_create", "file_update", "file_replace", "file_remove"]).empty?)
 				tags= (args["tags"] || "").split(" ")

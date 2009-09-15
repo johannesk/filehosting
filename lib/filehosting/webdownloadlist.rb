@@ -31,21 +31,13 @@ module FileHosting
 	# The download list
 	class WebDownLoadList < WebPage
 
-		def initialize(config, tags=[], rules= nil)
+		def initialize(config, tags=[], rule= nil)
 			@config= config
 			@header= {"Content-Type" => "text/plain; charset=utf-8"}
 			@status= 200
 			@cachable= true
 			tags.flatten!
 			begin
-				rule= nil
-				if rules
-					rule= FileHosting::Rule.new(true)
-					rules.each do |r|
-						next if r.strip.empty?
-						rule.add_raw(r)
-					end
-				end
 				files= if tags.empty?
 					config.datasource.files(rule)
 				else

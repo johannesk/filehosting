@@ -28,12 +28,16 @@ module FileHosting
 	# a page only to redirect to another page
 	class WebRedirect < WebPage
 
+		# the location where to redirect
 		attr_reader :location
+		# weather the redirect needs to be done by the browser
+		attr_reader :external
 
-		def initialize(config, location)
+		def initialize(config, location, external= false)
 			super(config)
 			@location= location
 			@header["Location"]= webroot.to_s+location
+			@external= external
 		end
 
 		def status

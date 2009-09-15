@@ -31,7 +31,7 @@ module FileHosting
 	# The search page
 	class WebSearchPage < WebDefaultPage
 
-		def initialize(config, search=[], rules= nil)
+		def initialize(config, search=[], rule= nil)
 			super(config) do
 				search.flatten!
 				title= "search"
@@ -43,17 +43,6 @@ module FileHosting
 				else
 					title+= ": #{search.join(", ")}"
 					begin
-						# Create the rule, in case the
-						# user gave one.
-						rule= nil
-						if rules
-							rule= FileHosting::Rule.new(true)
-							rules.each do |r|
-								next if r.strip.empty?
-								rule.add_raw(r)
-							end
-						end
-
 						# do the search
 						search_result= config.datasource.search_tags(search, rule)
 

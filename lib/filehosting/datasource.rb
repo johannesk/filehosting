@@ -100,7 +100,6 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
-			STDERR.puts tags
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
