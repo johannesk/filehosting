@@ -22,6 +22,8 @@
 #
 
 require "filehosting/user"
+require "filehosting/methodannouncing"
+require "filehosting/rule"
 require "filehosting/uuid"
 
 require "observer"
@@ -52,6 +54,7 @@ module FileHosting
 	class DataSource
 
 		include Observable
+		extend MethodAnnouncing
 
 		def notify_observers(*arg)
 			changed
@@ -91,56 +94,113 @@ module FileHosting
 			struct.ops
 		end
 
+		# Returns an array of all valid rulesets
+		def self.rulesets
+			[
+				"search",
+				"search_filter",
+				"rules",
+				"rules_read",
+				"rules_add",
+				"rules_add_post",
+				"rules_remove",
+				"history",
+				"history_file",
+				"history_user",
+				"user",
+				"user_withdata",
+				"user_read",
+				"user_add",
+				"user_add_post",
+				"user_update",
+				"user_update_post",
+				"file",
+				"file_withdata",
+				"file_info",
+				"file_data",
+				"file_add",
+				"file_add_post",
+				"file_update",
+				"file_update_post",
+				"file_replace",
+				"file_remove",
+			]
+		end
+
+		# The same for instances. This is necessary for
+		# announce_method
+		def rulesets
+			self.class.rulesets
+		end
+		announce_method :rulesets
+
 		# The following methods (except check_...) should be reimplemented in a
 		# child class of DataSource.
 
+		# Checks whether the user is forbidden to use any of
+		# the methods: search_tags, search_tags_partial, and
+		# files, with the arguments given.
 		def check_search(tags, rule= nil)
 			check_rule("search", {"tags" => tags})
 		end
+		announce_method :check_search, [String], [String, Rule]
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
+		announce_method :search_tags, [[String]], [[String], Rule]
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule=nil)
 			check_raise(check_search(tags, rule), "search(#{tags.inspect})")
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
+		announce_method :search_tags_partial, [[String]], [[String], Rule]
 
 		# returns fileinfo's for all files
 		def files(rule= nil)
 			check_raise(check_search(tags), "files()")
 			register_op("files")
 		end
+		announce_method :files, [], [Rule]
 
+		# Checks whether the user is forbidden to use any of
+		# the methods: tags, tag_exists?, real_tags, real_tag,
+		# taginfo.
 		def check_tags
 			check_rule("tags")
 		end
+		announce_method :check_tags
 
 		# returns all available tags
 		def tags
 			check_raise(check_tags, "tags()")
 			register_op("tags")
 		end
+		announce_method :tags
 
-		# returns weather this tag exists
+		# returns whether this tag exists
 		def tag_exists?(tag)
 			check_raise(check_tags, "tag_exists?(#{tag})")
 			register_op("tags")
 		end
+		announce_method :tag_exists?, [String]
 
 		# returns all tags which are not symlinks
 		def real_tags
 			check_raise(check_tags, "real_tags()")
 			register_op("tags")
 		end
+		announce_method :real_tags
 
+		# Checks whether the user is forbidden to use any of
+		# the methods: set_tag_alias, and remove_tag_alias
 		def check_tag_alias
 			check_rule("tags_alias")
 		end
+		announce_method :check_tag_alias
 
 		# sets a tag as an alias to another tag
 		def set_tag_alias(tag, target)
@@ -148,6 +208,7 @@ module FileHosting
 			notify_observers("tags")
 			notify_observers("tags/#{tag}")
 		end
+		announce_method :set_tag_alias, [String, String]
 
 		# removes a tag alias
 		def remove_tag_alias(tag)
@@ -155,47 +216,37 @@ module FileHosting
 			notify_observers("tags")
 			notify_observers("tags/#{tag}")
 		end
+		announce_method :remove_tag_alias, [String]
 
 		# reads the target of a tag alias
 		def tag_alias(tag)
 			register_op("tags/#{tag}")
 		end
-
-		# resolves tag aliases until a real tag is reached
-		def real_tag(tag)
-			check_raise(check_tags, "real_tag(#{tag.inspect})")
-			res= tag
-			while tag= tag_alias(tag)
-				res= tag
-			end
-			res
-		end
+		announce_method :tag_alias, [String]
 
 		# returns infos about a tag
 		def taginfo(tag)
 			check_raise(check_tags, "taginfo(#{tag.inspect})")
 			register_op("taginfo/#{tag}")
 		end
+		announce_method :taginfo, [String]
 
 		# stores infos about a tag
 		def set_taginfo(tag, info)
 			check_raise(check_tags, "set_taginfo(#{tag.inspect}, #{info.inspect})")
 			notify_observers("taginfo/#{tag}")
 		end
+		announce_method :set_taginfo, [String, String]
 
+		# Checks whether the user is forbidden to call the
+		# method fileinfo with this argument.
 		def check_fileinfo(uuid)
 			fileinfo= read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("file_info", {"file" => fileinfo})
 		end
-
-		# returns the fileinfo for the file with this uuid
-		def fileinfo(uuid)
-			res= read_fileinfo(uuid)
-			check_raise(check_fileinfo(res), "file_info(#{res.uuid.to_s})")
-			res
-		end
+		announce_method :check_fileinfo, [UUID]
 
 		# returns the fileinfo for the file with this uuid
 		def read_fileinfo(uuid)
@@ -203,23 +254,30 @@ module FileHosting
 		end
 		protected :read_fileinfo
 
+		# Checks whether the user is forbidden to call the
+		# method filedata with this argument.
 		def check_filedata(uuid)
 			fileinfo= read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("file_data", {"file" => fileinfo})
 		end
+		announce_method :check_filedata, [UUID]
 
 		# returns the filedata
 		def filedata(uuid, type= File)
 			check_raise(check_filedata(uuid), "file_data(#{uuid.uuid.to_s})")
 			register_op("files/#{uuid.uuid}")
 		end
+		announce_method :filedata, [UUID]
 
+		# Checks whether the user is forbidden to call the
+		# method add_file
 		def check_add_file
 			check_rule("file", {}) or
 			check_rule("file_add", {})
 		end
+		announce_method :check_add_file
 
 		# Adds a file to the datasource. There must be no
 		# existing file with the same uuid. Some data from the
@@ -241,15 +299,23 @@ module FileHosting
 			end
 			notify_observers("tags") unless (fileinfo.tags - tags).empty?
 		end
+		announce_method :add_file, [FileInfo, IO]
 
+		# Checks whether the user is forbidden to call the
+		# method update_fileinfo for this uuid. If uuid is
+		# given as a FileInfo, it must be the old fileinfo,
+		# not the updated one.
 		def check_update_fileinfo(uuid)
 			oldinfo= read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => oldinfo}) or
 			check_rule("file_update", {"file" => oldinfo})
 		end
+		announce_method :check_update_fileinfo, [UUID]
 
-		# Changes the metadata of a file
+		# Changes the metadata of a file. There is no uuid
+		# argument to specifiy which file is affected. This
+		# information is read from the fileinfo.
 		def update_fileinfo(fileinfo, oldinfo= nil)
 			fileinfo.tags.collect! { |t| real_tag(t) }
 			oldinfo= self.read_fileinfo(fileinfo.uuid) unless oldinfo
@@ -270,13 +336,17 @@ module FileHosting
 				notify_observers("tags")
 			end
 		end
+		announce_method :update_fileinfo, [UUID]
 
+		# Checks whether the user is forbidden to call the
+		# method update_fileinfo for this uuid
 		def check_update_filedata(uuid)
 			fileinfo= self.read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("file_replace", {"file" => fileinfo})
 		end
+		announce_method :check_update_filedata, [UUID]
 
 		# Replaces a file, but not it's metadata.
 		# Returns the fileinfo
@@ -285,13 +355,17 @@ module FileHosting
 			notify_observers("files")
 			notify_observers("files/#{uuid.uuid}")
 		end
+		announce_method :update_filedata, [UUID, IO]
 
+		# Checks whether the user is forbidden to call the
+		# method remove_file for this uuid.
 		def check_remove_file(uuid)
 			fileinfo= read_fileinfo(uuid)
 			check_rule("file", {}) or
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("file_remove", {"file" => fileinfo})
 		end
+		announce_method :check_remove_file, [UUID]
 
 		# removes a file
 		def remove_file(uuid)
@@ -306,7 +380,10 @@ module FileHosting
 				notify_observers("tags")
 			end
 		end
+		announce_method :remove_file, [UUID]
 
+		# Checks whether the user is forbidden to call the
+		# method history_files with these arguments.
 		def check_history_file(uuid, age= 1)
 			fileinfo= read_fileinfo(uuid)
 			check_rule("history",{"age" => age}) or
@@ -314,30 +391,26 @@ module FileHosting
 			check_rule("file_withdata", {"file" => fileinfo}) or
 			check_rule("history_file", {"file" => fileinfo, "age" => age})
 		end
+		announce_method :check_history_file, [UUID], [UUID, (1..(1.0/0))]
 
 		# returns the history of a file
 		def history_file(uuid, age= 1)
 			check_raise(check_history_file(uuid, age), "history_user(#{uuid.uuid})")
 			register_op("files/#{uuid.uuid}")
 		end
+		announce_method :history_file, [UUID], [UUID, (1..(1.0/0))]
 
-		def check_user(username)
+		# Checks whether the user is forbidden to call the
+		# method user for this username. The user is always
+		# allowed to call user without any arguments.
+		def check_user(username= nil)
+			return false unless username
 			user2= read_user(username)
 			check_rule("user", {}) or
 			check_rule("user_withdata", {"user2" => user2}) or
 			check_rule("user_read", {"user2" => user2})
 		end
-
-		# returns information about a user
-		def user(username= nil)
-			unless username
-				register_op("user/#{@user.username}")
-				return @user
-			end
-			result= read_user(username)
-			check_raise(check_user(result), "user_read(#{result.username})")
-			return result
-		end
+		announce_method :check_user, [], [String]
 
 		# returns information about a user
 		def read_user(username)
@@ -345,10 +418,13 @@ module FileHosting
 		end
 		protected :read_user
 
+		# Checks whether the user is allowed to call the
+		# method add_user
 		def check_add_user
 			check_rule("user", {}) or
 			check_rule("user_add", {})
 		end
+		announce_method :check_add_user
 
 		# creates a new user
 		def add_user(user2)
@@ -358,15 +434,20 @@ module FileHosting
 			end
 			notify_observers("user/#{user2.username}")
 		end
+		announce_method :add_user, [User]
 
+		# Checks whether the user is allowed to call the
+		# method update_user for this username
 		def check_update_user(username)
 			olduser= read_user(username)
 			check_rule("user", {}) or
 			check_rule("user_withdata", {"user2" => olduser}) or
 			check_rule("user_update", {"user2" => olduser})
 		end
+		announce_method :check_update_user, [String]
 
-		# updates a user
+		# Updates a user. The information which user to updat
+		# is extracted from newuser
 		def update_user(newuser, olduser= nil)
 			olduser= olduser || read_user(newuser.username)
 			if check_update_user(olduser) or
@@ -375,7 +456,10 @@ module FileHosting
 			end
 			notify_observers("user/#{newuser.username}")
 		end
+		announce_method :update_user, [User]
 
+		# Checks whether the user is allowed to call the
+		# method history_user with these arguments
 		def check_history_user(username= @user, age= 1)
 			user2= read_user(username)
 			check_rule("user", {"age" => age}) or
@@ -383,24 +467,22 @@ module FileHosting
 			check_rule("history") or
 			check_rule("history_user", {"user2" => user2, "age" => age})
 		end
+		announce_method :check_history_user, [], [String], [String, (1..(1.0/0))]
 
 		# returns the history of a user
 		def history_user(username= @user, age= 1)
 			check_raise(check_history_user(username, age), "history_user(#{username.username})")
 			register_op("user/#{username.username}")
 		end
+		announce_method :history_user, [], [String], [String, (1..(1.0/0))]
 
+		# Checks whether the user is allowed to call the
+		# method rule for this ruleset
 		def check_rules(ruleset)
 			check_rule("rules", {"ruleset" => ruleset}) or
 			check_rule("rules_read", {"ruleset" => ruleset})
 		end
-
-		# reads a rule set
-		def rules(ruleset)
-			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			check_raise(check_rules(ruleset), "rulse(#{ruleset.inspect})")
-			read_rules(ruleset)
-		end
+		announce_method :check_rules, [rulesets]
 
 		# reads a rule set
 		def read_rules(ruleset)
@@ -408,12 +490,18 @@ module FileHosting
 		end
 		protected :read_rules
 
+		# Checks whether the user is allowed to call the
+		# method add_rule for this ruleset
 		def check_add_rule(ruleset)
 			check_rule("rules", {"ruleset" => ruleset}) or
 			check_rule("rules_add", {"ruleset" => ruleset})
 		end
+		announce_method :check_add_rule, [rulesets]
 
-		# adds a rule to a rule set
+		# Adds a rule to a rule set. Position says on which
+		# position in the ruleset to add the rule. 0 is before
+		# the first rule. 1 is after the first rule. 2 is
+		# after the second rule…
 		def add_rule(ruleset, rule, position)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
 			if check_add_rule(ruleset) or
@@ -423,19 +511,24 @@ module FileHosting
 			notify_observers("rules/#{ruleset}")
 			notify_observers("rules")
 		end
+		announce_method :add_rule, [rulesets, Rule, (0..(1.0/0))]
 
-		def check_remove_rule(ruleset, rule)
+		# Checks whether the user is allowed to call the
+		# method remove_rule for this ruleset
+		def check_remove_rule(ruleset)
 			check_rule("rules", {"ruleset" => ruleset}) or
-			check_rule("rules_remove", {"ruleset" => ruleset, "rule" => rule})
+			check_rule("rules_remove", {"ruleset" => ruleset})
 		end
+		announce_method :check_remove_rule, [rulesets]
 
 		# removes a rule from a rule set
 		def remove_rule(ruleset, rule)
 			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
-			check_raise(check_remove_rule(ruleset, rule), "remove_rule(#{ruleset.inspect}, #{rule.to_s})")
+			check_raise(check_remove_rule(ruleset), "remove_rule(#{ruleset.inspect}, #{rule.to_s})")
 			notify_observers("rules/#{ruleset}")
 			notify_observers("rules")
 		end
+		announce_method :check_remove_rule, [rulesets, Rule]
 
 		# check if something is forbidden
 		# returns true if it is forbidden
@@ -474,7 +567,7 @@ module FileHosting
 		end
 		protected :prepared_rule
 
-		# Raises an operation not permited error if the first
+		# Raises an operation not permidted error if the first
 		# argument is true
 		def check_raise(result, string)
 			raise OperationNotPermittedError.new(string) if result
@@ -483,6 +576,48 @@ module FileHosting
 
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.
+
+		# returns the fileinfo for the file with this uuid
+		def fileinfo(uuid)
+			res= read_fileinfo(uuid)
+			check_raise(check_fileinfo(res), "file_info(#{res.uuid.to_s})")
+			res
+		end
+		announce_method :fileinfo, [UUID]
+
+
+		# resolves tag aliases until a real tag is reached
+		def real_tag(tag)
+			check_raise(check_tags, "real_tag(#{tag.inspect})")
+			res= tag
+			while tag= tag_alias(tag)
+				res= tag
+			end
+			res
+		end
+		announce_method :real_tag, [String]
+
+		# Returns information about a user. Without any
+		# arguments this returns the informations about the
+		# calling user itself.
+		def user(username= nil)
+			unless username
+				register_op("user/#{@user.username}")
+				return @user
+			end
+			result= read_user(username)
+			check_raise(check_user(result), "user_read(#{result.username})")
+			return result
+		end
+		announce_method :user, [], [String]
+
+		# reads a rule set
+		def rules(ruleset)
+			raise InvalidRuleSetError.new(ruleset) unless ruleset_valid?(ruleset)
+			check_raise(check_rules(ruleset), "rulse(#{ruleset.inspect})")
+			read_rules(ruleset)
+		end
+		announce_method :rules, [rulesets]
 
 		# Guesses possible tags, which could be meant for a
 		# given tag. The given tag does not need to be an
@@ -637,36 +772,8 @@ module FileHosting
 		end
 
 		# check if ruleset is a valid ruleset
-		def ruleset_valid?(ruleset)
-			[
-				"search",
-				"search_filter",
-				"rules",
-				"rules_read",
-				"rules_add",
-				"rules_add_post",
-				"rules_remove",
-				"history",
-				"history_file",
-				"history_user",
-				"user",
-				"user_withdata",
-				"user_read",
-				"user_add",
-				"user_add_post",
-				"user_update",
-				"user_update_post",
-				"file",
-				"file_withdata",
-				"file_info",
-				"file_data",
-				"file_add",
-				"file_add_post",
-				"file_update",
-				"file_update_post",
-				"file_replace",
-				"file_remove",
-			].include?(ruleset)
+		def self.ruleset_valid?(ruleset)
+			rulesets.include?(ruleset)
 		end
 
 		def global_name

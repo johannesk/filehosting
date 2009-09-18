@@ -25,31 +25,20 @@ require "filehosting/webpage"
 
 module FileHosting
 
-	# a page only to redirect to another page
-	class WebRedirect < WebPage
+	# The parent of all WebPages
+	class WebPage
 
-		# the location where to redirect
-		attr_reader :location
-		# whether the redirect needs to be done by the browser
-		attr_reader :external
+		attr_reader :header
+		attr_reader :status
+		attr_reader :body
+		attr_reader :size
+		attr_reader :config
+		attr_reader :cachable
+		attr_reader :date
 
-		def initialize(config, location, external= false)
+		def initialize(config, direction)
 			super(config)
-			@location= location
-			@header["Location"]= webroot.to_s+location
-			@external= external
-		end
-
-		def status
-			301
-		end
-
-		def body
-			""
-		end
-
-		def size
-			0
+			@header["Content-Type"]= "text/x-yaml"]
 		end
 
 	end

@@ -124,7 +124,7 @@ module FileHosting
 			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
 		end
 
-		# returns weather this tag exists
+		# returns whether this tag exists
 		def tag_exists?(tag)
 			super(tag)
 			@storage.index_exists?(tag_name(tag))

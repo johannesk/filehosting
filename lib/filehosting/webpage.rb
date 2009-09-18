@@ -51,10 +51,6 @@ module FileHosting
 			@date= Time.now
 		end
 
-		def time
-			Time.now
-		end
-
 		def to_output
 			[
 				header.collect do |key, value|
@@ -62,7 +58,7 @@ module FileHosting
 				end.join +
 				(size ? "Content-Length: #{size}\n" : "") +
 				"Status: #{status}\n" +
-				"Last-Modified: #{time.httpdate}\n" +
+				"Last-Modified: #{date.httpdate}\n" +
 				"\n",
 				body
 			]
