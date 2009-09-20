@@ -51,7 +51,7 @@ module FileHosting
 		attr_accessor :hash_type
 
 		# the password hash
-		attr_accessor :hash
+		attr_accessor :hash_data
 
 		def initialize(username= nil, password= nil)
 			@active= true
@@ -65,12 +65,12 @@ module FileHosting
 		def generate_hash(password)
 			@salt= String.random
 			@hash_type= "SHA-256"
-			@hash= make_hash(password)
+			@hash_data= make_hash(password)
 		end
 
 		def check_password(password)
 			@active and
-			@hash == make_hash(password)
+			@hash_data == make_hash(password)
 		end
 
 		def -(other)
@@ -94,7 +94,7 @@ module FileHosting
 				:active     => @active,
 				:salt       => @salt,
 				:hash_type  => @hash_type,
-				:hash       => @hash
+				:hash       => @hash_data
 			}
 		end
 
@@ -109,7 +109,7 @@ module FileHosting
 				"active"      => lambda { @active },
 				"salt"        => lambda { @salt },
 				"hash_type"   => lambda { @hash_type },
-				"hash"        => lambda { @hash },
+				"hash"        => lambda { @hash_data },
 			}
 		end
 		alias :rule_operand :to_yaml_properties
@@ -142,7 +142,7 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "user") do |tag, value|
 		res.active= value["active"]
 		res.salt= value["salt"].to_s
 		res.hash_type= value["hash_type"].to_s
-		res.hash= value["hash"].to_s
+		res.hash_data= value["hash"].to_s
 		res
 	rescue
 		raise FileHosting::InternalDataCorruptionError

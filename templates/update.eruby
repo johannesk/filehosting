@@ -73,7 +73,7 @@
 % end
 			<tr>
 				<th>hash</th>
-				<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash.to_html %></td>
+				<td><%= fileinfo.hash_type.to_html %> <%= fileinfo.hash_data.to_html %></td>
 			</tr>
 			<tr>
 				<th<%  if wrong_groups %> class="wrong_data"<% end %>>groups</th>

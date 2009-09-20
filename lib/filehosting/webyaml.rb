@@ -23,22 +23,151 @@
 
 require "filehosting/webpage"
 
+require "uuidtools"
+
 module FileHosting
 
-	# The parent of all WebPages
-	class WebPage
+	# This class allows rpc calls to config.datasource over the
+	# web. Non FileHosting objects are transmitted as a folder in
+	# the url. FileHosting objects are transmitted as yaml
+	# documents in the http request.
+	class WebYaml < WebPage
 
-		attr_reader :header
-		attr_reader :status
-		attr_reader :body
-		attr_reader :size
-		attr_reader :config
-		attr_reader :cachable
-		attr_reader :date
-
-		def initialize(config, direction)
+		# args are the url folders. io is the http body as an
+		# IO object.
+		#
+		# FIXME add_file and update_filedata cannot be called
+		def initialize(config, args, io)
 			super(config)
-			@header["Content-Type"]= "text/x-yaml"]
+			@header["Content-Type"]= "text/x-yaml"
+			# We do handle our errors by ourself
+			@error_handled= true
+			# We are cachable unless the method called has
+			# side effects
+			@cachable= true
+			if args.empty?
+				@status= 404
+				@body= "no method given"
+				return
+			end
+			method= args.shift.to_sym
+			# We are not cachable with side effects
+			@cachable= false if config.datasource.class.sideeffect_announced?(method)
+			unless config.datasource.class.method_announced?(method)
+			# ensure only available methods can be called
+				@status= 404
+				@body= "no such method"
+				return
+			end
+
+			# parse the args from the io
+			begin
+				YAML.each_document(io) do |doc|
+					# Caching does not take the
+					# http body in account. FIXME
+					@cachable= false
+					direction<< doc
+				end
+			rescue InternalDataCorruptionError
+			# if it can not be parsed by yaml
+				@status= 400
+				@body= "invalid request body"
+				@cachable= false
+				return
+			end
+
+			args= self.class.parse_args(config.datasource.class.method_args(method), args)
+			unless args
+				@status= 400
+				@body= "invalid args"
+				return
+			end
+			@body= config.datasource.send(method, *args).to_yaml
+		end
+
+		# Given multiple arg_sets and args in form of a
+		# [String], returns one possible set of parsed args.
+		def self.parse_args(arg_sets, args)
+			# If we don't have args and the empty set is
+			# possible take it
+			return [] if args.size == 0 and arg_sets.include?([])
+
+			# Only sets with size >= args are possible for
+			# this request.
+			arg_sets.delete_if { |set| set.size != args.size }
+
+			remaining= Hash.new
+			arg_sets.each_with_index do |set, i|
+				remaining[i]= []
+			end
+
+			args.each_with_index do |raw, i|
+				remaining.each do |set_i, args|
+					# if this set is out
+					next i if args.size > 0 and args[-1].nil?
+
+					set= arg_sets[set_i]
+					if FileHosting.constants.any? { |c| FileHosting.const_get(c) == set[i] }
+					# FileHosting object have to be already parsed
+						args<< if set[i] === raw
+							raw
+						end
+					else
+						args<< parse_as(set[i], raw)
+					end
+				end
+			end
+
+			# Find valid parsed args
+			remaining.values.find { |args| !args[-1].nil? }
+		end
+
+		# Parses one symbol from an argset as specified in
+		# MethodAnnouncing. Only a subset of the symbols in
+		# the spec are supported. All symbols to parse
+		# anything for use in DataSource are supported.
+		# raw must be a string.
+		def self.parse_as(type, raw)
+			case
+			when String === type
+			# "something"
+				raw if raw == type
+			when String == type
+			# String
+				raw
+			when Integer == type
+			# Integer
+				raw.to_i if raw=~ /^-?[1-9][0-9]*$/
+			when Float == type
+			# Float
+				raw.to_f if raw=~ /^-?(0|[1-9][0-9]*)\.(0|[0-9]*[1-9])$/
+			when UUID == type
+			# UUID
+				begin
+					UUID.parse(raw)
+				rescue ArgumentError
+				end
+			when Array === type && type.size == 1
+			# [something]
+				raw.split(/ +/).collect do |r|
+					arg= parse_as(type[0], r)
+					return nil unless arg
+					arg
+				end
+			when Array === type
+			# [23, 43]
+				raw2= raw.split(/ +/)
+				arg= (0..(type.size-1)).collect { |i| parse_as(type[i], raw2[i]) }
+				arg if !arg.find { |x| x.nil? }
+			when Range === type && [Integer, Float].any? { |c| c >= type.begin.class } && [Integer, Float].any? { |c| c >= type.end.class }
+			# (23..42)
+				arg= if Integer === type.begin or Integer === type.end
+					parse_as(Integer, raw)
+				else
+					parse_as(Float, raw)
+				end
+				arg if type === arg
+			end
 		end
 
 	end

@@ -241,7 +241,7 @@ module FileHosting
 			fileinfo.mimetype= old.mimetype
 			fileinfo.size= old.size
 			fileinfo.hash_type= old.hash_type
-			fileinfo.hash= old.hash
+			fileinfo.hash_data= old.hash_data
 			fileinfo.data_time= old.data_time
 			fileinfo.info_time= old.info_time
 			super(fileinfo, old)
@@ -389,7 +389,7 @@ module FileHosting
 				case file
 				when String
 					fileinfo.size= file.size
-					fileinfo.hash= Digest::SHA256.hexdigest(file)
+					fileinfo.hash_data= Digest::SHA256.hexdigest(file)
 					fileinfo.mimetype= fm.buffer(file).sub(/;?\s+.*?$/, "")
 				when IO
 					if !(File === file)
@@ -403,7 +403,7 @@ module FileHosting
 						file= f
 					end
 					fileinfo.size= File.size(file.path)
-					fileinfo.hash= Digest::SHA256.file(file.path).to_s
+					fileinfo.hash_data= Digest::SHA256.file(file.path).to_s
 					fileinfo.mimetype= fm.file(file.path).sub(/;?\s+.*?$/, "")
 				else
 					raise NotImplementedError

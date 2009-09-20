@@ -37,18 +37,19 @@ module FileHosting
 
 		attr_reader :header
 		attr_reader :status
-		attr_reader :body
-		attr_reader :size
 		attr_reader :config
 		attr_reader :cachable
 		attr_reader :date
+		attr_reader :error_handled
+		attr_reader :body
+		protected :body
 
 		def initialize(config)
 			@config= config
-			@status= 200
-			@header= Hash.new
-			@size= nil
-			@date= Time.now
+			@status= 200 unless instance_variable_defined?(:@status)
+			@header= Hash.new unless instance_variable_defined?(:@header)
+			@date= Time.now unless instance_variable_defined?(:@date)
+			@error_handled= false unless instance_variable_defined?(:@erro_handled)
 		end
 
 		def to_output
@@ -62,6 +63,14 @@ module FileHosting
 				"\n",
 				body
 			]
+		end
+
+		def size
+			if String === @body
+				body.size
+			else
+				nil
+			end
 		end
 
 		def webroot

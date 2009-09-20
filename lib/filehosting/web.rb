@@ -51,6 +51,7 @@ module FileHosting
 	autoload :WebDownLoadList, "filehosting/webdownloadlist"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
+	autoload :WebYaml, "filehosting/webyaml"
 
 	class Web
 
@@ -80,24 +81,27 @@ module FileHosting
 			page= nil
 			tags= @config.datasource.count do
 				begin
-					page= unless input
-						page_switch(direction,args, date)
+					page= case
+					when direction[0] == "raw"
+						WebYaml.new(config, direction[1..-1], input || StringIO.new(""))
+					when input
+						page_input_switch(direction, input, type, date)
 					else
-						page_input_switch(direction, args, input, type, date)
+						page_switch(direction, args, date)
 					end
 				rescue OperationNotPermittedError
 					return create_error_page(401, "operation not permitted")
 				end
 			end.keys
 			case
-			when page.status == 401
+			when page.status == 401 && !page.error_handled
 				create_error_page(401, page.auth_reason)
-			when page.status == 404
+			when page.status == 404 && !page.error_handled
 				@config.cache.store_link(cache_name, "weberror/404", tags) if page.cachable
 				create_error_page(404)
-			when page.status == 304
+			when page.status == 304 && !page.error_handled
 				return "Status: 304\n\n"
-			when WebRedirect === page && !page.external
+			when WebRedirect === page && !page.error_handled
 				location= page.location.sub(/^\//, "")
 				location=~ /\?/
 				path= $` || location
@@ -137,7 +141,7 @@ module FileHosting
 		def page_switch(direction, args, date= nil)
 			case
 			when direction == []
-				WebRedirect.new(config, "/search")
+				WebRedirect.new(config, "/search", true)
 			when direction == ["add"]
 				WebAddPage.new(config)
 			when direction == ["sourcecode"]
@@ -220,7 +224,7 @@ module FileHosting
 			end
 		end
 
-		def page_input_switch(direction, args, input, type, date)
+		def page_input_switch(direction, input, type, date)
 			args= case type
 			when "application/x-www-form-urlencoded"
 				self.class.parse_get(input.read)

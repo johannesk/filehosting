@@ -57,10 +57,6 @@ module FileHosting
 			@body= self.class.indent(use_part(WebDefaultPart, title, body, includes))
 		end
 
-		def size
-			@body.size
-		end
-
 		def use_part(partclass, *args)
 			begin
 				# save the current webpage this part is for

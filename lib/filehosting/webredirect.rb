@@ -37,7 +37,7 @@ module FileHosting
 			super(config)
 			@location= location
 			@header["Location"]= webroot.to_s+location
-			@external= external
+			@error_handled= external
 		end
 
 		def status

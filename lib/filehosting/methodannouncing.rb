@@ -41,12 +41,18 @@ module FileHosting
 
 		# Returns an array of all announced methods.
 		def announced_methods
-			(@announced_methods or Hash.new).keys
+			announced_methods_var.keys
 		end
 
 		# Returns whether this method in an announced method.
 		def method_announced?(method)
-			(@announced_methods or Hash.new)[method] and true
+			announced_methods_var[method] and true
+		end
+
+		# Returns whether this method has announced
+		# side effects.
+		def sideeffect_announced?(method)
+			announced_sideeffects_var[method]
 		end
 
 		# Returns all possibilities of arguments to supply to
@@ -54,7 +60,7 @@ module FileHosting
 		# returned as an array of array's. Each array is one
 		# set of possible arguments.
 		def method_args(method)
-			(@announced_methods or Hash.new)[method]
+			announced_methods_var[method]
 		end
 	
 		# Announces a method. Args are sets of possible
@@ -66,10 +72,32 @@ module FileHosting
 			# if no set of arguments is given assume the
 			# empty set was meant.
 			args= [[]] if args.size == 0
-			@announced_methods= Hash.new unless @announced_methods
-			@announced_methods[method]= args
+			announced_methods_var[method]= args
 		end
 		protected :announce_method
+
+		# Announces that a method has side effects
+		def announce_sideeffect(method)
+			raise "a non existing method can not have sideeffects: #{method}" unless self.method_defined?(method)
+			announced_sideeffects_var[method]= true
+		end
+		protected :announce_sideeffect
+
+		def announced_methods_var
+			unless class_variable_defined?(:@@announced_methods)
+				class_variable_set(:@@announced_methods, Hash.new)
+			end
+			class_variable_get(:@@announced_methods)
+		end
+		private :announced_methods_var
+
+		def announced_sideeffects_var
+			unless class_variable_defined?(:@@announced_sideeffects)
+				class_variable_set(:@@announced_sideeffects, Hash.new(false))
+			end
+			class_variable_get(:@@announced_sideeffects)
+		end
+		private :announced_sideeffects_var
 
 	end
 

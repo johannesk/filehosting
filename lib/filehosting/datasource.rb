@@ -23,6 +23,7 @@
 
 require "filehosting/user"
 require "filehosting/methodannouncing"
+require "filehosting/fileinfo"
 require "filehosting/rule"
 require "filehosting/uuid"
 
@@ -209,6 +210,7 @@ module FileHosting
 			notify_observers("tags/#{tag}")
 		end
 		announce_method :set_tag_alias, [String, String]
+		announce_sideeffect :set_tag_alias
 
 		# removes a tag alias
 		def remove_tag_alias(tag)
@@ -217,6 +219,7 @@ module FileHosting
 			notify_observers("tags/#{tag}")
 		end
 		announce_method :remove_tag_alias, [String]
+		announce_sideeffect :remove_tag_alias
 
 		# reads the target of a tag alias
 		def tag_alias(tag)
@@ -237,6 +240,7 @@ module FileHosting
 			notify_observers("taginfo/#{tag}")
 		end
 		announce_method :set_taginfo, [String, String]
+		announce_sideeffect :set_taginfo
 
 		# Checks whether the user is forbidden to call the
 		# method fileinfo with this argument.
@@ -300,6 +304,7 @@ module FileHosting
 			notify_observers("tags") unless (fileinfo.tags - tags).empty?
 		end
 		announce_method :add_file, [FileInfo, IO]
+		announce_sideeffect :add_file
 
 		# Checks whether the user is forbidden to call the
 		# method update_fileinfo for this uuid. If uuid is
@@ -337,6 +342,7 @@ module FileHosting
 			end
 		end
 		announce_method :update_fileinfo, [UUID]
+		announce_sideeffect :update_fileinfo
 
 		# Checks whether the user is forbidden to call the
 		# method update_fileinfo for this uuid
@@ -356,6 +362,7 @@ module FileHosting
 			notify_observers("files/#{uuid.uuid}")
 		end
 		announce_method :update_filedata, [UUID, IO]
+		announce_sideeffect :update_filedata
 
 		# Checks whether the user is forbidden to call the
 		# method remove_file for this uuid.
@@ -381,6 +388,7 @@ module FileHosting
 			end
 		end
 		announce_method :remove_file, [UUID]
+		announce_sideeffect :remove_file
 
 		# Checks whether the user is forbidden to call the
 		# method history_files with these arguments.
@@ -435,6 +443,7 @@ module FileHosting
 			notify_observers("user/#{user2.username}")
 		end
 		announce_method :add_user, [User]
+		announce_sideeffect :add_user
 
 		# Checks whether the user is allowed to call the
 		# method update_user for this username
@@ -457,6 +466,7 @@ module FileHosting
 			notify_observers("user/#{newuser.username}")
 		end
 		announce_method :update_user, [User]
+		announce_sideeffect :update_user
 
 		# Checks whether the user is allowed to call the
 		# method history_user with these arguments
@@ -512,6 +522,7 @@ module FileHosting
 			notify_observers("rules")
 		end
 		announce_method :add_rule, [rulesets, Rule, (0..(1.0/0))]
+		announce_sideeffect :add_rule
 
 		# Checks whether the user is allowed to call the
 		# method remove_rule for this ruleset
@@ -528,7 +539,8 @@ module FileHosting
 			notify_observers("rules/#{ruleset}")
 			notify_observers("rules")
 		end
-		announce_method :check_remove_rule, [rulesets, Rule]
+		announce_method :remove_rule, [rulesets, Rule]
+		announce_sideeffect :remove_rule
 
 		# check if something is forbidden
 		# returns true if it is forbidden
@@ -649,6 +661,7 @@ module FileHosting
 				end
 			end
 		end
+		announce_method :guess_tag, [String]
 
 		# Computes the did you mean distance between two
 		# strings. If the longest common subsequence (lcs)

@@ -7,31 +7,35 @@
 % if error
 		<div class="error"><%= error %></div>
 % end
-% if rules
+% if rule
 		<table>
 			<tr>
 				<th>tags</th>
 				<td>
 % end
 		<input type="text" name="tags" size="33" value="<%= search.join(" ").to_html %>" />
-% if rules
+% if rule
 				</td>
 			</tr>
 			<tr>
 				<th>rules</th>
-				<td><textarea name="rules" rows="6" cols="50"><%= rules.collect { |r| r.to_html }.join("\n") %></textarea></td>
+				<td>
+					<textarea name="rules" rows="6" cols="50"><% rule.each_raw do |raw| %>
+						<%= raw %>
+					<% end %></textarea>
+				</td>
 			</tr>
 			<tr>
 				<th></th>
 				<td>
 % end
 		<input type="submit" value="search" />
-% if rules
+% if rule
 				</td>
 			</tr>
 		</table>
 % end
-% if !rules
+% if !rule
 		<p><a href="<%= webroot %><%= WebSearchPage.url([], Rule.new) %>">advanced search</a></p>
 % end
 		<div class="tags">

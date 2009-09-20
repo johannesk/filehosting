@@ -51,10 +51,6 @@ module FileHosting
 			@body= HTML.use_template("feed.eruby", binding)
 		end
 
-		def size
-			@body.size
-		end
-
 	end
 
 end

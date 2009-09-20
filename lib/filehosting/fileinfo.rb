@@ -56,7 +56,7 @@ module FileHosting
 		attr_accessor :hash_type
 
 		# the hash data as string
-		attr_accessor :hash
+		attr_accessor :hash_data
 
 		# the tags of the file
 		attr_accessor :tags
@@ -99,7 +99,7 @@ module FileHosting
 				:mimetype  => @mimetype,
 				:size      => @size,
 				:hash_type => @hash_type,
-				:hash      => @hash,
+				:hash      => @hash_data,
 				:source    => @source,
 				:data_time => @data_time,
 				:info_time => @info_time,
@@ -121,7 +121,7 @@ module FileHosting
 				"mimetype"  => lambda { @mimetype },
 				"size"      => lambda { @size },
 				"hash_type" => lambda { @hash_type },
-				"hash"      => lambda { @hash },
+				"hash"      => lambda { @hash_data },
 				"tags"      => lambda { @tags },
 				"data_time" => lambda { @data_time },
 				"info_time" => lambda { @info_time },
@@ -148,7 +148,7 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 		res.mimetype= value["mimetype"].to_s
 		res.size= value["size"].to_i
 		res.hash_type= value["hash_type"].to_s
-		res.hash= value["hash"].to_s
+		res.hash_data= value["hash"].to_s
 		res.tags= if value["tags"].nil?
 			nil
 		else
