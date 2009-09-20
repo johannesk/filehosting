@@ -748,42 +748,6 @@ module FileHosting
 			arr[a.size]
 		end
 
-		# Returns a better set of search tags
-		def optimize_search(*search)
-			search.flatten!
-			search.uniq!
-			available= tags
-			(search-tags).each do |wrong|
-				better= @config.cache.retrieve("search_optimize/"+wrong.dir_encode) do
-					available.sort! { |a,b| (a.size-wrong.size).abs <=> (b.size-wrong.size).abs }
-					found= nil
-					min= 1.0/0
-					s= 0
-					catch :finished do
-						available.each do |tag|
-							throw :finished if (wrong.size - tag.size).abs > min
-							r= Text::Levenshtein.distance(tag, wrong)
-							n= (tag.split(//) & wrong.split(//)).size
-							next if n == 0
-							if r < min
-								min= r
-								found= tag
-								s= 0
-							elsif r == min
-								if n > s
-									s= n
-									found= tag
-								end
-							end
-						end
-					end
-					[found || "", ["tags"]]
-				end
-				search[search.index(wrong)]= better unless better.empty?
-			end
-			search.collect { |t| real_tag(t) }.uniq
-		end
-
 		# check if ruleset is a valid ruleset
 		def self.ruleset_valid?(ruleset)
 			rulesets.include?(ruleset)
