@@ -5,6 +5,7 @@
 	<head>
 		<title><%= "<"+"%= title.to_html %"+">" %></title>
 		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/default.css" />
+		<script type="text/javascript" src="<%= webroot %>/js/jquery.js"></script>
 <%= "% includes.grep(/\\.css$/).each do |style|
 		<link rel=\"stylesheet\" type=\"text/css\" href=\""%><%= webroot %><%="/style/<"+"%= style %"+">\" />
 % end
