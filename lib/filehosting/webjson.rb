@@ -21,27 +21,28 @@
 #++
 #
 
-require "yaml"
+require "filehosting/webrpc"
+require "filehosting/json"
 
-module YAMLPropertiesByEval
+module FileHosting
 
-	def to_yaml_hash
-		res= Hash.new
-		instance_variables.each do |var|
-			res[var[1..-1]]= lambda { eval(var) }
-		end
-		res
-	end
+	# This is a variant of the WepRPC which encodes it's responses
+	# as json.
+	class WebJSON < WebRPC
 
-	def to_yaml(opts = Hash.new)
-		YAML::quick_emit(object_id, opts) do |out|
-			out.map(taguri, to_yaml_style) do |map|
-				to_yaml_hash.each do |key, value|
-					map.add(key, value.call)
-				end
+		# args are the url folders. io is the http body as an
+		# IO object.
+		# FIXME methods which need FileInfo Objects or IO as
+		# input can not be called.
+		def initialize(config, args, io)
+			# We do handle our errors by ourself
+			@error_handled= true
+
+			super(config, args, "application/json") do |content|
+				content.to_json
 			end
 		end
+
 	end
 
 end
-

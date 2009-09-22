@@ -102,7 +102,7 @@ module FileHosting
 			to_hash.to_text([:username, :groups, :salt, :hash_type, :hash])
 		end
 
-		def to_yaml_properties
+		def to_yaml_hash
 			{
 				"username"    => lambda { @username },
 				"groups"      => lambda { @groups },
@@ -112,7 +112,7 @@ module FileHosting
 				"hash"        => lambda { @hash_data },
 			}
 		end
-		alias :rule_operand :to_yaml_properties
+		alias :rule_operand :to_yaml_hash
 
 		def to_yaml_type
 			"!filehosting/user"

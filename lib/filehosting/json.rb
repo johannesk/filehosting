@@ -21,27 +21,28 @@
 #++
 #
 
-require "yaml"
+require "json"
 
-module YAMLPropertiesByEval
+class Object
 
-	def to_yaml_hash
-		res= Hash.new
-		instance_variables.each do |var|
-			res[var[1..-1]]= lambda { eval(var) }
-		end
-		res
-	end
-
-	def to_yaml(opts = Hash.new)
-		YAML::quick_emit(object_id, opts) do |out|
-			out.map(taguri, to_yaml_style) do |map|
-				to_yaml_hash.each do |key, value|
-					map.add(key, value.call)
-				end
+	def to_json
+		if self.respond_to?(:to_yaml_hash)
+			res= Hash.new
+			to_yaml_hash.collect do |key, block|
+				res[key]= block.call
 			end
+			res.to_json
+		else
+			super
 		end
 	end
 
 end
 
+class Time
+
+	def to_json
+		self.to_i.to_json
+	end
+
+end

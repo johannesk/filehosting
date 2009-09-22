@@ -182,8 +182,9 @@ module FileHosting
 			end
 		end
 
-		# all subclasses of FileInfo should only serialize FileInfo Attributes
-		def to_yaml_properties
+		# all subclasses of Rule should only serialize Rule
+		# Attributes
+		def to_yaml_hash
 			{
 				"result"     => lambda { @result },
 				"conditions" => lambda { @conditions }

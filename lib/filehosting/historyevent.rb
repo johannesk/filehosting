@@ -71,7 +71,7 @@ module FileHosting
 			to_hash.to_text([:time, :user, :entity, :action, :data])
 		end
 
-		def to_yaml_properties
+		def to_yaml_hash
 			{
 				"time"   => lambda { @time },
 				"user"   => lambda { @user },

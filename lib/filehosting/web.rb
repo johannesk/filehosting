@@ -50,7 +50,8 @@ module FileHosting
 	autoload :WebDownLoadList, "filehosting/webdownloadlist"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
-	autoload :WebYaml, "filehosting/webyaml"
+	autoload :WebYAML, "filehosting/webyaml"
+	autoload :WebJSON, "filehosting/webjson"
 
 	class Web
 
@@ -81,8 +82,10 @@ module FileHosting
 			tags= @config.datasource.count do
 				begin
 					page= case
+					when direction[0..1] == ["raw", "json"]
+						WebJSON.new(config, direction[2..-1], input || StringIO.new(""))
 					when direction[0] == "raw"
-						WebYaml.new(config, direction[1..-1], input || StringIO.new(""))
+						WebYAMLl.new(config, direction[1..-1], input || StringIO.new(""))
 					when input
 						page_input_switch(direction, input, type, date)
 					else

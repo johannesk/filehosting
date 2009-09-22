@@ -69,7 +69,7 @@ module FileHosting
 			}
 		end
 
-		def to_yaml_properties
+		def to_yaml_hash
 			{
 				"type"     => lambda { @type },
 				"location" => lambda { @location },

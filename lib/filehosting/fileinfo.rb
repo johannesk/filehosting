@@ -113,7 +113,7 @@ module FileHosting
 		end
 
 		# all subclasses of FileInfo should only serialize FileInfo Attributes
-		def to_yaml_properties
+		def to_yaml_hash
 			{
 				"uuid"      => lambda { @uuid.to_s },
 				"filename"  => lambda { @filename },
@@ -129,7 +129,7 @@ module FileHosting
 				"groups"    => lambda { @groups },
 			}
 		end
-		alias :rule_operand :to_yaml_properties
+		alias :rule_operand :to_yaml_hash
 
 		def to_yaml_type
 			"!filehosting/fileinfo"
