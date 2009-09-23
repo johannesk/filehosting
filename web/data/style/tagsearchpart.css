@@ -28,7 +28,11 @@ div.search_tags div.tag_box a.guessed_tag {
 	border-color: orange;
 }
 
-div.search_tags div.tag_box a.guessed_tag + a.guessed_tag {
+div.search_tags div.tag_box a.selected {
+	background-color: yellow;
+}
+
+div.search_tags div.tag_box a.guessed_tag + a {
 	border-width: 0px;
 }
 

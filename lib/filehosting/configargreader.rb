@@ -75,7 +75,7 @@ module FileHosting
 
 		# all available switches
 		def switches
-			m= methods.grep(/^switch_/)
+			m= public_methods.grep(/^switch_/)
 			m= m.collect { |a| a[("switch_".size)..-1] }
 			m= m.collect do |a|
 				if a.size == 1
