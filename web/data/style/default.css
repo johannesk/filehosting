@@ -1,3 +1,7 @@
+* {
+	z-index: inherit;
+}
+
 body {
 	background-color: #F5F5DC;
 	color: black;
@@ -5,6 +9,7 @@ body {
 	padding: 10px;
 	text-align: left;
 	font-family: serif;
+	z-index: 0;
 }
 
 a {
@@ -65,20 +70,21 @@ div.head h1 {
 }
 
 div.head div.search {
-	float :right;
+	float: right;
 	font-size: 80%;
 	padding: 3px;
+}
+
+div.head div.search div.search_box {
+	display: inline;
 }
 
 div.head div.search form {
 	display: inline;
 }
 
-div.head div.search form input {
-	font-size: 50%;
-}
-
 div.head ul {
+	vertical-align: bottom;
 	padding: 0px;
 	margin: 10px 0px 0px 0px;
 }
@@ -88,7 +94,7 @@ div.head li {
 }
 
 div.head li+li {
-	margin-left: 10px;
+	padding-left: 10px;
 }
 
 div.license {

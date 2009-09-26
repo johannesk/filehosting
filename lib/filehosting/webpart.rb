@@ -29,12 +29,13 @@ module FileHosting
 		attr_reader :config
 		attr_reader :body
 
-		def initialize(config, name)
+		def initialize(config, name= nil)
+			raise ArgumentError.new("a name must be given if webpart is cachable") if cachable and !name
 			@config= config
-			name= "webpart/#{config.datasource.user.username}/#{name}"
+			name= "webpart/#{config.datasource.user.username}/#{name}" if cachable
 			@body= config.cache.retrieve(name) if cachable
 			if @body
-				config.datasource.register_op(config.cache.tags(name))
+				config.datasource.register_op(config.cache.tags(name)) if cachable
 			else
 				raise ArgumentError.new("a block must be given if @body is not set") unless block_given?
 				tags= config.datasource.count do

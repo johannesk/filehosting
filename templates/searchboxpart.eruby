@@ -1,0 +1,38 @@
+% use "searchboxpart.css"
+% use "searchboxpart.js"
+<form method="get" action="<%= webroot %><%= build_url([]) %>">
+	<div class="search_box">
+% if full
+% 	if rule
+		<table>
+			<tr>
+				<th>tags</th>
+				<td>
+% 	end
+% end
+		<input type="text" name="tags" <% if full %>size="33" <% end %>value="<%= tags.join(" ").to_html %>" />
+% if full
+% 	if rule
+				</td>
+			</tr>
+			<tr>
+				<th>rules</th>
+				<td>
+					<textarea name="rules" rows="6" cols="50"><% rule.each_raw do |raw| %>
+						<%= raw %>
+					<% end %></textarea>
+				</td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>
+% 	end
+					<input type="submit" value="search" />
+% 	if rule
+				</td>
+			</tr>
+		</table>
+% 	end
+% end
+	</div>
+</form>

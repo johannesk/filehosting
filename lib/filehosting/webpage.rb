@@ -31,6 +31,7 @@ module FileHosting
 	autoload :WebRemoveButtonPart, "filehosting/webremovebuttonpart"
 	autoload :WebFileHistoryButtonPart, "filehosting/webfilehistorybuttonpart"
 	autoload :WebTagSearchPart, "filehosting/webtagsearchpart"
+	autoload :WebSearchBoxPart, "filehosting/websearchboxpart"
 
 	# The parent of all WebPages
 	class WebPage

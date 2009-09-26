@@ -1,3 +1,4 @@
+% require "filehosting/websearchpage"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -5,24 +6,24 @@
 	<head>
 		<title><%= "<"+"%= title.to_html %"+">" %></title>
 		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/default.css" />
+		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/searchboxpart.css" />
 		<script type="text/javascript" src="<%= webroot %>/js/jquery.js"></script>
 		<script type="text/javascript" src="<%= webroot %>/js/filehosting.js"></script>
+		<script type="text/javascript" src="<%= webroot %>/js/searchboxpart.js"></script>
 <%= "% includes.grep(/\\.css$/).each do |style|
 		<link rel=\"stylesheet\" type=\"text/css\" href=\""%><%= webroot %><%="/style/<"+"%= style %"+">\" />
 % end
 % includes.grep(/\\.js$/).each do |script|
+% 	next if [\"jquery.js\", \"filehosting.js\", \"searchboxpart.js\"].include?(script)
 		<script type=\"text/javascript\" src=\""%><%= webroot %><%="/js/<"+"%= script %"+">\"></script>
 % end" %>
 	</head>
 	<body>
 		<div class="head">
 			<h1><%= config[:name] %></h1>
-			<form method="get" action="<%= webroot %>/search">
-				<div class="search">
-				search:
-					<input type="text" name="tags" value="<%= config[:default_search].to_html %>" />
-				</div>
-			</form>
+			<div class="search">
+				search:<%= use_part(WebSearchBoxPart, []) { |tag, rule| WebSearchPage.url(tag, rule) } %>
+			</div>
 			<ul>
 % if !datasource.check_add_file
 				<li><a href="<%= webroot %>/add">add File</a></li>

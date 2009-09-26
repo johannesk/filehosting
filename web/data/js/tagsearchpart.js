@@ -2,23 +2,23 @@ FileHosting.TagSearchPart= function (dom) {
 
 	var obj= this;
 
-	this.old_tags= function () {
+	this.oldTags= function () {
 		return $.map($("input[name=tags]", dom).attr("value").split(" "), function (tag) { return $.trim(tag) });
 	}
 
-	this.newtag= function () {
+	this.newTag= function () {
 		return $("input[name=newtags]", dom).attr("value")
 	}
 
-	this.set_newtag= function(tag) {
+	this.setNewTag= function(tag) {
 		$("input[name=newtags]", dom).attr("value", tag);
 		update_guessed(tag);
 		change();
 	}
 
 	this.tags= function () {
-		var res= obj.old_tags();
-		var add= obj.newtag();
+		var res= obj.oldTags();
+		var add= obj.newTag();
 		if (add.length > 0) {
 			res.push(add);
 		}
@@ -47,26 +47,27 @@ FileHosting.TagSearchPart= function (dom) {
 		} else {
 			FileHosting.DataSource.guess_tag(tag, function (tags) {
 				if (local_count == update_count) {
-					var current= $("div.tag_box a.selected").text();
+					var current= $("div.tag_box a.selected", dom).text();
 					$("div.tag_box form", dom).nextAll().remove();
+					var url= $("div.tag_box form", dom).attr("action") + obj.oldTags().join(" ") + " "
 					$("div.tag_box form", dom).after($.map(tags, function (tag) {
 						if (tag == current) {
-							return "<a class=\"guessed_tag selected\">"+tag+"</a>";
+							return "<a class=\"guessed_tag selected\" href=\"" + url + tag + "\">" + tag + "</a>";
 						} else {
-							return "<a class=\"guessed_tag\">"+tag+"</a>";
+							return "<a class=\"guessed_tag\" href=\"" + url + tag + "\">" + tag + "</a>";
 						}
 					} ).join(""));
 				}
 			});
 		}
 	};
-	update_guessed(this.newtag());
-  $("div.tag_box input[type=text]").attr("autocomplete", "off");
+	update_guessed(this.newTag());
+	$("div.tag_box input[name=newtags]", dom).attr("autocomplete", "off");
 
-	var last_newtag= this.newtag();
+	var last_newtag= this.newTag();
 	
 	$("input[name=newtags]", dom).keyup( function () {
-		var newtag= obj.newtag();
+		var newtag= obj.newTag();
 		if (last_newtag != newtag) {
 			last_newtag= newtag;
 			update_guessed(newtag);
@@ -76,11 +77,13 @@ FileHosting.TagSearchPart= function (dom) {
 	} );
 
 	$("input[name=newtags]", dom).keydown( function(key) {
-		var current= $("div.tag_box a.selected");
+		var current= $("div.tag_box a.selected", dom);
 		switch(key.keyCode) {
 			case 38: // up
 				if (current.length == 0) {
-					$("div.tag_box a:last").addClass("selected");
+					if ($("div.tag_box form + a", dom).length != 0) {;
+						$("div.tag_box a:last", dom).addClass("selected");
+					}
 				} else {
 					current.prev().addClass("selected");
 					current.removeClass("selected");
@@ -88,7 +91,7 @@ FileHosting.TagSearchPart= function (dom) {
 				break;
 			case 40: // down
 				if (current.length == 0) {
-					$("div.tag_box form + a").addClass("selected");
+					$("div.tag_box form + a", dom).addClass("selected");
 				} else {
 					current.next().addClass("selected");
 					current.removeClass("selected");
@@ -96,12 +99,14 @@ FileHosting.TagSearchPart= function (dom) {
 				break;
 			case 13: // enter
 				if (current.length == 1) {
-					obj.set_newtag(current.text());
+					obj.setNewTag(current.text());
 				}
 				break;
 		}
 		return true;
 	} );
+
+	FileHosting.iWantStartFocus(1, $("div.tag_box input[name=newtags]"));
 
 }
 
