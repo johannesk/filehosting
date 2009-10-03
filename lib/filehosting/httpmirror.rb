@@ -124,7 +124,7 @@ module FileHosting
 		# returns false if no update was found
 		# returns the new filedata if file was updated
 		def update_file(file, url)
-			case res= get_http(url, "If-Modified-Since" => file.user_time.httpdate)
+			case res= read_http(url, "If-Modified-Since" => file.user_time.httpdate)
 			when Net::HTTPSuccess
 				if res["Last-Modified"]
 					begin

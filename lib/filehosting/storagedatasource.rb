@@ -114,14 +114,14 @@ module FileHosting
 		# returns all available tags
 		def tags
 			super()
-			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) } +
+			@storage.indexes_by_record.grep(/^tag\//).collect { |r| tag_from_name(r) } +
 			@storage.records.grep(/^tagalias\//).collect { |r| tag_from_name(r) }
 		end
 
 		# returns all tags which are not linsk
 		def real_tags
 			super()
-			@storage.reverse.grep(/^tag\//).collect { |r| tag_from_name(r) }
+			@storage.indexes_by_record.grep(/^tag\//).collect { |r| tag_from_name(r) }
 		end
 
 		# returns whether this tag exists
@@ -276,7 +276,7 @@ module FileHosting
 			old= read_fileinfo(uuid)
 			super(old)
 			name= fileinfo_name(old)
-			index= @storage.reverse(name)
+			index= @storage.indexes_by_record(name)
 			begin
 				@storage.remove(name)
 				@storage.remove(filedata_name(uuid.uuid))
@@ -372,7 +372,7 @@ module FileHosting
 
 		# get all files uuid with this tag
 		def uuids_by_tag(tag)
-			@storage.index(tag_name(tag)).collect do |str|
+			@storage.records_by_index(tag_name(tag)).collect do |str|
 				uuid_from_name(str)
 			end
 		end

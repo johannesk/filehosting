@@ -39,7 +39,7 @@ module FileHosting
 		end
 
 		# Searches all record names for an index.
-		def index(prefix, index)
+		def records_by_index(prefix, index)
 			[]
 		end
 

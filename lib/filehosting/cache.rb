@@ -66,13 +66,13 @@ module FileHosting
 
 		# Reads the tags of a file in the cache
 		def tags(name)
-			@storage.reverse(name)
+			@storage.indexes_by_record(name)
 		end
 
 		# Deletes all files with this dependencies.
 		def delete_for_deps(deps)
 			[deps].flatten.each do |dep|
-				@storage.index(dep).each do |file|
+				@storage.records_by_index(dep).each do |file|
 					@storage.remove(file)
 				end
 			end

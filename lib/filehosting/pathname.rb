@@ -25,6 +25,13 @@ require "pathname"
 
 class Pathname
 
+	def mkdir?
+		begin
+			self.mkdir unless self.directory?
+		rescue Errno::EEXIST
+		end
+	end
+
 	def delete?
 		self.delete if self.linkfile?
 	end

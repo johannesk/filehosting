@@ -62,8 +62,8 @@ module FileHosting
 		end
 
 		# Searches all records for an index.
-		def index(index)
-			@storage.index(@prefix, index)
+		def records_by_index(index)
+			@storage.records_by_index(@prefix, index)
 		end
 
 		# Check whether records with this index exists.
@@ -72,8 +72,8 @@ module FileHosting
 		end
 
 		# Searches all index's for a record or all records.
-		def reverse(name= nil)
-			@storage.reverse(@prefix, name)
+		def indexes_by_record(name= nil)
+			@storage.indexes_by_record(@prefix, name)
 		end
 
 		# Returns all record names
@@ -114,6 +114,12 @@ module FileHosting
 		# Removes an index for a record.
 		def remove_index(index, name)
 			@storage.remove_index(@prefix, index, name)
+		end
+
+		# Locks files and indexes while executing the given
+		# block.
+		def lock(file_r, index_r, file_w, index_w, &block)
+			@storage.lock(@prefix, file_r, index_r, file_w, index_w, &block)
 		end
 
 	end

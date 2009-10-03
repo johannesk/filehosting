@@ -47,55 +47,75 @@ module FileHosting
 			@dir= dir
 		end
 
-
 		# Reads a record.
 		def read(prefix, name, type= String)
 			super(prefix, name, type)
 			file= prefix_data_file(prefix, name)
-			return nil unless file.file?
-			case
-			when type == String
-				file.read
-			when type == File
-				File.new(file)
-			when type == IO
-				File.new(file)
-			else
-				raise NotImplementedError
+			lock(prefix, name, [], [], []) do
+				case
+				when ! file.file?
+					nil
+				when type == String
+					file.read
+				when type == File
+					file.open
+				when type == IO
+					file.open
+				else
+					raise NotImplementedError
+				end
 			end
 		end
 
 		# Reads the date of a record
 		def date(prefix, name)
 			file= prefix_date_file(prefix, name)
-			return nil unless file.file?
-			begin
-				res= YAML.load(file.read)
-			rescue
-				InternalDataCorruptionError
+			lock(prefix, name, [], [], []) do
+				res= if file.file?
+					begin
+						YAML.load(file.read)
+					rescue
+						InternalDataCorruptionError
+					end
+				else
+					nil
+				end
 			end
-			raise InternalDataCorruptionError unless Time === res
+			raise InternalDataCorruptionError unless res.nil? or Time === res
+			res
 		end
 
 		# Checks whether a record exists.
 		def exists?(prefix, name)
-			prefix_data_file(prefix, name).file?
+			file= prefix_data_file(prefix, name)
+			lock(prefix, name, [], [], []) do
+				file.file?
+			end
 		end
 
 		# Searches all records for an index.
-		def index(prefix, index)
-			YAMLTools.read_array(prefix_index_file(prefix, index), String)
+		def records_by_index(prefix, index)
+			file= prefix_index_file(prefix, index)
+			lock(prefix, [], index, [], []) do
+				YAMLTools.read_array(file, String)
+			end
 		end
 
 		# Check whether records with this index exists.
 		def index_exists?(prefix, index)
-			prefix_index_file(prefix, index).file?
+			file= prefix_index_file(prefix, index)
+			lock(prefix, [], index, [], []) do
+				file.file?
+			end
 		end
 
 		# Searches all index's for a record
-		def reverse(prefix, name= nil)
+		def indexes_by_record(prefix, name= nil)
 			if name
-				YAMLTools.read_array(prefix_reverse_file(prefix, name), String)
+				file= prefix_reverse_file(prefix, name)
+				lock(prefix, name, [], [], []) do
+					YAMLTools.read_array(file, String)
+				end
 			else
 				prefix_index_dir(prefix).children.collect { |p| p.basename.to_s.dir_decode }
 			end
@@ -108,12 +128,14 @@ module FileHosting
 
 		# Stores an index
 		def store_index(prefix, index, name)
-			return if self.index(prefix, name).include?(index)
-			begin
-				add_index(prefix, index, name)
-			rescue Exception => e
-				rm_index(prefix, index, name)
-				raise e
+			lock(prefix, [], [], name, index) do
+				return if self.indexes_by_record(prefix, name).include?(index)
+				begin
+					add_index(prefix, index, name)
+				rescue Exception => e
+					rm_index(prefix, index, name)
+					raise e
+				end
 			end
 		end
 		
@@ -123,27 +145,29 @@ module FileHosting
 			file= prefix_data_file(prefix, name)
 			tmp= file.dirname + (file.basename.to_s + ".tmp")
 			data= [data].flatten
-			begin
-				if File === data[0]
-					d= data.shift.path
-					FileUtils.cp(d, tmp)
-				end
-				File.open(tmp, "a") do |f|
-					data.each do |d|
-						case d
-						when String
-							f.write(d)
-						when IO
-							IO2IO.do(d, f)
-						else
-							raise NotImplementedError
+			lock(prefix, [], [], name, []) do
+				begin
+					if File === data[0]
+						d= data.shift.path
+						FileUtils.cp(d, tmp)
+					end
+					File.open(tmp, "a") do |f|
+						data.each do |d|
+							case d
+							when String
+								f.write(d)
+							when IO
+								IO2IO.do(d, f)
+							else
+								raise NotImplementedError
+							end
 						end
 					end
+					FileUtils.mv(tmp, file)
+				rescue Exception => e
+					tmp.delete?
+					raise e
 				end
-				FileUtils.mv(tmp, file)
-			rescue Exception => e
-				tmp.delete?
-				raise e
 			end
 		end
 
@@ -152,57 +176,95 @@ module FileHosting
 			file= prefix_data_file(prefix, name)
 			tmp= file.dirname + (file.basename.to_s + ".tmp")
 			target= prefix_data_file(prefix, target)
-			begin
-				FileUilts.mv(file, tmp) if file.linkfile?
-				file.make_symlink(target.basename)
-				tmp.delete?
-			rescue
-				FileUilts.mv(tmp, file) if tmp.linkfile?
+			lock(prefix, [], [], file, []) do
+				begin
+					FileUilts.mv(file, tmp) if file.linkfile?
+					file.make_symlink(target.basename)
+					tmp.delete?
+				rescue
+					FileUilts.mv(tmp, file) if tmp.linkfile?
+				end
 			end
 		end
 
 		# Set's the date of a record
 		def set_date(prefix, name, date)
 			file= prefix_date_file(prefix, name)
-			File.open(file, "w") do |f|
-				f.write(date.to_yaml)
+			lock(prefix, name, [], [], []) do
+				File.open(file, "w") do |f|
+					f.write(date.to_yaml)
+				end
 			end
 		end
 
 		# Removes the date of a record
 		def remove_date(prefix, name)
-			prefix_date_file(prefix, name).delete?
-		end
-
-		# Removes a record.
-		def remove(prefix, name)
-			index= YAMLTools.read_array(prefix_reverse_file(prefix, name), String)
-			begin
-				index.each do |ind|
-					remove_index(prefix, ind, name)
-				end
-				prefix_data_file(prefix, name).delete?
-			rescue Exception => e
-				index.each do |ind|
-					store_index(prefix, ind, name)
-				end
-				raise e
+			file= prefix_date_file(prefix, name)
+			lock(prefix, name, [], [], []) do
+				file.delete?
 			end
 		end
 
 		# Removes an index for a record.
 		def remove_index(prefix, index, name)
-			return unless self.index(prefix, index).include?(name)
-			begin
-				rm_index(prefix, index, name)
-			rescue Exception => e
-				add_index(prefix, index, name)
-				raise e
+			lock(prefix, [], [], name, index) do
+				return unless self.records_by_index(prefix, index).include?(name)
+				begin
+					rm_index(prefix, index, name)
+				rescue Exception => e
+					add_index(prefix, index, name)
+					raise e
+				end
+			end
+		end
+
+		# Removes the data of a record
+		def remove_data(prefix, name)
+			prefix_data_file(prefix, name).delete?
+		end
+
+		protected
+
+		# Tries to get a lock for the given arguments.
+		# Constrains are addition resources to get a lock for.
+		# Constrains is a block which returns
+		# [file_r, index_r, file_w, index_w]. Constrains must
+		# evaluated when ether the primary locks are already
+		# in place, or the whole database is locked.
+		# Returns whether the lock is in place.
+		def get_lock(prefix, file_r, index_r,  file_w, index_w)
+			read= prefix_lock_files(prefix, file_r, index_r)
+			write= prefix_lock_files(prefix, file_w, index_w)
+
+			lock_lock(prefix) do
+				if block_given?
+					cfr, cir, cfw, ciw= yield
+					read+=  prefix_lock_files(cfr ,cir)
+					write+= prefix_lock_files(cfw ,ciw)
+				end
+
+				# check if lock can be acquired
+				if check_lock_files(read, write)
+					false
+				else
+					get_lock_files(read, write)
+				end
+			end
+		end
+
+		# Releases the locks for the given arguments.
+		def release_lock(prefix, file_r, index_r, file_w, index_w)
+			read= prefix_lock_files(prefix, file_r, index_r)
+			write= prefix_lock_files(prefix, file_w, index_w)
+
+			lock_lock(prefix) do
+				# release the locks
+				release_lock_files(read, write)
 			end
 		end
 
 		private
-		
+
 		def add_index(prefix, index, name)
 			YAMLTools.change_array(prefix_index_file(prefix, index), String) do |a|
 				a + [name]
@@ -219,6 +281,76 @@ module FileHosting
 			YAMLTools.change_array(prefix_reverse_file(prefix, name), String) do |a|
 				a - [index]
 			end
+		end
+
+		# locks the lockfile directory, so lockfiles can be
+		# edited
+		def lock_lock(prefix, &block)
+			lockfile= prefix_lock_dir(prefix) + ".lock"
+			# get the lock
+			begin
+				lockfile.open(File::CREAT | File::WRONLY | File::EXCL) do |f|
+					f.print(Process.pid)
+				end
+			rescue Errno::EEXIST
+				sleep 0.01
+				retry
+			end
+			begin
+			# do the work
+				res= block.call
+			# release the lock
+			ensure
+				lockfile.delete
+			end
+			res
+		end
+
+		# Checks whether these lock files are in place.
+		def check_lock_files(read, write)
+			write.any? do |file|
+				# is read or write
+				# locked?
+				file.exist?
+			end or read.any? do |dir|
+				# is write locked?
+				dir.file?
+			end
+		end
+
+		# Creates the requested lock files
+		def get_lock_files(read, write)
+			write.each do |file|
+				file.open("w") do |f|
+					f.print(Process.pid)
+				end
+			end
+			read.each do |dir|
+				dir.mkdir?
+				(dir + Process.pid.to_s).open("w") do |f|
+				end
+			end
+		end
+
+		# Releases the requested lock_files
+		def release_lock_files(read, write)
+			write.each do |file|
+				file.delete?
+			end
+			read.each do |dir|
+				if dir.directory?
+					 (dir + Process.pid.to_s).delete?
+					 # remove the read lock if no
+					 # process needs it
+					 dir.delete if dir.children.size == 0
+				end
+			end
+		end
+		
+		def prefix_lock_files(prefix, files, indexes)
+			res=  [files  ].flatten.collect { |file| prefix_lock_dir(prefix) + "file"  + file.dir_encode }
+			res+= [indexes].flatten.collect { |file| prefix_lock_dir(prefix) + "index" + file.dir_encode }
+			res
 		end
 
 		def prefix_data_file(prefix, name)
@@ -239,31 +371,39 @@ module FileHosting
 
 		def prefix_data_dir(prefix)
 			dir= prefix_dir(prefix)+"data"
-			dir.mkdir unless dir.directory?
+			dir.mkdir?
 			dir
 		end
 
 		def prefix_date_dir(prefix)
 			dir= prefix_dir(prefix)+"date"
-			dir.mkdir unless dir.directory?
+			dir.mkdir?
 			dir
 		end
 
 		def prefix_index_dir(prefix)
 			dir= prefix_dir(prefix)+"index"
-			dir.mkdir unless dir.directory?
+			dir.mkdir?
 			dir
 		end
 
 		def prefix_reverse_dir(prefix)
 			dir= prefix_dir(prefix)+"reverse"
-			dir.mkdir unless dir.directory?
+			dir.mkdir?
+			dir
+		end
+
+		def prefix_lock_dir(prefix)
+			dir= prefix_dir(prefix)+"lock"
+			dir.mkdir?
+			(dir + "file").mkdir?
+			(dir + "index").mkdir?
 			dir
 		end
 
 		def prefix_dir(prefix)
 			dir= @dir+prefix.dir_encode
-			dir.mkdir unless dir.directory?
+			dir.mkdir?
 			dir
 		end
 
