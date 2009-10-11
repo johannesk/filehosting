@@ -156,6 +156,26 @@ module FileHosting
 			:"FileHosting::Storage?#{self.object_id}"
 		end
 		protected :global_name
+
+		class LockStruct
+			attr_accessor :global
+			attr_accessor :local
+
+			def initialize
+				@global= false
+				@local= [[], [], [], []]
+			end
+		end
+
+		def lock_struct
+			res= Thread.current[global_name]
+			unless res
+				res= LockStruct.new
+				Thread.current[global_name]= res
+			end
+			res
+		end
+		protected :lock_struct
 		
 		# Locks files and indexes while executing the given
 		# block. file_r, index_r, file_w, index_w are the
@@ -166,14 +186,17 @@ module FileHosting
 		# [file_r, index_r, file_w, index_w]. Constrains is
 		# called every time trying to acquire a lock.
 		def lock(prefix, file_r, index_r, file_w, index_w, constrains= nil ,&block)
+			# we don't need to lock anything if we have a global lock
+			if lock_struct.global
+				return block.call
+			end
+
 			file_r= [file_r].flatten
 			index_r= [index_r].flatten
 			file_w= [file_w].flatten
 			index_w= [index_w].flatten
 
-			# get locks, wich are already in place in this thread
-			Thread.current[global_name]= [[], [], [], []] unless Thread.current[global_name]
-			glocks= Thread.current[global_name]
+			glocks= lock_struct.local
 
 			# don't set locks twice
 			file_w-= glocks[2]
@@ -192,10 +215,12 @@ module FileHosting
 					# acquired
 					if (!constrains and get_lock(prefix, file_r, index_r, file_w, index_w)) or
 					(    constrains and get_lock(prefix, file_r, index_r, file_w, index_w) do
+						lock_struct.global= true
 						cfr, cir, cfw, ciw= constrains.call
+						lock_struct.global= false
 						cfw-= glocks[2]
 						cfw-= file_w
-						cfr-= cf_w
+						cfr-= cfw
 						cfr-= file_w
 						cfr-= glocks[2]
 						cfr-= glocks[0]

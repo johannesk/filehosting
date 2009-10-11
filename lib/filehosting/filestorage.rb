@@ -239,8 +239,8 @@ module FileHosting
 			lock_lock(prefix) do
 				if block_given?
 					cfr, cir, cfw, ciw= yield
-					read+=  prefix_lock_files(cfr ,cir)
-					write+= prefix_lock_files(cfw ,ciw)
+					read+=  prefix_lock_files(prefix, cfr ,cir)
+					write+= prefix_lock_files(prefix, cfw ,ciw)
 				end
 
 				# check if lock can be acquired

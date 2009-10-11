@@ -29,6 +29,7 @@ require "filehosting/securityerror"
 require "filehosting/yamltools"
 require "filehosting/webredirect"
 require "filehosting/file"
+require "filehosting/readonlyerror"
 
 require "fileutils"
 require "time"
@@ -50,6 +51,7 @@ module FileHosting
 	autoload :WebDownLoadList, "filehosting/webdownloadlist"
 	autoload :Web404Page, "filehosting/web404page"
 	autoload :Web401Page, "filehosting/web401page"
+	autoload :WebReadOnlyPage, "filehosting/webreadonlypage"
 	autoload :WebYAML, "filehosting/webyaml"
 	autoload :WebJSON, "filehosting/webjson"
 
@@ -73,7 +75,7 @@ module FileHosting
 
 		# Creates a page and stores it into the cache.
 		def create_page(path, args, input= nil, type= nil, date= nil)
-			cache_name= "web#{input ? "post" : ""}/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}"
+			cache_name= "web#{input ? "post" : ""}/#{@config.datasource.current_user.username}/#{path.dir_encode}?#{args.dir_encode}"
 			return "Status: 304\n\n" if date and @config.cache.date(cache_name) == date
 			res= @config.cache.retrieve(cache_name, IO)
 			return res if res
@@ -93,6 +95,8 @@ module FileHosting
 					end
 				rescue OperationNotPermittedError
 					return create_error_page(401, "operation not permitted")
+				rescue ReadOnlyError
+					return create_error_page(:"read-only")
 				end
 			end.keys
 			case
@@ -131,6 +135,8 @@ module FileHosting
 					Web404Page.new(config)
 				when 401
 					Web401Page.new(config, args)
+				when :"read-only"
+					WebReadOnlyPage.new(config)
 				else
 					NotImplemntedError
 				end

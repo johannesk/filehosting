@@ -25,7 +25,7 @@
 				search:<%= use_part(WebSearchBoxPart, []) { |tag, rule| WebSearchPage.url(tag, rule) } %>
 			</div>
 			<ul>
-% if !datasource.check_add_file
+% if !datasource.pretend(:add_file)
 				<li><a href="<%= webroot %>/add">add File</a></li>
 % end
 				<li><a href="<%= webroot %>/createfeed">Feed</a></li>
