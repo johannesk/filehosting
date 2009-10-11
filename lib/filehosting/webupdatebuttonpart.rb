@@ -30,7 +30,7 @@ module FileHosting
 
 		def initialize(config, fileinfo)
 			super(config, "update/#{fileinfo.uuid}") do
-				[!datasource.check_update_fileinfo(fileinfo), WebUpdatePage.url(fileinfo), "update", "update"]
+				[!datasource.pretend(:update_fileinfo, fileinfo) or !datasource.pretend(:update_filedata, fileinfo), WebUpdatePage.url(fileinfo), "update", "update"]
 			end
 		end
 

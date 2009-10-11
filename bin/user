@@ -25,6 +25,10 @@
 require "filehosting/binenv"
 
 FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new([], ["user"])) do |env|
-	user= env.args[0] || env.config.datasource.user
-	puts env.config.datasource.user(user).to_text
+	user= if env.args[0]
+		env.config.datasource.user(env.args[0])
+	else
+		env.config.datasource.current_user
+	end
+	puts user.to_text
 end

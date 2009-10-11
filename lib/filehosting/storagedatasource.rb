@@ -96,21 +96,6 @@ module FileHosting
 			search_finalize(@storage.records.grep(/^fileinfo\//).collect { |r| uuid_from_name(r) }, rule)
 		end
 
-
-		def search_finalize(uuids, rule= nil)
-			res= uuids.collect do |uuid|
-				begin
-					fileinfo(uuid)
-				rescue OperationNotPermittedError
-					nil
-				end
-			end.compact
-			res= res.find_all { |info| !check_rule("search_filter", {"file" => info}) }
-			res= res.find_all { |info| rule.test({"user" => @user, "file" => info}) } if rule
-			res.sort { |a,b| (b.user_time || Time.now) <=> (a.user_time || Time.now) }
-		end
-		private :search_finalize
-
 		# returns all available tags
 		def tags
 			super()
@@ -194,7 +179,7 @@ module FileHosting
 		# returns the history of a file
 		def history_file(uuid, age= 1)
 			super(uuid, age)
-			raise NoSuchFileError.new(user) unless @storage.exists?(fileinfo_name(uuid))
+			raise NoSuchFileError.new(uuid) unless @storage.exists?(fileinfo_name(uuid))
 			time= Time.now
 			data= @storage.read(filehistory_name(uuid.uuid, time))
 			res= YAMLTools.parse_array(data, HistoryEvent)
@@ -327,7 +312,7 @@ module FileHosting
 		end
 
 		# returns the history of a user
-		def history_user(username= @user, age= 1)
+		def history_user(username, age= 1)
 			super(user, age)
 			time= Time.now
 			data= @storage.read(userhistory_name(username.username, time))

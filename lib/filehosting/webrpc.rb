@@ -22,6 +22,7 @@
 #
 
 require "filehosting/webpage"
+require "filehosting/typifieing"
 
 require "uuidtools"
 
@@ -61,98 +62,13 @@ module FileHosting
 				return
 			end
 
-			args= self.class.parse_args(config.datasource.class.method_args(method), args)
+			args= Typifieing::parse_args(config.datasource.class.method_args(method), args)
 			unless args
 				@status= 400
 				@body= "invalid args"
 				return
 			end
 			@body= yield config.datasource.send(method, *args)
-		end
-
-		# Given multiple arg_sets and args in form of a
-		# [String], returns one possible set of parsed args.
-		def self.parse_args(arg_sets, args)
-			# If we don't have args and the empty set is
-			# possible take it
-			return [] if args.size == 0 and arg_sets.include?([])
-
-			# Only sets with size >= args are possible for
-			# this request.
-			arg_sets.delete_if { |set| set.size != args.size }
-
-			remaining= Hash.new
-			arg_sets.each_with_index do |set, i|
-				remaining[i]= []
-			end
-
-			args.each_with_index do |raw, i|
-				remaining.each do |set_i, args|
-					# if this set is out
-					next i if args.size > 0 and args[-1].nil?
-
-					set= arg_sets[set_i]
-					if FileHosting.constants.any? { |c| FileHosting.const_get(c) == set[i] }
-					# FileHosting object have to be already parsed
-						args<< if set[i] === raw
-							raw
-						end
-					else
-						args<< parse_as(set[i], raw)
-					end
-				end
-			end
-
-			# Find valid parsed args
-			remaining.values.find { |args| !args[-1].nil? }
-		end
-
-		# Parses one symbol from an argset as specified in
-		# MethodAnnouncing. Only a subset of the symbols in
-		# the spec are supported. All symbols to parse
-		# anything for use in DataSource are supported.
-		# raw must be a string.
-		def self.parse_as(type, raw)
-			case
-			when String === type
-			# "something"
-				raw if raw == type
-			when String == type
-			# String
-				raw
-			when Integer == type
-			# Integer
-				raw.to_i if raw=~ /^-?[1-9][0-9]*$/
-			when Float == type
-			# Float
-				raw.to_f if raw=~ /^-?(0|[1-9][0-9]*)\.(0|[0-9]*[1-9])$/
-			when UUID == type
-			# UUID
-				begin
-					UUID.parse(raw)
-				rescue ArgumentError
-				end
-			when Array === type && type.size == 1
-			# [something]
-				raw.split(/ +/).collect do |r|
-					arg= parse_as(type[0], r)
-					return nil unless arg
-					arg
-				end
-			when Array === type
-			# [23, 43]
-				raw2= raw.split(/ +/)
-				arg= (0..(type.size-1)).collect { |i| parse_as(type[i], raw2[i]) }
-				arg if !arg.find { |x| x.nil? }
-			when Range === type && [Integer, Float].any? { |c| c >= type.begin.class } && [Integer, Float].any? { |c| c >= type.end.class }
-			# (23..42)
-				arg= if Integer === type.begin or Integer === type.end
-					parse_as(Integer, raw)
-				else
-					parse_as(Float, raw)
-				end
-				arg if type === arg
-			end
 		end
 
 	end

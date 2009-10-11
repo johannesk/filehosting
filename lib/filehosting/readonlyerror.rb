@@ -21,17 +21,21 @@
 #++
 #
 
-require "filehosting/webbuttonpart"
+require "filehosting/error"
 
 module FileHosting
 
-	class WebFileHistoryButtonPart < WebButtonPart
+	class ReadOnlyError < Error
+		
+		attr_reader :operation
 
-		def initialize(config, uuid)
-			super(config, "filehistory/#{uuid.uuid}") do
-				[false, "/filehistory/#{uuid.uuid}", "history", "view history"]
-				#[!datasource.pretend(:history_file, uuid), "/filehistory/#{uuid.uuid}", "history", "view history"]
-			end
+		def initialize(operation)
+			@operation= operation
+		end
+
+		def to_s
+			p
+			"the datasource is readonly, '#{operation}' needs to write"
 		end
 
 	end

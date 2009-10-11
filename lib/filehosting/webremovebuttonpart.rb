@@ -30,7 +30,7 @@ module FileHosting
 
 		def initialize(config, fileinfo)
 			super(config, "remove/#{fileinfo.uuid}") do
-				[!datasource.check_remove_file(fileinfo), WebRemovePage.url(fileinfo), "remove", "remove"]
+				[!datasource.pretend(:remove_file, fileinfo), WebRemovePage.url(fileinfo), "remove", "remove"]
 			end
 		end
 

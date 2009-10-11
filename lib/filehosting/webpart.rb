@@ -32,7 +32,7 @@ module FileHosting
 		def initialize(config, name= nil)
 			raise ArgumentError.new("a name must be given if webpart is cachable") if cachable and !name
 			@config= config
-			name= "webpart/#{config.datasource.user.username}/#{name}" if cachable
+			name= "webpart/#{config.datasource.current_user.username}/#{name}" if cachable
 			@body= config.cache.retrieve(name) if cachable
 			if @body
 				config.datasource.register_op(config.cache.tags(name)) if cachable
@@ -78,7 +78,7 @@ module FileHosting
 		end
 
 		def user
-			datasource.user
+			datasource.current_user
 		end
 
 	end

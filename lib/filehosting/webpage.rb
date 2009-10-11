@@ -83,7 +83,7 @@ module FileHosting
 		end
 
 		def user
-			datasource.user
+			datasource.current_user
 		end
 
 		# Each WebPage child should implement how to build the

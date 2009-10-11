@@ -30,7 +30,7 @@ module FileHosting
 
 		def initialize(config, fileinfo)
 			super(config, "fileinfo/#{fileinfo.uuid}") do
-				[!datasource.check_fileinfo(fileinfo), WebFileInfoPage.url(fileinfo), "view", "view"]
+				[!datasource.pretend(:fileinfo, fileinfo), WebFileInfoPage.url(fileinfo), "view", "view"]
 			end
 		end
 

@@ -26,17 +26,7 @@ module FileHosting
 	# MethodAnnouncing is a framework to announce methods. It's
 	# purpose is to allow method calling without prior knowledge
 	# of which methods are available and which arguments to supply
-	# to it.
-	#
-	# == Arguments
-	#
-	# In a set of arguments each arguments has the following
-	# meaning:
-	# - Class: an object of this class
-	# - [Class]: an array of objects of this class
-	# - [a, b, c]: on of the members of this array
-	# - (a..b): an object in this range.
-	# - (Integer..Integer): if first or last in range is an integer the object must be an integer
+	# to it. The announced arguments are types as in Typiefieng.
 	module MethodAnnouncing
 
 		# Returns an array of all announced methods.
@@ -73,11 +63,13 @@ module FileHosting
 			# empty set was meant.
 			args= [[]] if args.size == 0
 			announced_methods_var[method]= args
+			class_variable_set(:@@announced_last, method)
 		end
 		protected :announce_method
 
-		# Announces that a method has side effects
-		def announce_sideeffect(method)
+		# Announces that a method has side effects. If no
+		# method is specified, this is the last method.
+		def announce_sideeffect(method= announced_last)
 			raise "a non existing method can not have sideeffects: #{method}" unless self.method_defined?(method)
 			announced_sideeffects_var[method]= true
 		end
@@ -98,6 +90,10 @@ module FileHosting
 			class_variable_get(:@@announced_sideeffects)
 		end
 		private :announced_sideeffects_var
+
+		def announced_last
+			class_variable_get(:@@announced_last)
+		end
 
 	end
 

@@ -86,7 +86,7 @@ module FileHosting
 		end
 
 		# returns the history of a user
-		def history_user(user= @user)
+		def history_user(user)
 			[]
 		end
 

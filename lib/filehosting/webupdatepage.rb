@@ -32,8 +32,8 @@ module FileHosting
 
 		def initialize(config, uuid, values= nil)
 			super(config, uuid) do |fileinfo|
-				check_info= !config.datasource.check_update_fileinfo(fileinfo)
-				check_data= !config.datasource.check_update_filedata(fileinfo)
+				check_info= !config.datasource.pretend(:update_fileino, fileinfo)
+				check_data= !config.datasource.pretend(update_filedata, fileinfo)
 				unless check_info or check_data
 					raise OperationNotPermittedError.new("update(#{uuid})")
 				end

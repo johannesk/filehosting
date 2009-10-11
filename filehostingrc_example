@@ -1,0 +1,25 @@
+---
+# the name of this installation
+name: FileHosting
+
+# the datasource to use
+#datasoruce: storage
+datasource: sample
+
+# the  storage to use
+#storage: file
+#storage_args: /tmp/filehosting
+storage: empty
+
+# whether it is forbidden to make changes in the datasource
+#read-only: true
+
+# whether to display in human readable form
+#human: true
+
+# fill all web search boxes with these
+#default_search: ["defaultSearch"]
+
+# the default user
+#username: anonymous
+#password: ""
