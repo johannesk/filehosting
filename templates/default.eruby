@@ -31,8 +31,6 @@
 				<li><a href="<%= webroot %>/createfeed">feed</a></li>
 % if user.username == "anonymous"
 				<li><a href="<%= webroot %>/login">login</a></li>
-% else
-				<li><a href="<%= webroot %>/logout">logout</a></li>
 % end
 			</ul>
 		</div>

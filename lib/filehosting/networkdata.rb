@@ -27,7 +27,7 @@ require "filehosting/internaldatacorruptionerror"
 require "filehosting/fileexistserror"
 require "filehosting/nosuchusererror"
 
-require "uuidtools"
+require "filehosting/uuid"
 require "io2io"
 
 module FileHosting

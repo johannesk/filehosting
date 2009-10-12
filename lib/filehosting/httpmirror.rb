@@ -33,7 +33,7 @@ require "pathname"
 require "net/http"
 require "net/https"
 require "uri"
-require "uuidtools"
+require "filehosting/uuid"
 
 module FileHosting
 

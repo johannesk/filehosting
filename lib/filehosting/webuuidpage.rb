@@ -24,7 +24,7 @@
 require "filehosting/webdefaultpage"
 require "filehosting/errorwrapper"
 
-require "uuidtools"
+require "filehosting/uuid"
 
 module FileHosting
 

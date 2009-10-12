@@ -82,7 +82,6 @@ end
 
 FileHosting::BinEnv.new(SearchArgReader.new) do |env|
 	tags= env.args
-	tags= env.config.datasource.optimize_search(tags) if $human
 	fileinfos= env.config.datasource.search_tags(tags, env.config[:rule])
 	fileinfos_partial= env.config.datasource.search_tags_partial(tags, env.config[:rule]) if env.config[:partial_match]
 

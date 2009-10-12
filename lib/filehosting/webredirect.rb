@@ -35,13 +35,10 @@ module FileHosting
 
 		def initialize(config, location, external= false)
 			super(config)
+			@status= 301
 			@location= location
 			@header["Location"]= webroot.to_s+location
 			@error_handled= external
-		end
-
-		def status
-			301
 		end
 
 		def body

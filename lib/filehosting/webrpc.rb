@@ -24,7 +24,7 @@
 require "filehosting/webpage"
 require "filehosting/typifieing"
 
-require "uuidtools"
+require "filehosting/uuid"
 
 module FileHosting
 

@@ -21,15 +21,15 @@
 #++
 #
 
-require "filehosting/webdefaultpage"
-require "filehosting/html"
+require "filehosting/webredirect"
 
+require "uri"
 
 module FileHosting
 
 	# The login Page has a status of 401 if the user is
 	# 'anonymous'.
-	class WebLogin < WebDefaultPage
+	class WebLogin < WebRedirect
 
 		attr_reader :auth_reason
 
@@ -38,16 +38,29 @@ module FileHosting
 			if @config.datasource.current_user.username == "anonymous"
 				@status= 401
 				@auth_reason= "login"
-				@body= ""
+				@error_handled= false
 			else
 				user= @config.datasource.current_user
 				set_cookie("logged-in", "true")
-				super(config, "logged in", HTML.use_template("loggedin.eruby", binding))
+				path= if referer= ENV["HTTP_REFERER"]
+					begin
+						referer= URI.parse(referer)
+						base= URI.parse(config[:webroot])
+					rescue URI::InvalidURIError
+						"/"
+					end
+					res= referer-base
+					unless res.scheme or res.userinfo or res.host or res.port or res.registry or res.path=~ /^\.\./
+						res.path + (res.query ? "?" + res.query : "")
+					else
+					# not from the this filehosting site
+						"/"
+					end
+				else
+					"/"
+				end
+				super(config, path, true)
 			end
-		end
-
-		def cachable
-			true
 		end
 
 	end

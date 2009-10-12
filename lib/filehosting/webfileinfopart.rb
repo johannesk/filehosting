@@ -25,7 +25,7 @@ require "filehosting/webpart"
 require "filehosting/html"
 require "filehosting/fileinfo"
 
-require "uuidtools"
+require "filehosting/uuid"
 
 module FileHosting
 

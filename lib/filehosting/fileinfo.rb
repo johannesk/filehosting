@@ -23,13 +23,14 @@
 
 require "filehosting/integer"
 require "filehosting/yaml"
-require "filehosting/internaldatacorruptionerror"
 require "filehosting/hash"
 
 require "yaml"
-require "uuidtools"
+autoload :UUID, "filehosting/uuid"
 
 module FileHosting
+
+	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
 
 	# This class holds all the informations about a file.
 	class FileInfo
@@ -166,8 +167,8 @@ YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 			value["groups"].collect { |x| x.to_s }
 		end
 		res
-#	rescue
-#		raise FileHosting::InternalDataCorruptionError
+	rescue
+		raise FileHosting::InternalDataCorruptionError
 	end
 end
 

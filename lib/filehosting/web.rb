@@ -21,20 +21,16 @@
 #++
 #
 
-require "filehosting/web-tiny"
 require "filehosting/web_c"
-require "filehosting/html"
-require "filehosting/error"
-require "filehosting/securityerror"
-require "filehosting/yamltools"
-require "filehosting/webredirect"
 require "filehosting/file"
-require "filehosting/readonlyerror"
 
-require "fileutils"
-require "time"
+require "pathname"
+autoload :FileUtils, "fileutils"
 
 module FileHosting
+
+	autoload :ReadOnlyError, "filehosting/readonlyerror"
+	autoload :OperationNotPermittedError, "filehosting/operationnotpermittederror"
 
 	autoload :WebFileInfoPage, "filehosting/webfileinfopage"
 	autoload :WebUpdatePage,  "filehosting/webupdatepage"
@@ -46,7 +42,7 @@ module FileHosting
 	autoload :WebTagsPage, "filehosting/webtagspage"
 	autoload :WebFile, "filehosting/webfile"
 	autoload :WebLogin, "filehosting/weblogin"
-	autoload :WebLogout, "filehosting/weblogout"
+	autoload :WebRedirect, "filehosting/webredirect"
 	autoload :WebFeed, "filehosting/webfeed"
 	autoload :WebCreateFeedPage, "filehosting/webcreatefeedpage"
 	autoload :WebDownLoadList, "filehosting/webdownloadlist"
@@ -57,6 +53,16 @@ module FileHosting
 	autoload :WebJSON, "filehosting/webjson"
 
 	class Web
+
+		StaticDataDir= Pathname.new("web/data")
+		StaticDateDir= Pathname.new("web/date")
+		StaticHeaderDir= Pathname.new("web/header")
+
+		attr_reader :config
+
+		def initialize(config)
+			@config= config
+		end
 
 		# Returns a String, an IO, or an Array of String's and
 		# IO's. The String holds the data, from an IO can the
@@ -135,7 +141,7 @@ module FileHosting
 				when 404
 					Web404Page.new(config)
 				when 401
-					Web401Page.new(config, args)
+					Web401Page.new(config, "login")
 				when :"read-only"
 					WebReadOnlyPage.new(config)
 				else
@@ -157,8 +163,6 @@ module FileHosting
 				WebSourceCode.new(config)
 			when direction == ["login"]
 				WebLogin.new(config)
-			when direction == ["logout"]
-				WebLogout.new(config, ENV["HTTP_REFERER"] || WebSearchPage.url)
 			when direction == ["tags"]
 				WebTagsPage.new(config)
 			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "newtags", "rules"]).empty?)
@@ -247,6 +251,20 @@ module FileHosting
 				end
 			end
 			return res
+		end
+
+		# parses the query string and returns a hash
+		def self.parse_get(query_string)
+			query_string=~ /^/
+			res= Hash.new
+			while $'=~ /^([^&=]+)=([^&]*)(&|$)/
+				key= $1
+				value= $2
+				res[key.uri_decode]= value.uri_decode
+			end
+			res.delete("x")
+			res.delete("y")
+			res
 		end
 
 		# Parses the extra information in an http var.

@@ -21,11 +21,11 @@
 #++
 #
 
-require "filehosting/fileinfo"
-
-require "uuidtools"
+autoload :UUID, "filehosting/uuid"
 
 module FileHosting
+
+	autoload :FileInfo, "filehosting/fileinfo"
 
 	# A collection of methods for typifieing
 	#

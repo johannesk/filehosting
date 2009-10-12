@@ -22,21 +22,23 @@
 #
 
 require "filehosting/datasource"
-require "filehosting/fileinfo"
-require "filehosting/historyevent"
 require "filehosting/yamltools"
 require "filehosting/user"
 require "filehosting/rule"
-require "filehosting/operationnotpermittederror"
 
 require "pathname"
 require "yaml"
-require "digest/sha2"
-require "filemagic"
-require "fileutils"
-require "io2io"
+autoload :FileUtils, "fileutils"
+autoload :IO2IO, "io2io"
+autoload :FileMagic, "filemagic"
+module Digest
+	autoload :SHA256, "digest/sha2"
+end
 
 module FileHosting
+
+	autoload :FileInfo, "filehosting/fileinfo"
+	autoload :HistoryEvent, "filehosting/historyevent"
 
 	autoload :NoSuchFileError, "filehosting/nosuchfileerror"
 	autoload :FileExistsError, "filehosting/fileexistserror"
@@ -46,6 +48,7 @@ module FileHosting
 	autoload :TagExistsError, "filehosting/tagexistserror"
 	autoload :NoSuchRuleError, "filehosting/nosuchruleerror"
 	autoload :InternalDataCorruptionError , "filehosting/internaldatacorruptionerror"
+	autoload :OperationNotPermittedError, "filehosting/operationnotpermittederror"
 
 	# FileDataSource stores all data in the filesystem
 	class StorageDataSource < DataSource

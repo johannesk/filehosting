@@ -23,12 +23,16 @@
 
 require "filehosting/hash"
 require "filehosting/yaml"
-require "filehosting/internaldatacorruptionerror"
 
 require "yaml"
-require "digest/sha2"
+
+module Digest
+	autoload :SHA256, "digest/sha2"
+end
 
 module FileHosting
+
+	 "filehosting/internaldatacorruptionerror"
 
 	# This class holds all the informations about a user.
 	class User

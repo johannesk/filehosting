@@ -23,17 +23,18 @@
 
 require "filehosting/user"
 require "filehosting/methodannouncing"
-require "filehosting/fileinfo"
 require "filehosting/rule"
-require "filehosting/uuid"
-require "filehosting/algorithms"
 require "filehosting/typifieing"
 
 require "observer"
-require "thread"
+require "filehosting/uuid"
+autoload :Thread, "thread"
 
 module FileHosting
+	
+	autoload :FileInfo, "filehosting/fileinfo"
 
+	autoload :Algorithms, "filehosting/algorithms"
 	autoload :ReadOnlyError, "filehosting/readonlyerror"
 	autoload :NoSuchUserError, "filehosting/nosuchusererror"
 	autoload :InvalidRuleSetError , "filehosting/invalidruleseterror"

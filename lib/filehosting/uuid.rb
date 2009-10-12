@@ -21,12 +21,16 @@
 #++
 #
 
-require "uuidtools"
-
 class UUID
 
 	def uuid
 		self
+	end
+
+	def self.method_missing(method, *args)
+		class <<self; self.send(:remove_method, :method_missing); end
+		require "uuidtools"
+		send(method, *args)
 	end
 
 end

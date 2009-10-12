@@ -22,75 +22,47 @@
 #++
 #
 
-require "filehosting/web-tiny"
+require "filehosting/cgi"
 
-require "pathname"
-require "time"
+cgi= FileHosting::CGI.new
 
-input = if (ENV["CONTENT_LENGTH"] || "0").to_i > 0
-	STDIN
-else
-	nil
+# invalid request
+if cgi.invalid
+	cgi.puts "Status: 400"
+	cgi.puts
+	exit
 end
 
-date= if ENV["HTTP_IF_NOT_MODIFIED_SINCE"]
-	begin
-		date= Time.httpdate(ENV["HTTP_IF_NOT_MODIFIED_SINCE"])
-	rescue ArgumentError
-		puts "Status: 400\n\n"
-		exit
-	end
-else
-	nil
+# is logged in, but didn't send auth
+if cgi.cookies["logged-in"] and ! cgi.username
+	cgi.puts "Status: 401"
+	cgi.puts "WWW-Authenticate: Basic realm=\"login\""
+	cgi.puts
+	exit
 end
 
-if ENV["HTTP_AUTHORIZATION"]
-	require "filehosting/config"
-	require "filehosting/configfilereader"
-	require "base64"
-	auth= Hash.new
-	unless ENV["HTTP_AUTHORIZATION"]=~ /^Basic\s+/
-		puts "Status: 400"
-		puts
-		exit
-	end
-	Base64.decode64($')=~ /^([^:]*):(.*?)$/
-	auth[:username]= $1
-	auth[:password]= $2
-	etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-	homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-	localreader= FileHosting::ConfigFileReader.new("./filehostingrc")
+# read config
+require "filehosting/config"
+require "filehosting/configfilereader"
+require "filehosting/userauthenticationerror"
+etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
+homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+localreader= FileHosting::ConfigFileReader.new("./filehostingrc")
+auth= Hash.new
+auth[:username]= cgi.username if cgi.username
+auth[:password]= cgi.password if cgi.password
+begin
 	config= FileHosting::Config.new(etcreader, homereader, localreader, auth)
-	web= FileHosting::Web.new(config)
-	io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new, input, ENV["CONTENT_TYPE"])
-else
-	if cookies= ENV["HTTP_COOKIE"] and cookies.split("; *").any? { |cookie| cookie=~ /^logged-in=/ }
-		puts "Status: 401"
-		puts "WWW-Authenticate: Basic realm=\"logged-in\""
-		puts
-	end
-	web= FileHosting::Web.new({:storage_args => "/tmp/johannes/filehosting"})
-	io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new, input, ENV["CONTENT_TYPE"]) do
-		require "filehosting/config"
-		require "filehosting/configfilereader"
-		etcreader= FileHosting::ConfigFileReader.new("/etc/filehostingrc")
-		homereader= FileHosting::ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-		localreader= FileHosting::ConfigFileReader.new("./filehostingrc")
-		config= FileHosting::Config.new(etcreader, homereader, localreader)
-		web.config= config
-	end
+rescue FileHosting::UserAuthenticationError
+# on invalid username or password
+	cgi.puts "Status: 401"
+	cgi.puts "WWW-Authenticate: Basic realm=\"login\""
+	cgi.puts
+	exit
 end
 
-unless io
-	exit 1
-end
-
-require "io2io"
-[io].flatten.each do |out|
-	case out
-	when String
-		print out
-	when IO
-		IO2IO.do(out, STDOUT)
-	end
-end
+# get page
+require "filehosting/web"
+web= FileHosting::Web.new(config)
+page= web.get_page(cgi.path, FileHosting::Web.parse_get(cgi.query || ""), cgi.body, cgi.content_type)
+cgi.out(page)

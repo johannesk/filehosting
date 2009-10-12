@@ -348,8 +348,8 @@ module FileHosting
 		end
 		
 		def prefix_lock_files(prefix, files, indexes)
-			res=  [files  ].flatten.collect { |file| prefix_lock_dir(prefix) + "file"  + file.dir_encode }
-			res+= [indexes].flatten.collect { |file| prefix_lock_dir(prefix) + "index" + file.dir_encode }
+			res=  [files  ].flatten.collect { |file| prefix_lock_dir(prefix) + "file"  + file.to_s.dir_encode }
+			res+= [indexes].flatten.collect { |file| prefix_lock_dir(prefix) + "index" + file.to_s.dir_encode }
 			res
 		end
 

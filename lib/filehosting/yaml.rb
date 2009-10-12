@@ -21,8 +21,6 @@
 #++
 #
 
-require "yaml"
-
 module YAMLPropertiesByEval
 
 	def to_yaml_hash

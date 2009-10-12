@@ -59,7 +59,7 @@ require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
 
-autoload "UUID", "uuidtools"
+autoload "UUID", "filehosting/uuid"
 
 module FileHosting
 

@@ -26,7 +26,7 @@ require "filehosting/mirrorlocation"
 require "filehosting/nosuchfileerror"
 
 require "observer"
-require "uuidtools"
+require "filehosting/uuid"
 
 module FileHosting
 
