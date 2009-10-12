@@ -50,7 +50,8 @@ if ENV["HTTP_AUTHORIZATION"]
 	require "base64"
 	auth= Hash.new
 	unless ENV["HTTP_AUTHORIZATION"]=~ /^Basic\s+/
-		puts "Status: 400\n\n"
+		puts "Status: 400"
+		puts
 		exit
 	end
 	Base64.decode64($')=~ /^([^:]*):(.*?)$/
@@ -63,6 +64,11 @@ if ENV["HTTP_AUTHORIZATION"]
 	web= FileHosting::Web.new(config)
 	io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new, input, ENV["CONTENT_TYPE"])
 else
+	if cookies= ENV["HTTP_COOKIE"] and cookies.split("; *").any? { |cookie| cookie=~ /^logged-in=/ }
+		puts "Status: 401"
+		puts "WWW-Authenticate: Basic realm=\"logged-in\""
+		puts
+	end
 	web= FileHosting::Web.new({:storage_args => "/tmp/johannes/filehosting"})
 	io= web.get_page((ENV["PATH_INFO"] || "").sub(/^\//, ""), FileHosting::Web.parse_get(ENV["QUERY_STRING"]) || Hash.new, input, ENV["CONTENT_TYPE"]) do
 		require "filehosting/config"

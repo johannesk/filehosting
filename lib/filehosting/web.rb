@@ -46,6 +46,7 @@ module FileHosting
 	autoload :WebTagsPage, "filehosting/webtagspage"
 	autoload :WebFile, "filehosting/webfile"
 	autoload :WebLogin, "filehosting/weblogin"
+	autoload :WebLogout, "filehosting/weblogout"
 	autoload :WebFeed, "filehosting/webfeed"
 	autoload :WebCreateFeedPage, "filehosting/webcreatefeedpage"
 	autoload :WebDownLoadList, "filehosting/webdownloadlist"
@@ -112,7 +113,7 @@ module FileHosting
 				location=~ /\?/
 				path= $` || location
 				args= self.class.parse_get($' || "")
-				@config.cache.store_link(cache_name, "web/#{@config.datasource.user.username}/#{path.dir_encode}?#{args.dir_encode}", tags, page.date)
+				@config.cache.store_link(cache_name, "web/#{@config.datasource.current_user.username}/#{path.dir_encode}?#{args.dir_encode}", tags, page.date)
 				create_page(path, args)
 			when (not page.cachable)
 				page.to_output
@@ -149,13 +150,15 @@ module FileHosting
 		def page_switch(direction, args, date= nil)
 			case
 			when direction == []
-				WebRedirect.new(config, "/search", true)
+				WebRedirect.new(config, WebSearchPage.url, true)
 			when direction == ["add"]
 				WebAddPage.new(config)
 			when direction == ["sourcecode"]
 				WebSourceCode.new(config)
 			when direction == ["login"]
 				WebLogin.new(config)
+			when direction == ["logout"]
+				WebLogout.new(config, ENV["HTTP_REFERER"] || WebSearchPage.url)
 			when direction == ["tags"]
 				WebTagsPage.new(config)
 			when ([["search"], ["downloadlist"]].include?(direction) and (args.keys - ["tags", "newtags", "rules"]).empty?)

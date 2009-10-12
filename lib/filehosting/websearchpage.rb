@@ -57,14 +57,24 @@ module FileHosting
 		end
 
 		def self.url(tags=[], rule= nil)
-			tags= [tags].flatten
-			rules= if rule
-				"&rules="+
-				rule.conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" \n ").uri_encode
+			args= if tags.size > 0
+				["tags="+
+				[tags].flatten.join(" ").uri_encode]
+			else
+				[]
+			end +
+			if rule
+				["rules="+
+				rule.conditions.collect { |a, test, b| "#{a} #{test} #{b}" }.join(" \n ").uri_encode]
+			else
+				[]
+			end
+			"/search" +
+			if args.size > 0
+				"?"+args.join("&")
 			else
 				""
 			end
-			"/search?tags=" + tags.join(" ").uri_encode+rules
 		end
 
 	end

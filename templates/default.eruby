@@ -26,11 +26,13 @@
 			</div>
 			<ul>
 % if !datasource.pretend(:add_file)
-				<li><a href="<%= webroot %>/add">add File</a></li>
+				<li><a href="<%= webroot %>/add">add file</a></li>
 % end
-				<li><a href="<%= webroot %>/createfeed">Feed</a></li>
+				<li><a href="<%= webroot %>/createfeed">feed</a></li>
 % if user.username == "anonymous"
-				<li><a href="<%= webroot %>/login">Login</a></li>
+				<li><a href="<%= webroot %>/login">login</a></li>
+% else
+				<li><a href="<%= webroot %>/logout">logout</a></li>
 % end
 			</ul>
 		</div>

@@ -23,6 +23,8 @@
 
 require "filehosting/string"
 
+require "uri"
+
 module FileHosting
 
 	autoload :WebFileInfoPart, "filehosting/webfileinfopart"
@@ -84,6 +86,16 @@ module FileHosting
 
 		def user
 			datasource.current_user
+		end
+
+		def set_cookie(name, value)
+			path= URI.parse(@config[:webroot]).path + "/"
+			@header= Hash.new unless instance_variable_defined?(:@header)
+			@header["Set-Cookie"]= " #{name}=\"#{value}\"; path=\"#{path}\";"
+		end
+
+		def delete_cookie(name)
+			set_cookie(name, "")
 		end
 
 		# Each WebPage child should implement how to build the

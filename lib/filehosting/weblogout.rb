@@ -21,35 +21,19 @@
 #++
 #
 
-require "filehosting/webdefaultpage"
-require "filehosting/html"
-
+require "filehosting/webredirect"
 
 module FileHosting
 
-	# The login Page has a status of 401 if the user is
-	# 'anonymous'.
-	class WebLogin < WebDefaultPage
+	# logout and return to a page
+	class WebLogout < WebRedirect
 
-		attr_reader :auth_reason
-
-		def initialize(config)
-			@config= config
-			if @config.datasource.current_user.username == "anonymous"
-				@status= 401
-				@auth_reason= "login"
-				@body= ""
-			else
-				user= @config.datasource.current_user
-				set_cookie("logged-in", "true")
-				super(config, "logged in", HTML.use_template("loggedin.eruby", binding))
-			end
-		end
-
-		def cachable
-			true
+		def initialize(config, location)
+			super(config, location, true)
+			delete_cookie("logged-in")
 		end
 
 	end
 
 end
+

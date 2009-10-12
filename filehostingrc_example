@@ -17,6 +17,9 @@ storage: empty
 # whether to display in human readable form
 #human: true
 
+# the root location of the website
+#webroot: http://example.com/filehosting
+
 # fill all web search boxes with these
 #default_search: ["defaultSearch"]
 
