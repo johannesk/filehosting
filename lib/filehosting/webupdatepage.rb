@@ -33,7 +33,7 @@ module FileHosting
 		def initialize(config, uuid, values= nil)
 			super(config, uuid) do |fileinfo|
 				check_info= config.datasource.pretend(:update_fileino, fileinfo)
-				check_data= config.datasource.pretend(update_filedata, fileinfo)
+				check_data= config.datasource.pretend(:update_filedata, fileinfo)
 				unless check_info or check_data
 					raise check_info or check_data
 				end

@@ -33,7 +33,9 @@
 % if check_info
 			<tr>
 				<th<%  if wrong_tags %> class="wrong_data"<% end %>>tags</th>
-				<td><input type="text" name="tags" value="<%= fileinfo.tags.join(" ").to_html %>" size="50" /></td>
+				<td>
+					<%= use_part(WebTagInputPart, "tags", fileinfo.tags, 50) %>
+				</td>
 			</tr>
 % else
 			<tr>

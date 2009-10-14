@@ -1,0 +1,31 @@
+div.tag_input {
+	display: inline-block;
+	vertical-align: top;
+	text-align: left;
+}
+
+div.tag_input div.autocomplete {
+	position: relative;
+	overflow: visible;
+	max-height: 0px;
+	z-index: 1;
+}
+
+div.tag_input div.autocomplete div {
+	font-size: 80%;
+	font-style: italic;
+	text-align: left;
+	border-color: orange;
+	border-style: solid;
+	border-width: 0px 1px 0px 1px;
+	padding: 3px;
+	background-color: #F5F5DC;
+}
+
+div.tag_input div.autocomplete div:last-child {
+	border-width: 0px 1px 1px 1px;
+}
+
+div.tag_input div.autocomplete div.selected {
+	background-color: yellow;
+}

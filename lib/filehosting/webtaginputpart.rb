@@ -27,24 +27,15 @@ require "filehosting/string"
 
 module FileHosting
 
-	# Displays an input to search for tags.
-	class WebSearchBoxPart < WebPart
+	# Displays an input for tags
+	class WebTagInputPart < WebPart
 
-		# The block is used to build url's. The block is
-		# called everytime a url is build it's arguments
-		# are an array of tags. The block should return an
-		# url.
-		def initialize(config, tags, rule= nil, full=false, &block)
-			@url_builder= block
+		def initialize(config, name, tags= nil, size=nil)
 			super(config) do
-				tags= config[:default_search] if tags.empty?
+				tags= config[:default_search] unless tags
 
-				HTML.use_template("searchboxpart.eruby", binding)
+				HTML.use_template("taginputpart.eruby", binding)
 			end
-		end
-
-		def build_url(tags, rule=nil)
-			@url_builder.call(tags, rule)
 		end
 
 		def cachable

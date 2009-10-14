@@ -10,7 +10,7 @@
 				<td>
 % 	end
 % end
-		<input type="text" name="tags" <% if full %>size="33" <% end %>value="<%= tags.join(" ").to_html %>" />
+<%= use_part(WebTagInputPart, "tags", tags, full ? 33 : nil) %>
 % if full
 % 	if rule
 				</td>

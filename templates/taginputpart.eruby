@@ -1,0 +1,3 @@
+% use "taginputpart.css"
+% use "taginputpart.js"
+<input class="tag_input" type="text" name="<%= name.to_html %>" <% if size %>size="<%= size.to_html %>" <% end %>value="<%= tags.join(" ").to_html %>" />

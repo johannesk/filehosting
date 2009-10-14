@@ -43,7 +43,11 @@ module FileHosting
 			if values
 				@cachable= false
 				fileinfo.filename= values["filename"]
-				fileinfo.tags= values["tags"].split(" ") if values["tags"]
+				fileinfo.tags= if values["tags"]
+					values["tags"].split(" ") 
+				else
+					config[:default_search]
+				end
 				begin
 					fileinfo.user_time= Time.from_form(values["date"]) if values["date"]
 				rescue ArgumentError
