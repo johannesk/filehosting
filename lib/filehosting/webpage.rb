@@ -27,15 +27,6 @@ require "uri"
 
 module FileHosting
 
-	autoload :WebFileInfoPart, "filehosting/webfileinfopart"
-	autoload :WebFileInfoButtonPart, "filehosting/webfileinfobuttonpart"
-	autoload :WebUpdateButtonPart, "filehosting/webupdatebuttonpart"
-	autoload :WebRemoveButtonPart, "filehosting/webremovebuttonpart"
-	autoload :WebFileHistoryButtonPart, "filehosting/webfilehistorybuttonpart"
-	autoload :WebTagSearchPart, "filehosting/webtagsearchpart"
-	autoload :WebSearchBoxPart, "filehosting/websearchboxpart"
-	autoload :WebTagInputPart, "filehosting/webtaginputpart"
-
 	# The parent of all WebPages
 	class WebPage
 

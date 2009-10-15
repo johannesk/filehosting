@@ -1,21 +1,18 @@
 % require "filehosting/websearchpage"
+% use "default.css"
+<%= "% use \"default.css\"" %>
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<title><%= "<"+"%= title.to_html %"+">" %></title>
-		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/default.css" />
-		<link rel="stylesheet" type="text/css" href="<%= webroot %>/style/searchboxpart.css" />
-		<script type="text/javascript" src="<%= webroot %>/js/jquery.js"></script>
-		<script type="text/javascript" src="<%= webroot %>/js/filehosting.js"></script>
-		<script type="text/javascript" src="<%= webroot %>/js/searchboxpart.js"></script>
 <%= "% includes.grep(/\\.css$/).each do |style|
-		<link rel=\"stylesheet\" type=\"text/css\" href=\""%><%= webroot %><%="/style/<"+"%= style %"+">\" />
-% end
-% includes.grep(/\\.js$/).each do |script|
+		<link rel=\"stylesheet\" type=\"text/css\" href=\""%><%= webroot %><%="/<"+"%= style.to_html %"+">\" />
+% end" %>
+<%= "% includes.grep(/\\.js$/).each do |script|
 % 	next if [\"jquery.js\", \"filehosting.js\", \"searchboxpart.js\"].include?(script)
-		<script type=\"text/javascript\" src=\""%><%= webroot %><%="/js/<"+"%= script %"+">\"></script>
+		<script type=\"text/javascript\" src=\""%><%= webroot %><%="/<"+"%= script.to_html %"+">\"></script>
 % end" %>
 	</head>
 	<body>

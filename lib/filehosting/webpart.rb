@@ -21,48 +21,56 @@
 #++
 #
 
+require "filehosting/webdependencies"
+
+autoload :YAML, "yaml"
+
 module FileHosting
+
+	autoload  :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
 
 	# A part of a webpage
 	class WebPart
+
+		include WebDependencies
 
 		attr_reader :config
 		attr_reader :body
 
 		def initialize(config, name= nil)
-			raise ArgumentError.new("a name must be given if webpart is cachable") if cachable and !name
 			@config= config
-			name= "webpart/#{config.datasource.current_user.username}/#{name}" if cachable
-			@body= config.cache.retrieve(name) if cachable
-			if @body
-				config.datasource.register_op(config.cache.tags(name)) if cachable
-			else
-				raise ArgumentError.new("a block must be given if @body is not set") unless block_given?
-				tags= config.datasource.count do
-					@body= yield
-				end.keys
-				config.cache.store(name, @body, tags) if cachable
-			end
-		end
-
-		def use_part(partclass, *args)
-			begin
-				part= if block_given?
-					partclass.new(config, *args) { |*x| yield(*x) }
-				else
-					partclass.new(config, *args)
+			if (if cachable
+				# cachable parts need a name to be stored in the cache
+				if !name
+					raise ArgumentError.new("a name must be given if webpart is cachable")
 				end
-			rescue ArgumentError
-				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
+				bodyname= "webpart/#{config.datasource.current_user.username}/#{name.dir_encode}/body"
+				depsname= "webpart/#{config.datasource.current_user.username}/#{name.dir_encode}/deps"
+				@body= config.cache.retrieve(name)
+			end) and @body
+			# if retrieved from cache
+				# register cache tags
+				config.datasource.register_op(config.cache.tags(bodyname))
+				# register web dependencies
+				use_raw(cached_dependencies(depsname))
+			else
+				unless @body
+					raise ArgumentError.new("a block must be given if @body is not set") unless block_given?
+					tags= config.datasource.count do
+						@body= yield
+					end.keys
+				end
+				if cachable
+				# store in cache
+					config.cache.store(bodyname, @body, tags)
+					config.cache.store(depsname, webdependencies.join("\n"), tags)
+				end
 			end
-			part.body
 		end
 
-		# Includes a stylesheet or javascript file into the
-		# page.
-		def use(usethis)
-			webpage= Thread.current[:"filehosting/webpage"]
-			webpage[-1].use(usethis) if webpage and webpage.size > 0
+		# Retrieves dependencies from the cache
+		def cached_dependencies(name)
+			config.cache.retrive(name).collect { |dep| dep.strip }
 		end
 
 		def cachable

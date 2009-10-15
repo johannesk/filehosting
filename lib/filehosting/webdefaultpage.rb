@@ -23,11 +23,14 @@
 
 require "filehosting/webpage"
 require "filehosting/webdefaultpart"
+require "filehosting/webdependencies"
 
 module FileHosting
 
 	# The parent of all html WebPages
 	class WebDefaultPage < WebPage
+
+		include WebDependencies
 
 		# Body is the body to be embedded between the header
 		# and footer of the page. If title or body is not
@@ -54,42 +57,7 @@ module FileHosting
 
 			# get the body if not already given
 			title, body= yield unless title and body
-			@body= self.class.indent(use_part(WebDefaultPart, title, body, includes))
-		end
-
-		def use_part(partclass, *args)
-			begin
-				# save the current webpage this part is for
-				webpage= Thread.current[:"filehosting/webpage"]
-				unless webpage
-					webpage= []
-					Thread.current[:"filehosting/webpage"]= webpage
-				end
-				webpage<< self
-
-				part= if block_given?
-					partclass.new(config, *args) { |*x| yield(*x) }
-				else
-					partclass.new(config, *args)
-				end
-			rescue ArgumentError
-				raise "wrong arguments for '#{partclass}': '#{args.inspect}'"
-			ensure
-				webpage.pop
-			end
-			part.body
-		end
-
-		# An array of all stylesheet and javascript files to
-		# be included in this page.
-		def includes
-			@includes || []
-		end
-
-		# Includes a stylesheet or javascript file into the
-		# page.
-		def use(usethis)
-			@includes= ((@includes || []) + [usethis]).uniq
+			@body= self.class.indent(use_part(WebDefaultPart, title, body, webdependencies))
 		end
 
 		# Indents the html page. Only works if start and end

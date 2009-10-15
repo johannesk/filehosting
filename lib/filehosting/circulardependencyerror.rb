@@ -25,12 +25,18 @@ require "filehosting/error"
 
 module FileHosting
 
-	# This error indicates internal stored data was not in the
-	# form as it was supposed to be.
-	class InternalDataCorruptionError < Error
+	# This error indicates a circle was detected while evaluating
+	# dependencies.
+	class CircularDependencyError < Error
+
+		attr_reader :deps
+
+		def initialize(deps)
+			@deps= deps
+		end
 
 		def to_s
-			"internal data corruption"
+			"circular dependency: #{@deps.inspect}"
 		end
 
 	end

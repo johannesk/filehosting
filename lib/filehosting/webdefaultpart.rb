@@ -36,6 +36,7 @@ module FileHosting
 			super(config, "default") do
 				HTML.use_template("default.eruby", binding)
 			end
+			includes= (webdependencies + includes).uniq
 			@body= ERB.new(@body, nil, "%").result(binding)
 		end
 
