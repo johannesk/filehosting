@@ -69,21 +69,31 @@ module FileHosting
 
 		attr_reader :config
 		attr_reader :args
+		attr_reader :error
 
 		def initialize(*includes, &block)
 			@includes= includes
 			begin
-				autoreader= AutoConfigReader.new
-				etcreader= ConfigFileReader.new("/etc/filehostingrc")
-				homereader= ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
-				localreader= ConfigFileReader.new("./filehostingrc")
-				@argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
-				@args= @argreader.parse(ARGV)
-				@config= Config.new(autoreader, etcreader, homereader, localreader, @argreader)
-				count= config.datasource.count do
-					block.call(self)
+				begin
+					autoreader= AutoConfigReader.new
+					etcreader= ConfigFileReader.new("/etc/filehostingrc")
+					homereader= ConfigFileReader.new("#{ENV["HOME"]}/.filehostingrc")
+					localreader= ConfigFileReader.new("./filehostingrc")
+					# use the supplied argreader or the standard one
+					@argreader= includes.find { |i| ConfigArgReader === i} || ConfigArgReader.new
+					@args= @argreader.parse(ARGV)
+					@config= Config.new(autoreader, etcreader, homereader, localreader, @argreader)
+				rescue Error => e
+					if includes.include?(e.class)
+						@error= e
+					else
+						raise e
+					end
 				end
 				if ENV["DEBUG"]
+					count= config.datasource.count do
+						block.call(self)
+					end
 					STDERR.puts "#{config.storage.count_read} reads"
 					STDERR.puts "#{config.storage.count_write} writes"
 					STDERR.puts "#{count.keys.size} different operations"
@@ -99,6 +109,8 @@ module FileHosting
 					count.each do |op, num|
 						STDERR.puts op + " "*(max-op.size-num.to_s.size) + num.to_s
 					end
+				else
+					block.call(self)
 				end
 			rescue Error => e
 				puts e

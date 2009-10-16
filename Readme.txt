@@ -15,7 +15,11 @@ Storage
 	- empty
 		The empty Storage alway returns nothing.
 	- file
-		The file Storage uses the filesystem to store data.
+		The file Storage uses the filesystem to store data. Whenever
+		the storage format becomes incompatible with old ones, the
+		version number for the filestorage is increased. If you need
+		to update your stored data from old versions, look at the
+		skripts in skripts.
 
 bin
 ---

@@ -35,15 +35,38 @@ require "io2io"
 module FileHosting
 
 	autoload :InternalDataCorruptionError, "filehosting/internaldatacorruptionerror"
+	autoload :FileStorageVersionMismatchError, "filehosting/filestorageversionmismatcherror"
 
 	# FileStorage implements a Storage, where all data is saved 
 	# just in the filesystem.
 	class FileStorage < Storage
 
+		def self.version
+			1
+		end
+
 		def initialize(dir)
 			super()
 			dir= Pathname.new(dir) unless Pathname === dir
 			dir.mkpath unless dir.directory?
+			versionfile= dir+".version"
+			if dir.children.size == 0
+			# this is a new storage
+				# create version
+				versionfile.open("w") { |f| f.write(self.class.version) }
+			else
+			# this is an existing storage
+				# read version
+				version= if versionfile.file?
+					versionfile.read.to_i
+				else
+					0
+				end
+				# check for correct version
+				unless version == self.class.version
+					raise FileStorageVersionMismatchError.new(dir, self.class.version, version)
+				end
+			end
 			@dir= dir
 		end
 
