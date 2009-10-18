@@ -90,7 +90,7 @@ module FileHosting
 						raise e
 					end
 				end
-				if ENV["DEBUG"]
+				if config[:verbose]
 					count= config.datasource.count do
 						block.call(self)
 					end

@@ -46,6 +46,13 @@ module FileHosting
 			@pages= Hash.new
 		end
 
+		# output's messages if needed
+		def verbose(message)
+			if HTTPMirror == self.class and @config[:verbose]
+				puts message
+			end
+		end
+
 		# make a http get and returns the http response
 		def read_http(url, header= {})
 			url= URI.prase(url) unless URI === url
@@ -84,7 +91,10 @@ module FileHosting
 			url= URI.parse(url) unless URI === url
 			body= read(url)
 			res= []
-			return res unless body
+			unless body
+				verbose("could not read url '#{url}'")
+				return res
+			end
 			body=~ /^/
 			while $'=~ /<a(\s+\w+=['"][^'"]*['"])*\s+href=['"]([^'"]+)['"](\s+\w+=['"][^"]*['"])*\s*>/
 				begin
@@ -94,7 +104,16 @@ module FileHosting
 					res<< link
 				end
 			end
-			res.select { |l| l.to_s=~ pattern }
+			if res.size == 0
+				verbose("no url's on page found '#{url}'")
+				return res
+			elsif pattern
+				res= res.select { |l| l.to_s=~ pattern }
+				if res.size == 0
+					verbose("no url's for pattern found '#{url}' #{pattern.inspect}")
+				end
+			end
+			res
 		end
 
 		# loads a file from a url and creates a fileinfo

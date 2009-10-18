@@ -122,10 +122,10 @@ module FileHosting
 					arg[i]+" "*(max[i]+2-arg[i].size)
 				end.join +
 				"     " +
-				arg.collect do |s|
+				(arg.collect do |s|
 					s=~ /^--?(\w+)$/
 					eval("help_#{$1}") if methods.include?("help_#{$1}")
-				end.find { |x| x }
+				end+[""]).find { |x| x }
 			end
 			banner+"\n" + messages.join("\n")
 		end
@@ -163,7 +163,7 @@ module FileHosting
 		def switch_datasource(source)
 			@values[:datasource]= source
 		end
-		alias :switch_s :switch_datasource
+		alias :switch_d :switch_datasource
 
 		def help_user
 			"select the user"
@@ -191,6 +191,15 @@ module FileHosting
 			@values.merge!(ConfigFileReader.new(filename).read)
 		end
 		alias :switch_c :switch_config
+
+		def help_verbose
+			"more verbose output"
+		end
+
+		def switch_verbose
+			@values[:verbose]= true
+		end
+		alias :switch_v :switch_verbose
 
 	end
 

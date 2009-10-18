@@ -51,8 +51,12 @@ module FileHosting
 			end
 			@header["Content-Type"]= @fileinfo.mimetype
 			@header["Content-Disposition"]= "attachment;filename=#{@fileinfo.filename}"
-			file= config.datasource.filedate(@uuid, File)
-			@header["x-sednfile"]= file.path
+			if config[:"x-sendfile"]
+				file= config.datasource.filedata(@uuid, File)
+				@header["X-Sendfile"]= file.path
+				# This is for lighty-1.4
+				@header["X-LIGHTTPD-send-file"]= file.path
+			end
 		end
 
 		def body

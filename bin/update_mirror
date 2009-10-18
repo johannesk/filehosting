@@ -26,21 +26,23 @@ require "filehosting/binenv"
 require "filehosting/mirror"
 
 FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new("name")) do |env|
-	class <<env
-		def update(type, url, uuid)
-			print case type
-			when :create
-				"new:    "
-			when :update
-				"update: "
-			else
-				""
-			end
-			puts url.to_s
-		end
-	end
 	name= env.args.shift
 	mirror= FileHosting::Mirror.new(env.config)
-	mirror.add_observer(env) if env.config[:human]
+	if env.config[:verbose]
+		class <<env
+			def update(type, url, uuid)
+				print case type
+				when :create
+					"new:    "
+				when :update
+					"update: "
+				else
+					""
+				end
+				puts url.to_s
+			end
+		end
+		mirror.add_observer(env) if env.config[:human]
+	end
 	mirror.check(name)
 end
