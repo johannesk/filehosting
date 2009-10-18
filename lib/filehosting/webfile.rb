@@ -38,14 +38,12 @@ module FileHosting
 				@uuid= UUID.parse(uuid)
 			rescue ArgumentError
 				@status= 404
-				@cachable= true
 				return
 			end
 			begin
 				@fileinfo= @config.datasource.fileinfo(@uuid)
 			rescue NoSuchFileError
 				@status= 404
-				@cachable= true
 				return
 			end
 			if date and @fileinfo.data_time == date
@@ -53,10 +51,21 @@ module FileHosting
 			end
 			@header["Content-Type"]= @fileinfo.mimetype
 			@header["Content-Disposition"]= "attachment;filename=#{@fileinfo.filename}"
+			file= config.datasource.filedate(@uuid, File)
+			@header["x-sednfile"]= file.path
 		end
 
 		def body
-			@config.datasource.filedata(@uuid, IO)
+			unless @config[:"x-sendfile"]
+				@config.datasource.filedata(@uuid, IO)
+			else
+				""
+			end
+		end
+
+		def cachable
+			!(status == 304) and
+			(@config[:"x-sendfile"] or status == 404)
 		end
 
 		def time

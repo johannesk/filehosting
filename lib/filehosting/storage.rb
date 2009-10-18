@@ -237,8 +237,8 @@ module FileHosting
 						if glocks[0].size + glocks[1].size + glocks[2].size + glocks[3].size > 0 and
 						    file_r.size+cfr.size+index_r.size+cir.size+file_w.size+cfw.size+index_w.size+ciw.size > 0
 							STDERR.puts "You should avoid not to acquire all locks at the same time"
-							STDERR.puts "already acquired: "#{glocks.inspet}"
-							STDERR.puts "new locks: "#{[file_r + cfr, index_r + cir, file_w + cfw, index_w + ciw].inspect}"
+							#STDERR.puts "already acquired: "#{glocks.inspet}"
+							#STDERR.puts "new locks: "#{[file_r + cfr, index_r + cir, file_w + cfw, index_w + ciw].inspect}"
 						end
 						glocks[0]+= file_r
 						glocks[0]+= cfr
@@ -302,7 +302,7 @@ module FileHosting
 			minus= nil
 			lock(prefix, [], [], name, [], lambda do
 				rev= indexes_by_record(prefix, name)
-				plus= rev-index
+				plus= index - rev
 				minus= rev - index
 				[[], [], [], plus+minus]
 			end) do

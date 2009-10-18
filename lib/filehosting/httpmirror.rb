@@ -52,7 +52,7 @@ module FileHosting
 			http= Net::HTTP.new(url.host, url.port)
 			http.use_ssl= true if url.scheme == "https"
 			http.start do
-				request = Net::HTTP::Get.new(url.path)
+				request = Net::HTTP::Get.new(url.path + (url.query ? "?#{url.query}" : ""))
 				if url.user
 					request.basic_auth(url.user, url.password)
 				end

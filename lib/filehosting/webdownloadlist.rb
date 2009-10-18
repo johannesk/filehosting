@@ -32,9 +32,8 @@ module FileHosting
 	class WebDownLoadList < WebPage
 
 		def initialize(config, tags=[], rule= nil)
-			@config= config
-			@header= {"Content-Type" => "text/plain; charset=utf-8"}
-			@status= 200
+			super(config)
+			@header["Content-Type"]= "text/plain; charset=utf-8"
 			@cachable= true
 			tags.flatten!
 			begin
@@ -44,12 +43,10 @@ module FileHosting
 					config.datasource.search_tags(tags, rule)
 				end
 				@body= files.collect { |f| webroot + WebFile.url(f) + "\n" }.join
-				@size= @body.size
 			rescue RuleError => e
 				raise e unless e.rule == rule
 				@status= 400
 				@body= ""
-				@size= 0
 			end
 		end
 
