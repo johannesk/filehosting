@@ -24,15 +24,45 @@
 
 require "filehosting/binenv"
 require "filehosting/mirror"
-require "filehosting/mirrorlocation"
+require "filehosting/mirrorauth"
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["name", "type", "location", "pattern"])) do |env|
-	name= env.args.shift
-	loc= FileHosting::Mirror::Location.new
-	loc.type= env.args.shift.to_sym
-	loc.location= env.args.shift
-	loc.pattern= /#{env.args.shift}/
+class AddMirrorAuthArgReader < FileHosting::ConfigArgReader
+
+	def banner
+		super + " <auth-type> <identifier> <auth_data> <location .. location>"
+	end
+
+	define_method(:"help_auth-types") do
+		"list available auth-types"
+	end
+
+	define_method(:"switch_auth-types") do
+		puts "available auth-types:"
+		puts
+		puts "\thttp_basic_auth"
+		exit
+	end
+	alias :switch_t :"switch_auth-types"
+
+	def arg_count
+		(4..1.0/0)
+	end
+
+end
+
+FileHosting::BinEnv.new(AddMirrorAuthArgReader.new) do |env|
+	type= env.args.shift
+	identifier= env.args.shift
+	auth_data= env.args.shift
+	locations= env.args
+	auth= case type
+	when "http_basic_auth"
+		FileHosting::Mirror::Auth.http_basic_auth(identifier, auth_data, locations)
+	else
+		puts "invalid auth-type"
+		exit 2
+	end
 
 	mirror= FileHosting::Mirror.new(env.config)
-	mirror.remove(name, loc)
+	mirror.add_auth(auth)
 end

@@ -30,61 +30,65 @@ require "yaml"
 
 module FileHosting
 
-	# This class holds the information about a specific location
-	# which should be mirrored.
-	class MirrorLocation
+	class Mirror
 
-		include YAMLPropertiesByEval
+		# This class holds the information about a specific location
+		# which should be mirrored.
+		class Location
 
-		# which type of mirror
-		attr_accessor :type
+			include YAMLPropertiesByEval
 
-		# the location of the mirror
-		attr_accessor :location
+			# which type of mirror
+			attr_accessor :type
 
-		# the pattern which all new filenames must match
-		attr_accessor :pattern
+			# the location of the mirror
+			attr_accessor :location
 
-		# which tags should the mirrored files have
-		attr_accessor :tags
+			# the pattern which all new filenames must match
+			attr_accessor :pattern
 
-		# with what should the source be overwritten
-		attr_accessor :source
+			# which tags should the mirrored files have
+			attr_accessor :tags
 
-		def initialize(type= nil, location= nil, pattern= nil, tags= nil, source= nil)
-			@type= type
-			@location= location
-			@pattern= pattern
-			@tags= tags
-			@source= source
-		end
+			# with what should the source be overwritten
+			attr_accessor :source
 
-		def to_hash
-			{
-				:type     => @type,
-				:location => @location,
-				:pattern  => @pattern,
-				:tags     => @tags,
-				:source   => @source,
-			}
-		end
+			def initialize(type= nil, location= nil, pattern= nil, tags= nil, source= nil)
+				@type= type
+				@location= location
+				@pattern= pattern
+				@tags= tags
+				@source= source
+			end
 
-		def to_yaml_hash
-			{
-				"type"     => lambda { @type },
-				"location" => lambda { @location },
-				"pattern"  => lambda { @pattern.source },
-				"tags"     => lambda { @tags },
-				"source"   => lambda { @source },
-			}
-		end
+			def to_hash
+				{
+					:type     => @type,
+					:location => @location,
+					:pattern  => @pattern,
+					:tags     => @tags,
+					:source   => @source,
+				}
+			end
 
-		def to_text
-			to_hash.to_text([:type, :location, :pattern, :tags, :source])
-		end
+			def to_yaml_hash
+				{
+					"type"     => lambda { @type },
+					"location" => lambda { @location },
+					"pattern"  => lambda { @pattern.source },
+					"tags"     => lambda { @tags },
+					"source"   => lambda { @source },
+				}
+			end
 
-		def to_yaml_type
-			"!filehosting/mirrorlocation"
+			def to_text
+				to_hash.to_text([:type, :location, :pattern, :tags, :source])
+			end
+
+			def to_yaml_type
+				"!filehosting/mirrorlocation"
+			end
+
 		end
 
 	end
@@ -93,7 +97,7 @@ end
 
 YAML.add_domain_type("filehosting.yaml.org,2002", "mirrorlocation") do |tag, value|
 	begin
-		res= FileHosting::MirrorLocation.new
+		res= FileHosting::Mirror::Location.new
 		res.type= value["type"].to_sym
 		res.location= value["location"].to_s
 		res.pattern= /#{value["pattern"].to_s}/

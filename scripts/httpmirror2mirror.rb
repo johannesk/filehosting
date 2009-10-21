@@ -54,7 +54,7 @@ FileHosting::BinEnv.new do |env|
 					raise FileHosting::InternalDataCorruptionError unless String === tag
 				end
 				raise FileHosting::InternalDataCorruptionError unless String === source or source == nil
-				location= FileHosting::MirrorLocation.new
+				location= FileHosting::Mirror::Location.new
 				location.type= :http
 				location.location= url
 				location.pattern= pattern

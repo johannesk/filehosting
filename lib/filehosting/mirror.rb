@@ -24,6 +24,8 @@
 require "filehosting/yamltools"
 require "filehosting/mirrorlocation"
 require "filehosting/nosuchfileerror"
+require "filehosting/mirrorlocation"
+require "filehosting/mirrorauth"
 
 require "observer"
 require "filehosting/uuid"
@@ -131,6 +133,56 @@ module FileHosting
 			store_file_list(name, files)
 		end
 
+		# Returns an array of all suitable Auth objects for
+		# the given arguments. The array is sorted by most
+		# specific location first.
+		def find_auth_all(auth_type, location)
+			auth_by_type(auth_type).collect do |auth| 
+			# the prefix length for each auth
+				[auth.usable_in?(location), auth]
+			end.select do |length, auth|
+			# only auth with existing prefix length
+				length
+			end.sort do |a, b|
+			# sort by prefix length. Longest first.
+				b[0] <=> a[0]
+			end.collect do |length, auth|
+			# only auth not length
+				auth
+			end
+		end
+
+		# Retuns the most specific auth object for the given
+		# arguments.
+		def find_auth(auth_type, location)
+			find_auth_all(auth_type, location)[0]
+		end
+
+		# Returns an arry of all Auth objects for this type
+		def auth_by_type(auth_type)
+			list= @storage.read(auth_list_name(auth_type))
+			return [] unless list
+			list= YAMLTools.parse_array(list, Mirror::Auth)
+			list
+		end
+
+		# adds an Auth object to the storage
+		def add_auth(auth)
+			list= auth_by_type(auth.auth_type)
+			list<< auth
+			store_auth_list(auth.auth_type, list)
+		end
+
+		# removes an Auth object from the storage
+		def remove_auth(auth)
+			list= auth_by_type(auth.auth_type)
+			list.delete_if do |a|
+				a.identifier == auth.identifier and
+				a.locations.sort == auth.locations.sort
+			end
+			store_auth_list(auth.auth_type, list)
+		end
+
 		# replaces \1 .. \9 in tags with data from mdata
 		def self.grep_tags(tags, mdata)
 			tags.collect do |tag|
@@ -151,7 +203,7 @@ module FileHosting
 		def locations(name)
 			list= @storage.read(location_list_name(name))
 			return [] unless list
-			list= YAMLTools.parse_array(list, MirrorLocation)
+			list= YAMLTools.parse_array(list, Mirror::Location)
 			list
 		end
 		alias :location_list :locations
@@ -183,7 +235,7 @@ module FileHosting
 					unless self.respond_to?("plugin_#{name}")
 						require "plugins/mirror/#{name}"
 					end
-					@plugins[name]= eval("self.plugin_#{name}").new(@config)
+					@plugins[name]= send(:"plugin_#{name}").new(@config, self)
 					@plugins[name].add_observer(self)
 				end
 			end
@@ -258,12 +310,25 @@ module FileHosting
 			end
 		end
 
+		def store_auth_list(auth_type, list)
+			name= auth_list_name(auth_type)
+			if list.size == 0
+				@storage.remove(name)
+			else
+				@storage.store_data(name, list.to_yaml)
+			end
+		end
+
 		def file_list_name(name)
-			"files/#{name}"
+			"files/#{name.dir_encode}"
 		end
 
 		def location_list_name(name)
-			"locations/#{name}"
+			"locations/#{name.dir_encode}"
+		end
+
+		def auth_list_name(auth_type)
+			"auth/#{auth_type.to_s.dir_encode}"
 		end
 
 	end

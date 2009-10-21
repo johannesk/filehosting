@@ -41,8 +41,8 @@ module FileHosting
 
 	class HTTPMirror < MirrorPlugin
 
-		def initialize(config)
-			@config= config
+		def initialize(config, mirror)
+			super(config, mirror)
 			@pages= Hash.new
 		end
 
@@ -62,6 +62,8 @@ module FileHosting
 				request = Net::HTTP::Get.new(url.path + (url.query ? "?#{url.query}" : ""))
 				if url.user
 					request.basic_auth(url.user, url.password)
+				elsif auth= find_auth("http_basic_auth", url.to_s)
+					request.basic_auth(auth.identifier, auth.auth_data)
 				end
 				header.each do |key, val|
 					request[key]= val
@@ -191,12 +193,15 @@ module FileHosting
 		def check_update(files)
 			result= []
 			files.values.each do |fileinfo, data|
+				# check all files
 				raise InternalDataCorruptionError unless String === data
+				# create URI object
 				begin
 					url= URI.parse(data)
 				rescue URI::InvalidURIError
 					raise InternalDataCorruptionError
 				end
+				# check for updates
 				if filedata= update_file(fileinfo, url)
 					result<< [fileinfo, filedata, data, data]
 					notify_observers(:update, data, fileinfo.uuid)

@@ -49,7 +49,7 @@ end
 
 FileHosting::BinEnv.new(AddArgReader.new) do |env|
 	name= env.args.shift
-	loc= FileHosting::MirrorLocation.new
+	loc= FileHosting::Mirror::Location.new
 	loc.type= env.args.shift.to_sym
 	loc.location= env.args.shift
 	loc.pattern= /#{env.args.shift}/

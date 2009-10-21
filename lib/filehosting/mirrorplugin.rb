@@ -37,8 +37,19 @@ module FileHosting
 			super(type, human_readable, uuid)
 		end
 
-		def initialize(config)
+		def initialize(config, mirror)
 			@config= config
+			@mirror= mirror
+		end
+
+		# Use this to find your auth data
+		def find_auth(auth_type, location)
+			@mirror.find_auth(auth_type, location)
+		end
+
+		# Use this to find your auth data
+		def find_auth_all(auth_type, location)
+			@mirror.find_auth_all(auth_type, location)
 		end
 
 		# This method should check for all new files in

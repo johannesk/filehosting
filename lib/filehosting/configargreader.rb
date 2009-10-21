@@ -47,7 +47,7 @@ module FileHosting
 				case arg= args.shift
 				when "--"
 					return res + args
-				when /^--?(\w+)$/
+				when /^--?([\w-]+)$/
 					switch_help unless m.include?(arg)
 					block= method("switch_#{$1}")
 					a= []
@@ -93,7 +93,7 @@ module FileHosting
 			meth= []
 			res= []
 			switches.each do |s|
-				s=~ /^--?(\w+)$/
+				s=~ /^--?([\w-]+)$/
 				m= method("switch_#{$1}")
 				if meth.include?(m)
 					res[meth.index(m)] << s

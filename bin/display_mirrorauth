@@ -24,15 +24,10 @@
 
 require "filehosting/binenv"
 require "filehosting/mirror"
-require "filehosting/mirrorlocation"
 
-FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new(["name", "type", "location", "pattern"])) do |env|
-	name= env.args.shift
-	loc= FileHosting::Mirror::Location.new
-	loc.type= env.args.shift.to_sym
-	loc.location= env.args.shift
-	loc.pattern= /#{env.args.shift}/
+FileHosting::BinEnv.new(FileHosting::ConfigSimpleArgReader.new("auth-type")) do |env|
+	type= env.args.shift
 
 	mirror= FileHosting::Mirror.new(env.config)
-	mirror.remove(name, loc)
+	puts mirror.auth_by_type(type).to_text
 end
