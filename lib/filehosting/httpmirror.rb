@@ -62,7 +62,7 @@ module FileHosting
 				request = Net::HTTP::Get.new(url.path + (url.query ? "?#{url.query}" : ""))
 				if url.user
 					request.basic_auth(url.user, url.password)
-				elsif auth= find_auth("http_basic_auth", url.to_s)
+				elsif auth= find_auth(:http_basic_auth, url.to_s)
 					request.basic_auth(auth.identifier, auth.auth_data)
 				end
 				header.each do |key, val|
