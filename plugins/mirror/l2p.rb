@@ -61,10 +61,15 @@ module FileHosting
 			end.gsub(" ", "+")
 		end
 
+		def uri_from_link(link)
+			if link.href and !(link.href=~ /^javascript:/)
+				link.page.uri + URI.parse(correct_uri_encoding(link.href))
+			end
+		end
+
 		# Finds all document url's for an l2p room. If pattern
 		# is giving only those matching that pattern.
 		def find_urls(url, pattern= nil)
-			url+= URI.parse("materials/default.aspx")
 			res= Hash.new
 			used= Hash.new
 			mechanize= WWW::Mechanize.new
@@ -74,21 +79,18 @@ module FileHosting
 			end
 			
 			begin
-				links= mechanize.get(url).links
+				links= mechanize.get(url+= URI.parse("materials/default.aspx")).links
 			rescue
 				verbose("could not read url '#{url}'")
 				return []
 			end
+
 			while links.size > 0
 				newlinks= []
 				links.each do |link|
-					# no empty links
-					next unless link.href
-					# no javascript links
-					next if link.href=~ /^javascript:/
-					href= link.page.uri + URI.parse(correct_uri_encoding(link.href))
+					next unless href= uri_from_link(link)
 					case link.href
-					when /\/materials\/default.aspx\?/
+					when /\/materials\/default.aspx|\/exerciseCourse\/(default.aspx|AssignmentSheets\/display.aspx\?)/
 						unless used[href]
 							begin
 								newlinks+= mechanize.click(link).links
@@ -98,7 +100,8 @@ module FileHosting
 							used[href]= true
 						end
 					when  /\/materials\/documents\/Forms\/all.aspx/
-					when  /\/materials\/documents\/./
+					when  /\/materials\/structured\/Forms\/all.aspx/
+					when  /\/(materials\/(documents|structured)|exerciseCourse\/Assignment(Documents|Attachments))\/./
 						res[href]= true
 					end
 				end
@@ -106,6 +109,7 @@ module FileHosting
 			end
 
 			res= res.keys
+			puts res
 			if res.size == 0
 				verbose("no url's on page found '#{url}'")
 				return res
