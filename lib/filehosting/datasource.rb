@@ -242,6 +242,7 @@ module FileHosting
 		# searches for all files with these tags
 		# see search_finalize when reimplementing this method
 		def search_tags(tags, rule= nil)
+			correct_tags(tags)
 			pretend_raise(:search_tags)
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
@@ -252,6 +253,7 @@ module FileHosting
 		# searches for all files with at least on of this tags
 		# see search_finalize when reimplementing this method
 		def search_tags_partial(tags, rule=nil)
+			correct_tags(tags)
 			pretend_raise(:search_tags_partial)
 			register_op(tags.collect { |tag| "tags/#{tag}" } )
 		end
@@ -366,7 +368,7 @@ module FileHosting
 		# file.
 		def add_file(fileinfo, file)
 			pretend_raise(:add_file, fileinfo)
-			fileinfo.tags.collect! { |t| real_tag(t) }
+			corret_tags(fileinfo.tags)
 			notify_observers("files")
 			notify_observers("files/#{fileinfo.uuid}")
 			fileinfo.tags.each do |tag|
@@ -542,7 +544,7 @@ module FileHosting
 
 		# The following methods need not to be reimplemented
 		# in a child class of DataSource.
-		
+
 		# This should be called by search, search_partial and
 		# files to generate the real result.
 		def search_finalize(uuids, rule= nil)
@@ -570,6 +572,11 @@ module FileHosting
 		end
 		announce_method :real_tag, [String]
 		needs_rule "tags"
+
+		# Replaces tags inplace with the real tags.
+		def correct_tags(tags)
+			tags.collect! { |tag| real_tag(tag) }
+		end
 
 		# returns the fileinfo for the file with this uuid
 		def fileinfo(uuid)
@@ -737,7 +744,7 @@ module FileHosting
 			@@needs_rule[method].each do |rule, how|
 				rule_args= case how
 				when Proc
-					how.call(self, args)
+					how.call(self, *args)
 				else
 					begin
 						Typifieing::scan_args(@@rulesets[rule], args)

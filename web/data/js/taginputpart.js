@@ -124,6 +124,7 @@ FileHosting.TagInputPart= function (dom) {
 					current.prev().addClass("selected");
 					current.removeClass("selected");
 				}
+				return false;
 				break;
 			case 40: // down
 				if (current.length == 0) {
@@ -132,9 +133,11 @@ FileHosting.TagInputPart= function (dom) {
 					current.next().addClass("selected");
 					current.removeClass("selected");
 				}
+				return false;
 				break;
 			case 13: // enter
 				if (current.length == 1) {
+					current.removeClass("selected")
 					obj.setTag(current.text());
 					return false;
 				}

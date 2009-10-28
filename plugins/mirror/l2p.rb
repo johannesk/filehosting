@@ -109,7 +109,6 @@ module FileHosting
 			end
 
 			res= res.keys
-			puts res
 			if res.size == 0
 				verbose("no url's on page found '#{url}'")
 				return res

@@ -60,6 +60,7 @@ module FileHosting
 
 		# searches for all files with these tags
 		def search_tags(tags, rule= nil)
+			super(tags, rule)
 			tags.each do |tag|
 				return [] unless tag_exists?(tag)
 			end
@@ -75,6 +76,7 @@ module FileHosting
 
 		# searches for all files with at least on of this tags
 		def search_tags_partial(tags, rule= nil)
+			super(tags, rule)
 			tags.each do |tag|
 				return [] unless tag_exists?(tag)
 			end
