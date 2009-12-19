@@ -34,7 +34,7 @@ module FileHosting
 
 		def initialize(config, fileinfo, small= false)
 			uuid= case fileinfo
-			when UUID
+			when UUIDTools::UUID
 				fileinfo
 			when FileInfo
 				fileinfo.uuid

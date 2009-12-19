@@ -452,7 +452,7 @@ module FileHosting
 			case fileinfo
 			when FileInfo
 				"fileinfo/" + fileinfo.uuid.to_s
-			when UUID
+			when UUIDTools::UUID
 				"fileinfo/" + fileinfo.to_s
 			end
 		end
@@ -500,7 +500,7 @@ module FileHosting
 
 		def uuid_from_name(name)
 			begin
-				UUID.parse(tag_from_name(name))
+				UUIDTools::UUID.parse(tag_from_name(name))
 			rescue ArgumentError
 				raise InternalDataCorruptionError
 			end

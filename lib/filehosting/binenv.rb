@@ -58,8 +58,7 @@ require "filehosting/autoconfigreader"
 require "filehosting/configfilereader"
 require "filehosting/configargreader"
 require "filehosting/error"
-
-autoload "UUID", "filehosting/uuid"
+require "filehosting/uuid"
 
 module FileHosting
 
@@ -126,7 +125,7 @@ module FileHosting
 
 		def read_uuid(str)
 			begin
-				UUID.parse(str)
+				UUIDTools::UUID.parse(str)
 			rescue ArgumentError => e
 				STDERR.puts e
 				exit 1

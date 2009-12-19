@@ -68,7 +68,7 @@ module FileHosting
 				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless args.size == 3
 				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless [:create, :update].include?(args[0])
 				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless String === args[1]
-				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless UUID === args[2]
+				raise ArgumentError.new("notify_observers needs these arguments: (type, url, uuid)") unless UUIDTools::UUID === args[2]
 			end
 			notify_observers(*args)
 			@update_list<< args[2]
@@ -269,7 +269,7 @@ module FileHosting
 					raise InternalDataCorruptionError unless Array === b
 					raise InternalDataCorruptionError unless b.size == 2
 					begin
-						uuid= UUID.parse(b[0])
+						uuid= UUIDTools::UUID.parse(b[0])
 					rescue ArgumentError
 						raise InternalDataCorruptionError
 					end

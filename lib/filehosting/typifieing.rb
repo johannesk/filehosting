@@ -21,7 +21,7 @@
 #++
 #
 
-autoload :UUID, "filehosting/uuid"
+require "filehosting/uuid"
 
 module FileHosting
 
@@ -49,7 +49,7 @@ module FileHosting
 			# Class
 				type === arg or
 			# FileInfo
-				type == UUID and FileInfo === arg
+				type == UUIDTools::UUID and FileInfo === arg
 			when Array
 				Array === arg and
 				if type.size == 1
@@ -149,10 +149,10 @@ module FileHosting
 			when Float == type
 			# Float
 				raw.to_f if raw=~ /^-?(0|[1-9][0-9]*)\.(0|[0-9]*[1-9])$/
-			when UUID == type
-			# UUID
+			when UUIDTools::UUID == type
+			# UUIDTools::UUID
 				begin
-					UUID.parse(raw)
+					UUIDTools::UUID.parse(raw)
 				rescue ArgumentError
 				end
 			when Array === type && type.size == 1

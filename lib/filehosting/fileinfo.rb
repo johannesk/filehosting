@@ -24,9 +24,9 @@
 require "filehosting/integer"
 require "filehosting/yaml"
 require "filehosting/hash"
+require "filehosting/uuid"
 
 require "yaml"
-autoload :UUID, "filehosting/uuid"
 
 module FileHosting
 
@@ -38,7 +38,7 @@ module FileHosting
 		include YAMLPropertiesByEval
 
 		# the RFC 4122 uuid for this file. It should always be
-		# stored as a UUID object.
+		# stored as a UUIDTools::UUID object.
 		attr_accessor :uuid
 
 		# the file name
@@ -75,7 +75,7 @@ module FileHosting
 		attr_accessor :groups
 
 		def initialize
-			@uuid= UUID.random_create
+			@uuid= UUIDTools::UUID.random_create
 		end
 
 		def -(other)
@@ -143,7 +143,7 @@ end
 YAML.add_domain_type("filehosting.yaml.org,2002", "fileinfo") do |tag, value|
 	begin
 		res= FileHosting::FileInfo.new
-		res.uuid= UUID.parse(value["uuid"])
+		res.uuid= UUIDTools::UUID.parse(value["uuid"])
 		res.filename= value["filename"].to_s
 		res.source= value["source"].to_s
 		res.mimetype= value["mimetype"].to_s

@@ -354,7 +354,7 @@ module FileHosting
 			pretend_raise(:filedata, uuid)
 			register_op("files/#{uuid.uuid}")
 		end
-		announce_method :filedata, [UUID]
+		announce_method :filedata, [UUIDTools::UUID]
 		needs_rule "file"
 		needs_rule "file_withdata"
 		needs_rule "file_data"
@@ -368,7 +368,7 @@ module FileHosting
 		# file.
 		def add_file(fileinfo, file)
 			pretend_raise(:add_file, fileinfo)
-			corret_tags(fileinfo.tags)
+			correct_tags(fileinfo.tags)
 			notify_observers("files")
 			notify_observers("files/#{fileinfo.uuid}")
 			fileinfo.tags.each do |tag|
@@ -404,7 +404,7 @@ module FileHosting
 				notify_observers("tags")
 			end
 		end
-		announce_method :update_fileinfo, [UUID]
+		announce_method :update_fileinfo, [UUIDTools::UUID]
 		announce_sideeffect
 		needs_to_write
 		needs_rule "file"
@@ -419,8 +419,8 @@ module FileHosting
 			notify_observers("files")
 			notify_observers("files/#{uuid.uuid}")
 		end
-		announce_method :update_filedata, [UUID, IO]
-		pretend_args [UUID]
+		announce_method :update_filedata, [UUIDTools::UUID, IO]
+		pretend_args [UUIDTools::UUID]
 		announce_sideeffect
 		needs_to_write
 		needs_rule "file"
@@ -440,7 +440,7 @@ module FileHosting
 				notify_observers("tags")
 			end
 		end
-		announce_method :remove_file, [UUID]
+		announce_method :remove_file, [UUIDTools::UUID]
 		announce_sideeffect
 		needs_to_write
 		needs_rule "file"
@@ -452,7 +452,7 @@ module FileHosting
 			pretend_raise(:history_file, uuid, age)
 			register_op("files/#{uuid.uuid}")
 		end
-		announce_method :history_file, [UUID], [UUID, (1..(1.0/0))]
+		announce_method :history_file, [UUIDTools::UUID], [UUIDTools::UUID, (1..(1.0/0))]
 		needs_rule "history"
 		needs_rule "file"
 		needs_rule "file_withdata"
@@ -584,7 +584,7 @@ module FileHosting
 			res= read_fileinfo(uuid)
 			res
 		end
-		announce_method :fileinfo, [UUID]
+		announce_method :fileinfo, [UUIDTools::UUID]
 		needs_rule "file"
 		needs_rule "file_withdata"
 		needs_rule "file_info"

@@ -36,7 +36,7 @@ module FileHosting
 		def initialize(config, uuid, *includes, &block)
 			super(config) do
 				begin
-					@uuid= UUID.parse(uuid)
+					@uuid= UUIDTools::UUID.parse(uuid)
 				rescue ArgumentError
 					@status= 404
 				end
